@@ -1,0 +1,5 @@
+anthropic
+flask
+flask_session
+flask_cors
+groq

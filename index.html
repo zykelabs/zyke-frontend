@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zyke</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <p class="title">zyke</p>
+    <p>Generate content in your style. </p>
+    <div id="responses" class="responses">
+        <!-- <div class="user" id="user-container">
+            <p class="title-user-inp">User:</p>
+            <br>
+            <p class="user-prompt" id="prompt"></p>
+        </div> -->
+        <!-- <div class="chats-bot" id="response-container">
+            <p class="title-bot">LLM bot:</p>
+            <br>
+            <p class="bot-resp" id="gptResponse"></p>
+        </div> -->
+    </div>
+
+    <div class="bot-form">
+        <div class="out-settings" id="out-settings">
+            <div class="settings">
+                <div class="settings-container">
+                    <p class="metrics"><strong>Additional Metrics:</strong></p>
+                    <input class="tone" placeholder="Tones for your brand (default- friendly)" id="mode">
+                    <input class="target" placeholder="Target audience for your brand posts" id="target">
+                    <input class="trends" placeholder="Trends for your post" id="trends">
+                    <input class="platform" placeholder="Platform(s) for your post" id="platform">
+                    <div>
+                        <p class="num-post-text">Number of posts (1-5):</p>
+                        <input type="number" class="num-posts-inp" placeholder="" min="1" max="5" value="1" id="num-posts">
+                        <p class="size-post-text">Length of posts:</p>
+                        <select name="size-posts" id="post-size">
+                        <option value="short">Short</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option> 
+                        </select>   
+                    </div>        
+                </div>
+            </div>
+        </div>
+        <form id="chat-bot-input-form">
+            <div class="input-container">
+                <div class="bot">
+                    <div style="display: inline;"><img src="settings.png" alt="settings" class="bot-settings-icon" id="settings-icon"></div>
+                    <span role="textbox" class="text-bot" type="text" id="userInput" onkeydown="return event.key;" contenteditable></span>
+                </div>
+                <!-- <input class="bot" type="text" id="userInput" placeholder="Enter your prompt" onkeydown="return event.key;"> -->
+                <button class="bot-in" id="sendButton" type="submit" value="">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="3 0 32 32" class="icon-2xl"><path fill="currentColor" fill-rule="evenodd" d="M15.192 8.906a1.143 1.143 0 0 1 1.616 0l5.143 5.143a1.143 1.143 0 0 1-1.616 1.616l-3.192-3.192v9.813a1.143 1.143 0 0 1-2.286 0v-9.813l-3.192 3.192a1.143 1.143 0 1 1-1.616-1.616z" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
