@@ -337,6 +337,8 @@ input{
 .title-bot{
     color: rgb(255, 255, 255);
     margin: 0;
+    display: block;
+    margin-bottom: 10px;
 }
 
 .title-user-inp{

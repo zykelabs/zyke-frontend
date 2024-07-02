@@ -285,11 +285,12 @@ def gpt_request():
         model = "llama3-70b-8192"
         system_prompt = '''
         You are tasked with creating an image generation prompt for a social media post. Your goal is to craft a detailed and accurate prompt that will be used in a stable diffusion XL image generation model to create an image that perfectly matches the post idea for a specific social media platform.
+        Do not use emojis. Do not write any other text, any introductory statements like 'Here are the image generation prompts for each post:' or 'Here are the prompts you requested for' or anything else. Remember DO NOT WRITE INTRODUCTORY STATEMENTS. 
 
         You will be given input of the original user prompt, the platform and the post.
         Do not rely a lot on the original user prompt, rely on the platform and post idea to generate the image generation prompt.
         From the original user prompt you just take reference of the style of the post, the mood of the post, the tone of the post, the target audience, the trends mentioned, the subtopics mentioned, etc.
-        Try not to include text in the image, unless post requires it, only visual elements.
+        Try to avoid text in the image, unless it is needed.
 
         Remember to not take the number of posts mentioned in the original user prompt into consideration. Decide number of posts based on the post data provided to you, where the posts themselves and number of prompt pairs (positive + negative) to generate for each of these posts will be mentioned.
 
@@ -298,16 +299,20 @@ def gpt_request():
         2. Include details about the style, mood, and atmosphere that best suit the post idea and platform.
         3. Mention any relevant colors, lighting, or composition elements that would enhance the image.
         4. Consider the typical aesthetics and trends of the specified social media platform.
-        5. Avoid any text or words in the image unless specifically required by the post idea.
+        5. Avoid any text or words in the image unless specifically required by the post idea. If text is needed, then do include it in the prompt.
 
         You will be given three inputs, the original user prompt, one input of the platform and on of the post idea.
 
         Use these inputs to tailor your image generation prompt. Consider the nature of the post idea and how it would best be represented visually on the specified social media platform.
 
         You will have to generate two kinds of prompt, one a normal prompt and one a negative prompt. They both have to be enclosed in square brackets "[]" and separeted by comma. Ex: "[prompt], [negative prompt]"
-        Negative prompt describes what not to include in generation, ex: "text" or "blue background", etc. 
+        Negative prompt describes what not to include in generation, ex: "hazy" or "distorted", etc. 
         
         Very Imp: Negative prompts are usually one or a few worded, like short phrases, do not describe them in detail, but do use them to specify what not to include in the image and also try to use multiple phrases in the negative prompt, not just one or two.
+        Very Imp: Negative prompts stop what you write, for example, if you write "blurred" in negative prompt, the image will not have any blurring in it, if you write "noise" in negative prompt, the image will not be noisy, etc.
+        So if you want no text in the image, then do not write "no text" or "without text", just write "text" in the negative prompt, this will stop the model from generating any text in the image.
+        Similarly if you do not want distorted images, then write "distorted" in the negative prompt, this will stop the model from generating any distorted images, etc.
+        So remember to use negative prompts to stop the model from generating certain elements in the image.
 
         Here are some examples of good prompts for different social media platforms, (there maybe other platforms given to you for posting think accordingly and generate prompts for them):
 
@@ -372,7 +377,8 @@ def gpt_request():
 
         Only write the prompts to be put in, do not write any introductory statement like "Here's a tailored image generation prompt for the given post idea on Instagram:"
 
-        Do not use emojis. Do not write any other text, any introductory statements like 'Here are the image generation prompts for each post:'. Only write the prompts in the format provided above. Again, Do not include any other text.'''
+        Do not use emojis. Do not write any other text, any introductory statements like 'Here are the image generation prompts for each post:' or 'Here are the prompts you requested for' or anything else. Remember DO NOT WRITE INTRODUCTORY STATEMENTS. 
+        Only write the prompts in the format provided above. Again, Do not include any other text.'''
 
     # print("System Prompt:\n",system_prompt, end="\n\n\n\n")
 

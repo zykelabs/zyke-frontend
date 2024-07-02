@@ -304,7 +304,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
         return new Promise((resolve, reject) => {
         selected_questions = []
         selected_posts = []
-        end_check = 0;
 
         if (use_case === "prompt-gen"){
             var questions = document.getElementsByClassName('question_0');
@@ -427,7 +426,7 @@ try to write about these trends : ${trends}.`;
             }
             out_q_final = out_q_final.slice(0, -2);
             userInput += ` try to include the subtopics in the questions provided, into the posts or strategies you are generating, questions: ${out_q_final}`;
-            saved_user_input = ` try to include the subtopics in the questions provided, into the posts or strategies you are generating, questions: ${out_q_final}`;
+            saved_user_input += ` try to include the subtopics in the questions provided, into the posts or strategies you are generating, questions: ${out_q_final}`;
         }
 
         if (use_case === "post-gen"){
@@ -617,23 +616,23 @@ try to write about these trends : ${trends}.`;
                                         in_html += `<span class="question_${idx}" id="question_${i}"> ${strip(a[i].replace(/\]/g, ''), `[],"' `)}</span>`;
                                     }
                                 }
-                                if (use_case === "post-gen" && end_check == 0)
+
+                                in_html += `<button class="send-button-${button_id_type} send-button">Send</button>`;
+                                if (!(use_case === "question-gen"))
+                                {
+                                    in_html += `<button class="reset-button-${button_id_type} reset-button">Reset</button>`;
+                                }
+                                if (use_case === "question-gen" || use_case === "post-gen"){
+                                    in_html += `<button class="select-button-${button_id_type} select-button">Select all</button>`;
+                                }
+
+                                if (use_case === "post-gen")
                                 {
                                     // console.log('here3');
-                                    end_check = 1
-                                    in_html += `<br><br><p class="title-bot end-num">Select number of posts to generate for each image, maximum 5 posts total (so 1x5 or 2x2). If more is selected it will be reduced internally.</p>`;
-                                    in_html += `<input type="number" class="num-posts-inp" placeholder="" min="1" max="5" value="1" id="num-posts-chat"><br><br>`;
+                                    in_html += `<br><br><span class="title-bot end-num">Select number of posts to generate for each image, maximum 5 posts total (so 1x5 or 2x2). If more is selected it will be reduced internally.</span>`;
+                                    in_html += `<input type="number" class="num-posts-inp" placeholder="" min="1" max="5" value="1" id="num-posts-chat">`;
                                 }
-                                else {
-                                    in_html += `<button class="send-button-${button_id_type} send-button">Send</button>`;
-                                    if (!(use_case === "question-gen"))
-                                    {
-                                        in_html += `<button class="reset-button-${button_id_type} reset-button">Reset</button>`;
-                                    }
-                                    if (use_case === "question-gen" || use_case === "post-gen"){
-                                        in_html += `<button class="select-button-${button_id_type} select-button">Select all</button>`;
-                                    }
-                                }
+
                                 responseBox.innerHTML = `
                                     <p class="title-bot"><strong>LLM Chatbot:</strong><br>${subtitle}</p>
                                     <br>
@@ -694,12 +693,7 @@ try to write about these trends : ${trends}.`;
                                         in_html += `<span class="question_${idx}" id="question_${i}"> ${strip(a[i].replace(/\]/g, ''), `[],"' `)}</span>`;
                                     }
                                 }
-                                if (use_case === "post-gen" && end_check == 0)
-                                {                                
-                                    // console.log('here4');
-                                    in_html += `<br><br><p class="title-bot end-num">Select number of posts to generate for each image, maximum 5 posts total (so 1x5 or 2x2). If more is selected it will be reduced internally.</p>`;
-                                    in_html += `<input type="number" class="num-posts-inp" placeholder="" min="1" max="5" value="1" id="num-posts-chat"><br><br>`;
-                                }
+                                
                                 in_html += `<button class="send-button-${button_id_type} send-button">Send</button>`;
                                 if (!(use_case === "question-gen"))
                                 {
@@ -707,7 +701,15 @@ try to write about these trends : ${trends}.`;
                                 }
                                 if (use_case === "question-gen" || use_case === "post-gen"){
                                     in_html += `<button class="select-button-${button_id_type} select-button">Select all</button>`;
-                                }                             
+                                }   
+                                
+                                if (use_case === "post-gen")
+                                {                                
+                                    // console.log('here4');
+                                    in_html += `<br><br><span class="title-bot end-num">Select number of posts to generate for each image, maximum 5 posts total (so 1x5 or 2x2). If more is selected it will be reduced internally.</span>`;
+                                    in_html += `<input type="number" class="num-posts-inp" placeholder="" min="1" max="5" value="1" id="num-posts-chat">`;
+                                }
+                                
                                 streamBox.innerHTML = `${in_html}`;
                                 // Auto-scroll
                                 const scrollPosition = responseBox.offsetTop + responseBox.offsetHeight + 80;
