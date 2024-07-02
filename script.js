@@ -5,6 +5,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
     let userInput = '';
     let platform_out = '';
     let running = 0;
+    let saved_user_input = '';
 
     function strip(str, chars = `' []\'",'`, mapChar = '<br>') {
         // Escape special regex characters, handling all potential inputs
@@ -319,7 +320,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
         }
 
         if (use_case === "post-gen"){
-            subtitle = 'Here are the final posts. Select and send them to generate image prompts. Click on the prompt to select them, to reset press reset.';
+            subtitle = 'Here are the final posts. Edit them, Select them and send them to generate images. Click on the prompt to select them, to reset press reset.';
             button_id_type = 'post';
         }
 
@@ -412,6 +413,7 @@ Write ${n_posts} posts for ${platform} platform.
 Use current trends if needed. expand in detail on the ideas you are suggesting. Use a ${mode} tone. my target audience is primarily ${tgt}. write ${post_size} size posts.
 try to write about these trends : ${trends}.`;
 
+            saved_user_input = userInput;
         }
 
         if (use_case === "prompt-gen"){
@@ -422,6 +424,7 @@ try to write about these trends : ${trends}.`;
             }
             out_q_final = out_q_final.slice(0, -2);
             userInput += ` try to include the subtopics in the questions provided, into the posts or strategies you are generating, questions: ${out_q_final}`;
+            saved_user_input = userInput;
         }
 
         if (use_case === "post-gen"){
@@ -455,7 +458,7 @@ try to write about these trends : ${trends}.`;
                 posts_final += '['+selected_posts[i] + `: ${n}], `;
             }
             posts_final = posts_final.slice(0, -2);
-            userInput = `Platform: ${platform_out}.\n\nPosts:\n${posts_final}`;
+            userInput = `Original User Input:${saved_user_input}\n\nPlatform: ${platform_out}.\n\nPosts:\n${posts_final}`;
         }
 
         if(use_case === "img-gen"){
@@ -480,7 +483,7 @@ try to write about these trends : ${trends}.`;
         }
 
         console.log(userInput);
-
+        
         fetch('https://flask.app.zyke.in/gpt', {
             method: 'POST',
             headers: {
