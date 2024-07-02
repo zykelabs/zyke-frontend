@@ -481,7 +481,7 @@ try to write about these trends : ${trends}.`;
 
         console.log(userInput);
 
-        fetch('https://16.171.175.195/gpt', {
+        fetch('https://flask.zyke.in/gpt', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
