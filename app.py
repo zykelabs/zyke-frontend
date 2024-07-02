@@ -21,7 +21,24 @@ app = Flask(__name__)
 # Add the configuration here
 app.config['MAX_CONTENT_LENGTH'] = 256 * 1024 * 1024
 app.secret_key = os.urandom(24)  # This generates a random 24-byte string
-CORS(app)
+CORS(app) #this is uncommented out for local testing, comment it when deploying to production
+#read this stuff carefully
+#-----------------------------------
+#
+#
+#
+#-----------------------------------
+#-----------------------------------
+#I KNOW YOU WILL SKIP THIS, BUT PLEASE READ THIS
+#-----------------------------------
+#-----------------------------------
+#-----------------------------------
+#
+#
+#
+#DO NOT SKIP
+#DON'T DARE SKIPPING THIS
+#READ LINES ABOVE THIS
 
 # Dictionary to store conversations
 conversations = {}
@@ -269,6 +286,13 @@ def gpt_request():
         system_prompt = '''
         You are tasked with creating an image generation prompt for a social media post. Your goal is to craft a detailed and accurate prompt that will be used in a stable diffusion XL image generation model to create an image that perfectly matches the post idea for a specific social media platform.
 
+        You will be given input of the original user prompt, the platform and the post.
+        Do not rely a lot on the original user prompt, rely on the platform and post idea to generate the image generation prompt.
+        From the original user prompt you just take reference of the style of the post, the mood of the post, the tone of the post, the target audience, the trends mentioned, the subtopics mentioned, etc.
+        Try not to include text in the image, unless post requires it, only visual elements.
+
+        Remember to not take the number of posts mentioned in the original user prompt into consideration. Decide number of posts based on the post data provided to you, where the posts themselves and number of prompt pairs (positive + negative) to generate for each of these posts will be mentioned.
+
         When creating the image generation prompt, follow these guidelines:
         1. Be specific and descriptive about the visual elements required in the image.
         2. Include details about the style, mood, and atmosphere that best suit the post idea and platform.
@@ -276,7 +300,7 @@ def gpt_request():
         4. Consider the typical aesthetics and trends of the specified social media platform.
         5. Avoid any text or words in the image unless specifically required by the post idea.
 
-        You will be given two inputs, one of the platform and on of the post idea.
+        You will be given three inputs, the original user prompt, one input of the platform and on of the post idea.
 
         Use these inputs to tailor your image generation prompt. Consider the nature of the post idea and how it would best be represented visually on the specified social media platform.
 
@@ -313,8 +337,13 @@ def gpt_request():
         You will have to generate two prompts for each image (one positive and one negative), based on the social media platform and post idea provided. The prompt should be detailed and descriptive, focusing on the visual elements, style, and mood of the image. Remember to include any specific settings, such as lighting, colors, and framing, that would enhance the image.
 
         You will be given the number of image prompt pairs to generate for each post in the input prompt. Generate only that many number not more, not less.
+        This means that for each post in the given posts data there will be a number next to it, both enclosed in a list(array) format, suppose n is the number. So the data is like [post, n].
+        Now this means you will have to generate 2*n image prompts for that post. This is because each post will contain two image prompts, one positive and one negative. Now after generating prompts for this post, you will move to the next one and repeat this process untill all prompts for all posts are generated.
+        Remember to not generate more or less prompts for a post than twice the number specified, (twice because one positive and one negative).
+        Remember to not exclude any post, generate prompts for all posts provided to you, and do not include any posts not provided to you.
+        Remember you do not have to look at the number of posts asked to generate in the original user prompt, generate the number of prompts for each post as specified in the posts data.
 
-        Example in the previous case, use only 1 prompt of post1, 4 for post2, 1 for post3, 3 for post4, 2 for post5 and so on. Not more not less.
+        Example in the previous case, use only 1 prompt pair (positive + negative) of post1, 4 prompt pairs (positive + negative) for post2, 1 prompt pair (positive + negative) for post3, 3 prompt pairs (positive + negative) for post4, 2 prompt pairs (positive + negative) for post5 and so on. Not more not less.
         
         Format part 1, to be strictly followed:
         "[image content/subject, description of action, state, and mood, art form, style, and artist references, additional settings, such as lighting, colors, and framing], [negative prompt]"
