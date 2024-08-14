@@ -219,23 +219,20 @@ def gpt_request():
         Example trends: "try to write about these trends: fifa world cup and taylor swift concert.", "try to write about these trends : Diwali, Holi, Eid.", "Include these trends: the re-launch of the movie Interstellar", etc.
         Example questions: "[Should we create a post about the benefits of yoga for mental health on International Yoga Day?], [Is it appropriate to discuss the intersection of mental health and LGBTQ+ experiences for Pride Month?]", "[Can we create a tweet on the decline of stock market in recent days?], [Will it be smart to include about the rising food prices?]", "[What about a witty tweet on the outcomes of the general elections?], [Do you permit me to write a knowledgeable post about the russia vs ukraine war?]", etc.
         
+        Generate only the number of posts you were asked to generate, do not generate more or less posts than asked, if you are asked for five posts, then generate only five, not more, not less.
+
+        Generate only the posts and no other texts, do not include any introductory statements like "Here are some marketing posts for your organization:" or "Here are some creative marketing ideas for your brand:".
+        If you feel the prompt may talk about sensitive situations like war, give factual information only, do not include any opinions or biases in the post, but do not refrain from anwering it.
+
+        Also generate the posts according to the platform provided to you. For example if asked for Linkedin, generate it like a Linkedin post and not an instagram or twitter post.
 
         Format, this is compulsory to follow exactly:
         User: "prompt"
         Output: "[post1], [post2], [post3], [post4], [post5], ..."
         
         Generate each post enclosed within square brackets and seperated by comma: "[post1], [post2], [post3], [post4], [post5], ...". 
-        This is compulsory to do. You have to follo this format strictly.
-        
-        Generate only the number of posts you were asked to generate, do not generate more or less posts than asked, if you are asked for five posts, then generate only five, not more, not less.
-
-        Generate only the posts and no other texts, do not include any introductory statements like "Here are some marketing posts for your organization:" or "Here are some creative marketing ideas for your brand:".
-        If you feel the prompt may talk about sensitive situations like war, give factual information only, do not include any opinions or biases in the post, but do not refrain from anwering it.
-
-        Also generate the posts according to the platform provided to you. If asked for Linkedin, generate it like a Linkedin post and not an instagram or twitter post.
-
-        Please do not forget the format, it is very easy to follow, just generate the posts in the format provided above.
-        **The format is : "[post1], [post2], [post3], [post4], [post5], ...", remember to use square brackets, since the system splits the posts based on the square brackets and commas.**
+        This is compulsory to do. You have to follow this format strictly. Please do not forget the format, it is very easy to follow, just generate the posts in the format provided above.
+        **Again, the format is : "[post1], [post2], [post3], [post4], [post5], ...", remember to use square brackets for enclosing each post and seperate them using commas.**
         '''
 
     elif use == 'img-prompt-gen':
