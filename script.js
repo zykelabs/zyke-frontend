@@ -471,15 +471,19 @@ try to write about these trends : ${trends}.`;
             for (let i = 0; i < resps.length; i++)
             {
                 resp = resps[i].innerHTML;
+                out_dict['positive'] = resp;
+                out_dicts.push(out_dict);
+                out_dict = {};
                 
-                if (i%2 == 0){
-                    out_dict['positive'] = resp;
-                }
-                else{
-                    out_dict['negative'] = resp;
-                    out_dicts.push(out_dict);
-                    out_dict = {};
-                }
+                // for SDXL
+                // if (i%2 == 0){
+                //     out_dict['positive'] = resp;
+                // }
+                // else{
+                //     out_dict['negative'] = resp;
+                //     out_dicts.push(out_dict);
+                //     out_dict = {};
+                // }
             }
             userInput = out_dicts;
         }

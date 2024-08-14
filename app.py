@@ -7,6 +7,8 @@ import uuid
 from groq import Groq
 import requests
 import json
+import fal_client
+import base64
 
 def load_config():
     with open('config.json') as config_file:
@@ -16,6 +18,7 @@ config = load_config()
 api_key_anthropic = config['api_keys']['anthropic']
 api_key_groq = config['api_keys']['groq']
 api_key_stability_ai = config['api_keys']['stability_ai']
+os.environ["FAL_KEY"] = config['api_keys']['fal_ai']
 
 app = Flask(__name__)
 # Add the configuration here
@@ -237,8 +240,9 @@ def gpt_request():
 
     elif use == 'img-prompt-gen':
         model = "claude-3-5-sonnet-20240620"
-        system_prompt = '''
-        You are tasked with creating an image generation prompt for a social media post. Your goal is to craft a detailed and accurate prompt that will be used in a stable diffusion XL image generation model to create an image that perfectly matches the post idea for a specific social media platform.
+
+        system_prompt = \
+        '''You are tasked with creating an image generation prompt for a social media post. Your goal is to craft a detailed and accurate prompt that will be used in an image generation model to create an image that perfectly matches the post idea for a specific social media platform.
         Do not use emojis. Do not write any other text, any introductory statements like 'Here are the image generation prompts for each post:' or 'Here are the prompts you requested for' or anything else. Remember DO NOT WRITE INTRODUCTORY STATEMENTS. 
 
         You will be given input of the original user prompt, the platform and the post.
@@ -251,18 +255,15 @@ def gpt_request():
         3. Mention any relevant colors, lighting, or composition elements that would enhance the image.
         4. Consider the typical aesthetics and trends of the specified social media platform.
         5. Avoid any text or words in the image unless specifically required by the post idea. If text is needed, then do include it in the prompt.
-        6. Remember prompting for images is not the same as prompting for LLMs, so use all the knowledge and idea you have about prompting methods from image generation models, specially stable diffusion models.
+        6. Remember prompting for images is not the same as prompting for LLMs, so use all the knowledge and idea you have about prompting methods from image generation models.
 
         You will be given three inputs, the original user prompt, one input of the platform and on of the post idea.
         Use these inputs to tailor your image generation prompt. Consider the nature of the post idea and how it would best be represented visually on the specified social media platform.
 
-        You will have to generate two kinds of prompt, one a normal prompt and one a negative prompt. They both have to be enclosed in square brackets "[]" and separeted by comma. Ex: "[prompt], [negative prompt]".
-        Negative prompt describes what not to include in generation, ex: "hazy" or "distorted", etc. 
-        Remember that negative prompts stop what you write, for example, if you write "blurred" in negative prompt, the image will not have any blurring in it, if you write "noise" in negative prompt, the image will not be noisy, etc. So for say no text, do not write "no text" just write "text" in the negative prompt.
-        Negative prompts are usually one or a few worded, like short phrases, do not describe them in detail, but do use them to specify what not to include in the image. Use them intelligently.
-
         Only make the first or main statement detailed. make the rest of the instructions short, no need to explain it in depth, example: instead of using "Use a green background of a blurred out campus with lush green trees and blue sky", use "green background, blurred campus, lush green trees, blue sky"
-        Describe styling of the image. Ex: Cartoony or Digital art or photorealistic or style of van gogh or anything else. you can also combine multiple styles in the prompt.
+
+        Describe styling of the image. Example Styles (just for reference): Digital Art, Photorealistic, style of Van Gogh, Cyberpunk imagery, Hyper Realism, Cartoon, Oil Painting, Neon, etc. 
+        You can also combine multiple styles in the prompt.
 
         Here is a more detailed guide to the format:
 
@@ -274,27 +275,24 @@ def gpt_request():
         Say for example:
         "[post1: 1], [post2: 4], [post3: 1], [post4: 3], [post5: 2], ..."
 
-        Here, you will have to generate two prompts (one pair of prompts, one positive and one negative) for each image, and the number of images required for each post is mentioned next to the post, as shown before.
-        Hence, for this case, for post1 you need 1 image (2 prompts), for post2 4 images (8 prompts), for post3 1 image (2 prompts), for post4 3 images (6 prompts), for post5 2 images (4 prompts), and so on.
+        Here, the number of prompts required for each post is mentioned next to the post, as shown.
+        Hence, for this case, for post1 you need 1 prompt, for post2 4 prompts, for post3 1 prompt, for post4 3 prompts, for post5 2 prompts, and so on.
         
         Base it on the social media platform and post idea provided. The prompt should be detailed and descriptive, focusing on the visual elements, style, and mood of the image. 
         Remember to include any specific settings, such as lighting, colors, and framing, that would enhance the image.
 
         Remember to not take the number of posts mentioned in the original user prompt into consideration. 
-        Decide number of posts based on the post data provided to you, where the posts themselves and number of prompt pairs (positive + negative) to generate for each of these posts will be mentioned.
+        Decide number of posts based on the post data provided to you, where the posts themselves and number of prompts to generate for each of these posts will be mentioned.
         
-        Contents of a positive prompt: "image content/subject, description of action, state, and mood, art form, style, and artist references, additional settings, such as lighting, colors, and framing"
-
-        The positive and negative prompt should look like this: "[positive prompt], [negative prompt]"
+        Contents of a prompt: "image content/subject, description of action, state, and mood, art form, style, and artist references, additional settings, such as lighting, colors, and framing"
 
         Format for the output, to be strictly followed:
-        "[positive prompt for post 1's 1st post], [negative prompt for post 1's 1st post], [positive prompt for post 1's second post], [negative prompt for post 1's second post], .., [positive prompt for post 2's first post], [negative prompt for post 2's first post], [positive prompt for post 2's second post], [negative prompt for post 2's second post], [positive prompt for post 2's third post], [negative prompt for post 2's third post],, .., [positive prompt for post 3's first post], [negative prompt for post 3's first post], ...."
+        "[prompt for post 1's 1st post], [prompt for post 1's second post],  [prompt for post 1's third post], [prompt for post 1's fourth post], .., [prompt for post 2's first post], [prompt for post 2's second post], [prompt for post 2's third post], .., [prompt for post 3's first post], [prompt for post 3's second post], ...."
 
-        Remember, You have to generate prompts for all the posts given to you. Remember, You specifically have to generate two prompts for each image of each post given to you.
-        Say for example given 5 image for post 1, so for 5 image of post 1, you have to generate 10 prompts, 5 positive and 5 negative, then repeat for post 2.
+        Remember, You have to generate prompts for all the posts given to you.
+        Say for example given 5 images for post 1, so for 5 images of post 1, you have to generate 5 prompts, then repeat this process for post 2.
 
-        You also have to seperate them in the format provided above, seperate by square brackets and commas. Do not forget to include the negative prompt for each image generation prompt:
-        "[positive prompt for post 1's 1st post], [negative prompt for post 1's 1st post], [positive prompt for post 1's second post], [negative prompt for post 1's second post], [positive prompt for post 2's first post], [negative prompt for post 2's first post], [positive prompt for post 2's second post], [negative prompt for post 2's second post], [positive prompt for post 2's third post], [negative prompt for post 2's third post], [positive prompt for post 3's first post], [negative prompt for post 3's first post], ...."
+        You also have to seperate them in the format provided above, seperate by square brackets and commas.
 
         Do not get confused with the format, it is very easy to follow, just generate the prompts in the format provided above. Also you are not to generate more prompts of one post and less of another post, you will have to generate according to the number specified and the instructions provided to you.
 
@@ -303,6 +301,77 @@ def gpt_request():
         Do not write any other text, any introductory statements like 'Here are the image generation prompts for each post:' or 'Here are the prompts you requested for' or anything else. Remember DO NOT WRITE INTRODUCTORY STATEMENTS. 
         Only write the prompts in the format provided above. 
         Again, Do not include any other text.'''
+
+
+        # for sdxl (both negative and positive prompts)
+        # system_prompt = '''You are tasked with creating an image generation prompt for a social media post. Your goal is to craft a detailed and accurate prompt that will be used in a stable diffusion XL image generation model to create an image that perfectly matches the post idea for a specific social media platform.
+        # Do not use emojis. Do not write any other text, any introductory statements like 'Here are the image generation prompts for each post:' or 'Here are the prompts you requested for' or anything else. Remember DO NOT WRITE INTRODUCTORY STATEMENTS. 
+
+        # You will be given input of the original user prompt, the platform and the post.
+        # Do take into consideration the platform and the post idea provided to you, and generate an appropriate image generation prompt based on this information.
+        # Try to avoid text in the image, unless you feel it is needed, say for an infographic.
+
+        # When creating the image generation prompt, follow these guidelines:
+        # 1. Be specific and descriptive about the visual elements required in the image.
+        # 2. Include details about the style, mood, and atmosphere that best suit the post idea and platform.
+        # 3. Mention any relevant colors, lighting, or composition elements that would enhance the image.
+        # 4. Consider the typical aesthetics and trends of the specified social media platform.
+        # 5. Avoid any text or words in the image unless specifically required by the post idea. If text is needed, then do include it in the prompt.
+        # 6. Remember prompting for images is not the same as prompting for LLMs, so use all the knowledge and idea you have about prompting methods from image generation models, specially stable diffusion models.
+
+        # You will be given three inputs, the original user prompt, one input of the platform and on of the post idea.
+        # Use these inputs to tailor your image generation prompt. Consider the nature of the post idea and how it would best be represented visually on the specified social media platform.
+
+        # You will have to generate two kinds of prompt, one a normal prompt and one a negative prompt. They both have to be enclosed in square brackets "[]" and separeted by comma. Ex: "[prompt], [negative prompt]".
+        # Negative prompt describes what not to include in generation, ex: "hazy" or "distorted", etc. 
+        # Remember that negative prompts stop what you write, for example, if you write "blurred" in negative prompt, the image will not have any blurring in it, if you write "noise" in negative prompt, the image will not be noisy, etc. So for say no text, do not write "no text" just write "text" in the negative prompt.
+        # Negative prompts are usually one or a few worded, like short phrases, do not describe them in detail, but do use them to specify what not to include in the image. Use them intelligently.
+
+        # Only make the first or main statement detailed. make the rest of the instructions short, no need to explain it in depth, example: instead of using "Use a green background of a blurred out campus with lush green trees and blue sky", use "green background, blurred campus, lush green trees, blue sky"
+        # Describe styling of the image. Ex: Cartoony or Digital art or photorealistic or style of van gogh or anything else. you can also combine multiple styles in the prompt.
+
+        # Here is a more detailed guide to the format:
+
+        # You will get a prompt with the posts in the following format:
+        # "[post1: number of prompts for post1], [post2: number of prompts for post2], [post3: number of prompts for post3], ..."
+
+        # Note again, the input format is "[post idea 1: number of posts to be generated for this idea], [post idea 2: number of posts to be generated for this idea], [post idea 3: number of posts to be generated for this idea], ..."
+
+        # Say for example:
+        # "[post1: 1], [post2: 4], [post3: 1], [post4: 3], [post5: 2], ..."
+
+        # Here, you will have to generate two prompts (one pair of prompts, one positive and one negative) for each image, and the number of images required for each post is mentioned next to the post, as shown before.
+        # Hence, for this case, for post1 you need 1 image (2 prompts), for post2 4 images (8 prompts), for post3 1 image (2 prompts), for post4 3 images (6 prompts), for post5 2 images (4 prompts), and so on.
+        
+        # Base it on the social media platform and post idea provided. The prompt should be detailed and descriptive, focusing on the visual elements, style, and mood of the image. 
+        # Remember to include any specific settings, such as lighting, colors, and framing, that would enhance the image.
+
+        # Remember to not take the number of posts mentioned in the original user prompt into consideration. 
+        # Decide number of posts based on the post data provided to you, where the posts themselves and number of prompt pairs (positive + negative) to generate for each of these posts will be mentioned.
+        
+        # Contents of a positive prompt: "image content/subject, description of action, state, and mood, art form, style, and artist references, additional settings, such as lighting, colors, and framing"
+
+        # The positive and negative prompt should look like this: "[positive prompt], [negative prompt]"
+
+        # Format for the output, to be strictly followed:
+        # "[positive prompt for post 1's 1st post], [negative prompt for post 1's 1st post], [positive prompt for post 1's second post], [negative prompt for post 1's second post], .., [positive prompt for post 2's first post], [negative prompt for post 2's first post], [positive prompt for post 2's second post], [negative prompt for post 2's second post], [positive prompt for post 2's third post], [negative prompt for post 2's third post],, .., [positive prompt for post 3's first post], [negative prompt for post 3's first post], ...."
+
+        # Remember, You have to generate prompts for all the posts given to you. Remember, You specifically have to generate two prompts for each image of each post given to you.
+        # Say for example given 5 image for post 1, so for 5 image of post 1, you have to generate 10 prompts, 5 positive and 5 negative, then repeat for post 2.
+
+        # You also have to seperate them in the format provided above, seperate by square brackets and commas. Do not forget to include the negative prompt for each image generation prompt:
+        # "[positive prompt for post 1's 1st post], [negative prompt for post 1's 1st post], [positive prompt for post 1's second post], [negative prompt for post 1's second post], [positive prompt for post 2's first post], [negative prompt for post 2's first post], [positive prompt for post 2's second post], [negative prompt for post 2's second post], [positive prompt for post 2's third post], [negative prompt for post 2's third post], [positive prompt for post 3's first post], [negative prompt for post 3's first post], ...."
+
+        # Do not get confused with the format, it is very easy to follow, just generate the prompts in the format provided above. Also you are not to generate more prompts of one post and less of another post, you will have to generate according to the number specified and the instructions provided to you.
+
+        # Only write the prompts to be put in, do not write any introductory statement like "Here's a tailored image generation prompt for the given post idea on Instagram:"
+        # Do not use emojis. 
+        # Do not write any other text, any introductory statements like 'Here are the image generation prompts for each post:' or 'Here are the prompts you requested for' or anything else. Remember DO NOT WRITE INTRODUCTORY STATEMENTS. 
+        # Only write the prompts in the format provided above. 
+        # Again, Do not include any other text.'''
+
+    elif use == 'img-gen':
+        model = 'flux-pro'
 
     # print("System Prompt:\n",system_prompt, end="\n\n\n\n")
 
@@ -376,7 +445,7 @@ def gpt_request():
             conversations[conversation_id] = conversations[conversation_id][-10:]
             yield f"\n\nCONVERSATION_ID: {conversation_id}"
 
-        def get_images():
+        def get_images_sdxl():
             images_data = []
 
             for idx,i in enumerate(user_input):
@@ -433,11 +502,60 @@ def gpt_request():
             
             # print(jsonify({'images': images_data}))
             return jsonify({'images': images_data})
+        
+        def get_images_flux():
+            images_data = []
+
+            for idx,i in enumerate(user_input):
+
+                prompt = i['positive']
+
+                handler = fal_client.submit(
+                "fal-ai/flux-pro",
+                arguments={
+                    "prompt": prompt,
+                    "image_size": "square",
+                    "num_inference_steps": 50,
+                    "guidance_scale": 3.5,
+                    "num_images": 1,
+                    "safety_tolerance": "2"
+                },
+                )
+
+                result = handler.get()
+                # print(result)
+
+                response2 = requests.get(result['images'][0]['url'])
+
+                if response2.status_code != 200:
+                    raise Exception("Non-200 response: " + str(response2.text))
+                                
+                # print(f"Prompt for Img{idx}:\n",prompt, end="\n\n\n\n")
+
+                image_base64 = base64.b64encode(response2.content).decode('utf-8')
+
+                # print(image_base64)
+                # print(type(image_base64))
+                # print(len(image_base64))
+                # print(image_base64[-500:])
+                
+                # Add to our list
+                images_data.append({
+                    'id': idx,
+                    'image': image_base64
+                })
+            
+            # print(jsonify({'images': images_data}))
+            return jsonify({'images': images_data})
 
         if (use != 'img-gen'):
             return Response(stream_with_context(generate(model, use)), mimetype='text/event-stream')
         else:
-            response3 = get_images()
+            response3 = None
+            if model == 'sdxl':
+                response3 = get_images_sdxl()
+            elif 'flux' in model:
+                response3 = get_images_flux()
             response3.headers['Content-Type'] = 'application/json'
             return response3
 
