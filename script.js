@@ -520,7 +520,7 @@ try to write about these trends : ${trends}.`;
 
         console.log(userInput);
         
-        fetch('http://127.0.0.1:5000/gpt', {
+        fetch('https://flask.app.zyke.in/gpt', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
