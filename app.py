@@ -15,7 +15,7 @@ def load_config():
         return json.load(config_file)
 
 config = load_config()
-api_key_anthropic = config['api_keys']['anthropic']
+api_key_anthropic = config['api_keys']['anthropic-abhi']
 api_key_groq = config['api_keys']['groq']
 api_key_stability_ai = config['api_keys']['stability_ai']
 os.environ["FAL_KEY"] = config['api_keys']['fal_ai']
