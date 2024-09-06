@@ -7,36 +7,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
     let running = 0;
     let saved_user_input = '';
 
-    const people = [
-        { name: 'Alec', role: 'crafting the next-gen builder community & fine-tuning content' },
-        { name: 'Mattia', role: 'building a visual landing page builder for developers' },
-        { name: 'Stavan', role: 'chief vibes architect of buildspace. don\'t like any pixels we push.' },
-        { name: 'Charlie', role: 'ai hacker and musician exploring the frontiers of technology and creativity' },
-        { name: 'Jeffrey', role: 'writing at buildspace' }
-    ];
-
-    const scrollContent = document.getElementById('scrollContent');
-
-    function createCard(person) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-            <p><strong>${person.name}</strong></p>
-            <p>${person.role}</p>
-        `;
-        return card;
-    }
-
-    function populateCards() {
-        // Double the array to create a seamless loop
-        const doubledPeople = [...people, ...people];
-        doubledPeople.forEach(person => {
-            scrollContent.appendChild(createCard(person));
-        });
-    }
-
-    populateCards();
-
     function strip(str, chars = `' []\'",'`, mapChar = '<br>') {
         // Escape special regex characters, handling all potential inputs
         const escapeRegExp = (string) => string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
