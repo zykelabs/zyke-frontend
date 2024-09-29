@@ -24,7 +24,7 @@ app = Flask(__name__)
 # Add the configuration here
 app.config['MAX_CONTENT_LENGTH'] = 256 * 1024 * 1024
 app.secret_key = os.urandom(24)  # This generates a random 24-byte string
-CORS(app) #this is uncommented out for local testing, comment it when deploying to production
+# CORS(app) #this is uncommented out for local testing, comment it when deploying to production
 #read this stuff carefully
 #-----------------------------------
 #
@@ -395,46 +395,50 @@ def gpt_request():
             if use == 'prompt-gen':
                 temp = 0.3
             response_content = ""
-            if (model == "claude-3-5-sonnet-20240620"):
-                # print("Claude")
-                with client.messages.stream(
-                    model=modell,
-                    max_tokens=4096,
-                    temperature=temp,
-                    system=system_prompt,
-                    messages=
-                        conversations[conversation_id]
-                )as stream:
-                    for text in stream.text_stream:
-                        # print(text, end="", flush=True)
-                        response_content += text
-                        yield text
-                        
-            else:
-                # Initialize the chat history
-                chat_history = [{"role": "system","content": system_prompt}]
-                for i in conversations[conversation_id]:
-                    # print("Yo:",i)
-                    sm_part = {}
-                    sm_part['role'] = i['role']
-                    try:
-                        sm_part['content'] = i['content'][0]['text']
-                    except:
-                        sm_part['content'] = i['content']
-                    chat_history.append(sm_part)
-                # print(chat_history)
-                # print("groq")
-                stream = client_groq.chat.completions.create(model=modell,
-                                          messages=chat_history,
-                                          max_tokens=2000,
-                                          temperature=temp,
-                                          stream=True,) 
-                for chunk in stream:
-                    # print(chunk.choices[0].delta.content, end="", flush=True)
-                    if chunk.choices[0].delta.content is not None:
-                        response_content += str(chunk.choices[0].delta.content)
-                        yield chunk.choices[0].delta.content
+            try:
+                if (model == "claude-3-5-sonnet-20240620"):
+                    # print("Claude")
+                        with client.messages.stream(
+                            model=modell,
+                            max_tokens=4096,
+                            temperature=temp,
+                            system=system_prompt,
+                            messages=
+                                conversations[conversation_id]
+                        )as stream:
+                            for text in stream.text_stream:
+                                # print(text, end="", flush=True)
+                                response_content += text
+                                yield text
+                            
+                else:
+                    # Initialize the chat history
+                    chat_history = [{"role": "system","content": system_prompt}]
+                    for i in conversations[conversation_id]:
+                        # print("Yo:",i)
+                        sm_part = {}
+                        sm_part['role'] = i['role']
+                        try:
+                            sm_part['content'] = i['content'][0]['text']
+                        except:
+                            sm_part['content'] = i['content']
+                        chat_history.append(sm_part)
+                    # print(chat_history)
+                    # print("groq")
+                    stream = client_groq.chat.completions.create(model=modell,
+                                            messages=chat_history,
+                                            max_tokens=2000,
+                                            temperature=temp,
+                                            stream=True,) 
+                    for chunk in stream:
+                        # print(chunk.choices[0].delta.content, end="", flush=True)
+                        if chunk.choices[0].delta.content is not None:
+                            response_content += str(chunk.choices[0].delta.content)
+                            yield chunk.choices[0].delta.content
 
+            except Exception as e:
+                    print(f"Error: {str(e)}")
+                    yield f"Error: {str(e)}"
 
             # Add the assistant's response to the conversation history
             conversations[conversation_id].append({"role": "assistant", "content": response_content})
@@ -562,3 +566,4 @@ def gpt_request():
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
+    # app.run(host="0.0.0.0", port=5000, debug = True)
