@@ -287,7 +287,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
   };
 
   // Navigate to previous image in history
-  const handlePrevImage = () => {
+  const handlePrevImage = useCallback(() => {
     if (currentHistoryIndex > 0) {
       const newIndex = currentHistoryIndex - 1;
       setCurrentHistoryIndex(newIndex);
@@ -297,9 +297,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
         imageHistory.slice(0, newIndex + 1)
       );
     }
-  };
+  }, [currentHistoryIndex, imageHistory, onImageUpdate]);
 
   // Navigate to next image in history
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleNextImage = () => {
     if (currentHistoryIndex < imageHistory.length - 1) {
       const newIndex = currentHistoryIndex + 1;
@@ -716,7 +717,7 @@ export default function GeneratedPosts() {
   useEffect(() => {
     setPostsData(generatePosts(currentIdeaIndex, postsPerIdea));
     setCurrentPostIndex(0); // Reset to first post when idea changes
-  }, [currentIdeaIndex, postsPerIdea]);
+  }, [currentIdeaIndex, postsPerIdea, generatePosts]);
 
   const handleCopyCaption = () => {
     const caption = postsData[currentPostIndex]?.caption || "";
