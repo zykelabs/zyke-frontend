@@ -63,7 +63,9 @@ const Button: React.FC<ButtonProps> = ({
 }
 
 // Card Component
-const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+const Card: React.FC<CardProps> = ({ className, children, ...props }) => {
   return (
     <div
       className={cn('bg-white rounded-lg shadow-md p-4', className)}
@@ -74,7 +76,9 @@ const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, child
   )
 }
 
-const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+const CardHeader: React.FC<CardHeaderProps> = ({
   className,
   children,
   ...props
@@ -86,7 +90,9 @@ const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   )
 }
 
-const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
+interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+
+const CardTitle: React.FC<CardTitleProps> = ({
   className,
   children,
   ...props
@@ -98,7 +104,9 @@ const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   )
 }
 
-const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+const CardContent: React.FC<CardContentProps> = ({
   className,
   children,
   ...props
@@ -111,7 +119,9 @@ const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 }
 
 // ScrollArea Component
-const ScrollArea: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+interface ScrollAreaProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+const ScrollArea: React.FC<ScrollAreaProps> = ({
   className,
   children,
   ...props
@@ -146,6 +156,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
   onClose,
   imageSrc,
   onImageUpdate,
+  originalImageSrc,
   imageHistory: initialImageHistory,
 }) => {
   const [prompt, setPrompt] = useState('')

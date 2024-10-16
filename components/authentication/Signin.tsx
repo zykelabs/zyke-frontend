@@ -74,7 +74,7 @@ export default function SignInPage() {
         {/* Progress Indicator */}
         {selectedOption && (
           <div className="fixed bottom-8 w-1/2 max-w-md">
-            <Progress value={selectedOption ? 50 : 0} className="h-2 bg-blue-200" />
+            <Progress value={selectedOption ? 50 : 0} className="h-2 bg-blue-200" indicatorClassName="bg-blue-600" />
           </div>
         )}
 
@@ -91,7 +91,7 @@ export default function SignInPage() {
   )
 }
 
-function AccountOption({ icon, title, description, isSelected, onClick }: { icon: React.ReactNode, title: string, description: string, isSelected: boolean, onClick: () => void }) {
+function AccountOption({ icon, title, description, isSelected, onClick }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -117,7 +117,7 @@ function AccountOption({ icon, title, description, isSelected, onClick }: { icon
   )
 }
 
-function ConfirmationModal({ isOpen, onClose, onConfirm, selectedOption, isLoading }: { isOpen: boolean, onClose: () => void, onConfirm: () => void, selectedOption: "individual" | "business" | null, isLoading: boolean }) {
+function ConfirmationModal({ isOpen, onClose, onConfirm, selectedOption, isLoading }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-white">

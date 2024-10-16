@@ -27,7 +27,6 @@ export default function Dashboard() {
         if (!response.ok) throw new Error('Failed to fetch trending topics');
         const data = await response.json();
         setTrendingTopics(data);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         setError('Unable to load trending topics');
       } finally {

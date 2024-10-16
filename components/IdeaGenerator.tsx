@@ -22,12 +22,16 @@ import {
   Image,
   Youtube,
   Globe,
+  Clipboard,
   Menu,
   X,
   MessageCircle,
 } from "lucide-react";
 import {
+  Tooltip,
   TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -441,11 +445,11 @@ Overall, the situation surrounding Salman Khan is complex and involves a mix of 
 
 export default function IdeaGenerator() {
   const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [inputData, setInputData] = useState({});
   const [contentType, setContentType] = useState("");
-  const [selectedTrend, setSelectedTrend] = useState<{ trend: string; shortDescription: string; longDescription: string; } | null>(null);
-  const [trends, setTrends] = useState<{ trend: string; shortDescription: string; longDescription: string; }[]>([]);
+  const [selectedTrend, setSelectedTrend] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [trends, setTrends] = useState([]);
   const [isFetchingTrends, setIsFetchingTrends] = useState(false);
   const [charCount, setCharCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -467,21 +471,21 @@ export default function IdeaGenerator() {
     }
   };
 
-  const handleContentTypeChange = (value: string) => {
+  const handleContentTypeChange = (value) => {
     setContentType(value);
     setInputData({});
     setSelectedTrend(null);
     setCharCount(0);
   };
 
-  const handleInputChange = (name: string, value: string) => {
+  const handleInputChange = (name, value) => {
     setInputData((prev) => ({ ...prev, [name]: value }));
     setCharCount(value.length);
   };
 
-  const handleTrendSelect = (value: string) => {
+  const handleTrendSelect = (value) => {
     const selected = trends.find((trend) => trend.trend === value);
-    setSelectedTrend(selected || null);
+    setSelectedTrend(selected);
     setInputData({ trend: value });
   };
 
@@ -650,7 +654,7 @@ export default function IdeaGenerator() {
                   {label}
                 </h3>
                 <p className="text-sm text-gray-600 mt-2 text-center">
-                  {contentTypeDescriptions[value as keyof typeof contentTypeDescriptions]}
+                  {contentTypeDescriptions[value]}
                 </p>
               </motion.button>
             ))}

@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChevronDown,
+  Instagram,
   Linkedin,
+  Twitter,
+  BarChart,
+  Facebook,
+  Github,
   Plus,
   Minus,
   Menu,
@@ -52,7 +57,8 @@ export default function HomePage() {
 
   const fadeInUp = {
     initial: { opacity: 0, y: 60 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6 },
   };
 
   const toggleFaq = (index: number) => {
@@ -67,13 +73,13 @@ export default function HomePage() {
     setIsModalOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
     handleCloseModal();
     setShowAlert(true);
   
-    const form = e.target as HTMLFormElement;
+    const form = e.target;
     const formDataToSubmit = new FormData(form);
   
     fetch(form.action, {
@@ -99,7 +105,7 @@ export default function HomePage() {
     }, 5000);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -193,7 +199,6 @@ export default function HomePage() {
           <button
             className="md:hidden text-gray-300 hover:text-white transition-colors duration-300"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            title="Toggle Mobile Menu"
           >
             <Menu size={24} />
           </button>
@@ -403,7 +408,7 @@ export default function HomePage() {
           </div>
           <div className="mt-12 text-center">
             <p className="text-gray-600 mb-4">
-              Have questions? We&apos;re here to help!
+              Have questions? We're here to help!
             </p>
             <Button asChild variant="outline">
               <Link href="mailto:zyke.work@gmail.com">Contact Us</Link>
