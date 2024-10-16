@@ -664,7 +664,7 @@ export default function GeneratedPosts() {
       : []),
   ];
 
-  const generatePosts = (ideaIndex: number, count: number) => {
+  const generatePosts = useCallback((ideaIndex: number, count: number) => {
     const posts: { images: string[]; caption: string }[] = [];
     for (let i = 0; i < count; i++) {
       let images: string[];
@@ -706,7 +706,7 @@ export default function GeneratedPosts() {
       posts.push({ images, caption });
     }
     return posts;
-  };
+  }, [dummyImages, dummyCaptions]);
 
   // Initialize posts data
   const [postsData, setPostsData] = useState<
@@ -786,7 +786,7 @@ export default function GeneratedPosts() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 p-8">
         <Link
-          href="/generate-ideas"
+          href="/generated-ideas"
           className="inline-flex items-center mb-8 text-indigo-600 hover:text-indigo-800 transition-colors"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Idea Generator
