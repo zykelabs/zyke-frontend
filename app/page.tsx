@@ -1,4 +1,3 @@
-import BookDemo from "@/components/BookDemo";
 import BrandProfile from "@/components/BrandProfile";
 import BrandVoice from "@/components/BrandVoice";
 import Chatbot from "@/components/Chatbot";
