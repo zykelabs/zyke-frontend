@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, ChevronLeft, ChevronRight, Rocket, Share2, ThumbsUp, Loader2 } from "lucide-react"
+import { ArrowLeft, ChevronLeft, ChevronRight, Rocket, Share2, ThumbsUp } from "lucide-react"
 
 const ideas = [
   {
@@ -30,13 +30,13 @@ const ideas = [
   {
     id: 3,
     title: "Telee..port Your Orders",
-    content: "Playfully one-up SpaceX by claiming Zomato has developed teleportation for food delivery. Create a surprising visual where a meal materializes instantly on a dining table with sci-fi effects, adding humor by 'out-teching' the tech giants.",
+    content: "Playfully one-up SpaceX by claiming Zomato has developed teleportation for food delivery. Create a surprising visual where a meal materializes instantly on a dining table with sci-fi effects, adding humor by 'out-teching' the tech giants.",
     type: "challenge"
   },
   {
     id: 4,
     title: "Lightspeed Delivery",
-    content: "Craft a humorous comparison showing Zomato's delivery speed outpacing the precision of SpaceX's mechanical arms. Use an unexpected twist where a Zomato delivery person intercepts the booster mid-air to hand over an order, emphasizing lightning-fast service.",
+    content: "Craft a humorous comparison showing Zomato's delivery speed outpacing the precision of SpaceX's mechanical arms. Use an unexpected twist where a Zomato delivery person intercepts the booster mid-air to hand over an order, emphasizing lightning-fast service.",
     type: "challenge"
   }
 ]
@@ -44,6 +44,7 @@ const ideas = [
 export default function GenerateIdeas() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const contentType = searchParams.get("type")
   const trend = searchParams.get("trend")
 
   const [selectedIdeas, setSelectedIdeas] = useState<number[]>([])
@@ -52,7 +53,6 @@ export default function GenerateIdeas() {
   const [customIdea, setCustomIdea] = useState("")
   const [includeAIIdea, setIncludeAIIdea] = useState(false)
   const [includeCustomIdea, setIncludeCustomIdea] = useState(false)
-  const [isLoading, setIsLoading] = useState(false) // Loading state
 
   const customIdeaRef = useRef<HTMLDivElement>(null)
 
@@ -98,18 +98,10 @@ export default function GenerateIdeas() {
       alert("Please enter a number of posts greater than 0.")
       return
     }
-
-    setIsLoading(true) // Show loader
-
-    // Prepare query parameters
     const ideasParam = selectedIdeas.join(',')
     const customIdeaParam = includeCustomIdea && customIdea ? encodeURIComponent(customIdea) : ''
     const aiIdeaParam = includeAIIdea ? '&includeAI=true' : ''
-
-    // Set a timeout for 5 seconds before redirecting
-    setTimeout(() => {
-      router.push(`/generated-posts?ideas=${ideasParam}&postsPerIdea=${postsPerIdea}&customIdea=${customIdeaParam}${aiIdeaParam}`)
-    }, 5000)
+    router.push(`/generated-posts?ideas=${ideasParam}&postsPerIdea=${postsPerIdea}&customIdea=${customIdeaParam}${aiIdeaParam}`)
   }
 
   const handleIncludeCustomIdeaChange = (checked: boolean) => {
@@ -129,31 +121,13 @@ export default function GenerateIdeas() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 relative">
-        {/* Loading Overlay */}
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              className="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Loader2 className="animate-spin h-12 w-12 text-white" />
-              <span className="mt-4 text-white text-lg">Generating Content...</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Back Button */}
-        <Button variant="ghost" className="mb-8" onClick={() => router.push('/idea-generator')}>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+        <Button variant="ghost" className="mb-8" onClick={() => window.location.href='/idea-generator'}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Trends
         </Button>
 
-        {/* Title */}
         <h1 className="text-4xl font-bold text-gray-800 mb-8">Generated Ideas for {trend}</h1>
 
-        {/* Create Custom Idea Button */}
         <Button 
           className="mb-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold"
           onClick={() => {
@@ -167,9 +141,7 @@ export default function GenerateIdeas() {
           + Create Your Own Custom Idea
         </Button>
 
-        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Idea Flashcards */}
           <Card className="col-span-1 lg:col-span-2">
             <CardHeader>
               <CardTitle>Idea Flashcards</CardTitle>
@@ -225,7 +197,6 @@ export default function GenerateIdeas() {
                     )}
                   </motion.div>
                 </AnimatePresence>
-                {/* Previous Button */}
                 <Button 
                   variant="ghost" 
                   className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-full bg-white rounded-full shadow-md"
@@ -233,7 +204,6 @@ export default function GenerateIdeas() {
                 >
                   <ChevronLeft className="h-6 w-6" />
                 </Button>
-                {/* Next Button */}
                 <Button 
                   variant="ghost" 
                   className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-full bg-white rounded-full shadow-md"
@@ -272,13 +242,11 @@ export default function GenerateIdeas() {
             </CardFooter>
           </Card>
 
-          {/* Idea Settings */}
           <Card>
             <CardHeader>
               <CardTitle>Idea Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Posts per Idea */}
               <div>
                 <Label htmlFor="postsPerIdea">Posts per Idea</Label>
                 <Input
@@ -290,7 +258,6 @@ export default function GenerateIdeas() {
                   className="mt-1"
                 />
               </div>
-              {/* Selected Ideas */}
               <div>
                 <Label>Selected Ideas</Label>
                 <ScrollArea className="h-[200px] w-full rounded-md border p-4">
@@ -317,7 +284,6 @@ export default function GenerateIdeas() {
                   )}
                 </ScrollArea>
               </div>
-              {/* Include AI-Generated Idea */}
               <div className="flex items-center space-x-2 p-2 rounded-lg bg-gradient-to-r from-indigo-100 to-purple-100">
                 <Switch
                   checked={includeAIIdea}
@@ -328,11 +294,7 @@ export default function GenerateIdeas() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button 
-                className="w-full flex items-center justify-center"
-                onClick={handleGenerateContent}
-                disabled={isLoading} // Disable button while loading
-              >
+              <Button className="w-full" onClick={handleGenerateContent}>
                 <Rocket className="mr-2 h-4 w-4" /> Generate Content
               </Button>
             </CardFooter>
