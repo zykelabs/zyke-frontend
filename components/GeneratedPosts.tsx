@@ -1,12 +1,10 @@
-// components/GeneratedPosts.tsx
+"use client";
 
-'use client'
-
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Download,
@@ -15,42 +13,42 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-} from 'lucide-react'
+} from "lucide-react";
 
 // Utility function to combine class names
 function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(" ");
 }
 
 // Button Component
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'outline' | 'ghost'
-  size?: 'default' | 'sm' | 'icon'
+  variant?: "default" | "outline" | "ghost";
+  size?: "default" | "sm" | "icon";
 }
 
 const Button: React.FC<ButtonProps> = ({
   className,
-  variant = 'default',
-  size = 'default',
+  variant = "default",
+  size = "default",
   children,
   ...props
 }) => {
   const variantStyles = {
-    default: 'bg-indigo-600 text-white hover:bg-indigo-500',
-    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-200',
-    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100',
-  }
+    default: "bg-indigo-600 text-white hover:bg-indigo-500",
+    outline: "border border-gray-300 text-gray-700 hover:bg-gray-200",
+    ghost: "bg-transparent text-gray-700 hover:bg-gray-100",
+  };
 
   const sizeStyles = {
-    default: 'px-4 py-2',
-    sm: 'px-3 py-1.5 text-sm',
-    icon: 'p-2',
-  }
+    default: "px-4 py-2",
+    sm: "px-3 py-1.5 text-sm",
+    icon: "p-2",
+  };
 
   return (
     <button
       className={cn(
-        'rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-100',
+        "rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-100",
         variantStyles[variant],
         sizeStyles[size],
         className
@@ -59,96 +57,90 @@ const Button: React.FC<ButtonProps> = ({
     >
       {children}
     </button>
-  )
-}
+  );
+};
 
 // Card Component
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const Card: React.FC<CardProps> = ({ className, children, ...props }) => {
+const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  className,
+  children,
+  ...props
+}) => {
   return (
     <div
-      className={cn('bg-white rounded-lg shadow-md p-4', className)}
+      className={cn("bg-white rounded-lg shadow-md p-4", className)}
       {...props}
     >
       {children}
     </div>
-  )
-}
+  );
+};
 
-interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const CardHeader: React.FC<CardHeaderProps> = ({
+const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
   children,
   ...props
 }) => {
   return (
-    <div className={cn('mb-4', className)} {...props}>
+    <div className={cn("mb-4", className)} {...props}>
       {children}
     </div>
-  )
-}
+  );
+};
 
-interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
-
-const CardTitle: React.FC<CardTitleProps> = ({
+const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   className,
   children,
   ...props
 }) => {
   return (
-    <h2 className={cn('text-xl font-semibold', className)} {...props}>
+    <h2 className={cn("text-xl font-semibold", className)} {...props}>
       {children}
     </h2>
-  )
-}
+  );
+};
 
-interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const CardContent: React.FC<CardContentProps> = ({
+const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
   children,
   ...props
 }) => {
   return (
-    <div className={cn('', className)} {...props}>
+    <div className={cn("", className)} {...props}>
       {children}
     </div>
-  )
-}
+  );
+};
 
 // ScrollArea Component
-interface ScrollAreaProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const ScrollArea: React.FC<ScrollAreaProps> = ({
+const ScrollArea: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
   children,
   ...props
 }) => {
   return (
-    <div className={cn('overflow-y-auto', className)} {...props}>
+    <div className={cn("overflow-y-auto", className)} {...props}>
       {children}
     </div>
-  )
-}
+  );
+};
 
 // Define the Idea Type
 interface Idea {
-  id: number | string
-  title: string
-  content: string
-  type: string
+  id: number | string;
+  title: string;
+  content: string;
+  type: string;
 }
 
 // ImageModal Component
 interface ImageModalProps {
-  isOpen: boolean
-  onClose: () => void
-  imageSrc: string
-  onImageUpdate: (newImage: string, imageHistory: string[]) => void // Function to update image in parent component
-  originalImageSrc: string // Original image to allow reverting back
-  imageHistory: string[]
+  isOpen: boolean;
+  onClose: () => void;
+  imageSrc: string;
+  onImageUpdate: (newImage: string, imageHistory: string[]) => void; // Function to update image in parent component
+  originalImageSrc: string; // Original image to allow reverting back
+  imageHistory: string[];
 }
 
 const ImageModal: React.FC<ImageModalProps> = ({
@@ -156,186 +148,199 @@ const ImageModal: React.FC<ImageModalProps> = ({
   onClose,
   imageSrc,
   onImageUpdate,
-  originalImageSrc,
   imageHistory: initialImageHistory,
 }) => {
-  const [prompt, setPrompt] = useState('')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [masks, setMasks] = useState<string[]>([])
-  const [selectedMask, setSelectedMask] = useState<string | null>(null)
-  const [displayedImage, setDisplayedImage] = useState<string>(imageSrc)
-  const [imageHistory, setImageHistory] = useState<string[]>(initialImageHistory)
-  const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number>(initialImageHistory.length - 1)
-  const [isMaskSelectionReady, setIsMaskSelectionReady] = useState(false)
-  const [isSelectMaskActive, setIsSelectMaskActive] = useState(false) // To change activation state
+  const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [masks, setMasks] = useState<string[]>([]);
+  const [selectedMask, setSelectedMask] = useState<string | null>(null);
+  const [displayedImage, setDisplayedImage] = useState<string>(imageSrc);
+  const [imageHistory, setImageHistory] =
+    useState<string[]>(initialImageHistory);
+  const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number>(
+    initialImageHistory.length - 1
+  );
+  const [isMaskSelectionReady, setIsMaskSelectionReady] = useState(false);
+  const [isSelectMaskActive, setIsSelectMaskActive] = useState(false); // To change activation state
 
   const hardcodedMasks = [
-    '/masks/L_Model_blended_img_1.png',
-    '/masks/L_Model_blended_img_2.png',
-    '/masks/L_Model_blended_img_3.png',
-    '/masks/L_Model_blended_img_4.png',
-    '/masks/L_Model_blended_img_5.png',
-    '/masks/L_Model_blended_img_6.png',
-  ]
+    "/masks/L_Model_blended_img_1.png",
+    "/masks/L_Model_blended_img_2.png",
+    "/masks/L_Model_blended_img_3.png",
+    "/masks/L_Model_blended_img_4.png",
+    "/masks/L_Model_blended_img_5.png",
+    "/masks/L_Model_blended_img_6.png",
+  ];
 
-  const fixedGeneratedImage = '/generated/fixed.png' // Placeholder image for no mask generation
+  const fixedGeneratedImage = "/generated/fixed.png"; // Placeholder image for no mask generation
 
   useEffect(() => {
     if (isOpen) {
-      setPrompt('')
-      setIsGenerating(false)
-      setMasks([])
-      setSelectedMask(null)
-      setDisplayedImage(imageHistory[currentHistoryIndex])
-      setIsMaskSelectionReady(false)
-      setIsSelectMaskActive(false)
+      setPrompt("");
+      setIsGenerating(false);
+      setMasks([]);
+      setSelectedMask(null);
+      setDisplayedImage(imageHistory[currentHistoryIndex]);
+      setIsMaskSelectionReady(false);
+      setIsSelectMaskActive(false);
     }
-  }, [isOpen, imageHistory, currentHistoryIndex])
+  }, [isOpen, imageHistory, currentHistoryIndex]);
 
   const handleGenerate = () => {
-    if (isGenerating) return
+    if (isGenerating) return;
 
-    setIsGenerating(true)
+    setIsGenerating(true);
 
     // Simulate API call with a 1-second delay for demo purposes
     setTimeout(() => {
-      let newImage = fixedGeneratedImage // Default image if no mask is selected
+      let newImage = fixedGeneratedImage; // Default image if no mask is selected
 
       if (selectedMask) {
         // If a mask is selected, use a corresponding generated image
-        const maskIndex = hardcodedMasks.indexOf(selectedMask)
+        const maskIndex = hardcodedMasks.indexOf(selectedMask);
         // For demonstration, assuming predecided generated images
         const predecidedImages = [
-          '/generated/generated1.png',
-          '/generated/generated2.png',
-          '/generated/generated3.png',
-          '/generated/generated4.png',
-          '/generated/generated5.png',
-          '/generated/generated6.png',
-        ]
+          "/generated/generated1.png",
+          "/generated/generated2.png",
+          "/generated/generated3.png",
+          "/generated/generated4.png",
+          "/generated/generated5.png",
+          "/generated/generated6.png",
+        ];
         newImage =
           maskIndex !== -1
             ? predecidedImages[maskIndex % predecidedImages.length]
-            : fixedGeneratedImage
+            : fixedGeneratedImage;
       }
 
       // Update image history
-      const newImageHistory = [...imageHistory.slice(0, currentHistoryIndex + 1), newImage]
-      setImageHistory(newImageHistory)
-      setCurrentHistoryIndex(newImageHistory.length - 1)
-      setDisplayedImage(newImage)
-      setIsGenerating(false)
+      const newImageHistory = [
+        ...imageHistory.slice(0, currentHistoryIndex + 1),
+        newImage,
+      ];
+      setImageHistory(newImageHistory);
+      setCurrentHistoryIndex(newImageHistory.length - 1);
+      setDisplayedImage(newImage);
+      setIsGenerating(false);
 
       // Update image in parent component
-      onImageUpdate(newImage, newImageHistory)
-    }, 1000) // Faster generation for demo purposes
-  }
+      onImageUpdate(newImage, newImageHistory);
+    }, 1000); // Faster generation for demo purposes
+  };
 
   const handleSelectMask = () => {
     // Toggle mask selection mode
-    const canActivate =
-      !isCurrentImageMask && !isGenerating
+    const canActivate = !isCurrentImageMask && !isGenerating;
 
-    if (!canActivate) return
+    if (!canActivate) return;
 
-    setIsMaskSelectionReady(!isMaskSelectionReady)
-    setIsSelectMaskActive(!isSelectMaskActive)
+    setIsMaskSelectionReady(!isMaskSelectionReady);
+    setIsSelectMaskActive(!isSelectMaskActive);
 
     if (!isMaskSelectionReady) {
       // Activating mask selection
-      setMasks([])
-      setSelectedMask(null)
+      setMasks([]);
+      setSelectedMask(null);
     } else {
       // Deactivating mask selection
-      setMasks([])
-      setSelectedMask(null)
+      setMasks([]);
+      setSelectedMask(null);
     }
-  }
+  };
 
   const handleImageClick = () => {
     if (isSelectMaskActive && masks.length === 0) {
       // Load masks when user clicks on the image after selecting mask
-      setMasks(hardcodedMasks)
-      setSelectedMask(null) // Reset any previously selected mask
+      setMasks(hardcodedMasks);
+      setSelectedMask(null); // Reset any previously selected mask
       // Deactivate the select mask button
-      setIsSelectMaskActive(false)
-      setIsMaskSelectionReady(false)
+      setIsSelectMaskActive(false);
+      setIsMaskSelectionReady(false);
     }
-  }
+  };
 
   const handleMaskSelection = (mask: string) => {
-    setSelectedMask(mask)
-    setDisplayedImage(mask)
-    setImageHistory((prev) => [...prev.slice(0, currentHistoryIndex + 1), mask])
-    setCurrentHistoryIndex((prev) => prev + 1)
-    setMasks([]) // Hide masks after selection
+    setSelectedMask(mask);
+    setDisplayedImage(mask);
+    setImageHistory((prev) => [
+      ...prev.slice(0, currentHistoryIndex + 1),
+      mask,
+    ]);
+    setCurrentHistoryIndex((prev) => prev + 1);
+    setMasks([]); // Hide masks after selection
     // Make button non-clickable when viewing a mask
-    setIsSelectMaskActive(false)
-    setIsMaskSelectionReady(false)
-  }
+    setIsSelectMaskActive(false);
+    setIsMaskSelectionReady(false);
+  };
 
   const handleRevert = () => {
     if (currentHistoryIndex > 0) {
-      const newIndex = currentHistoryIndex - 1
-      const previousImage = imageHistory[newIndex]
-      setCurrentHistoryIndex(newIndex)
-      setDisplayedImage(previousImage)
-      setSelectedMask(null)
+      const newIndex = currentHistoryIndex - 1;
+      const previousImage = imageHistory[newIndex];
+      setCurrentHistoryIndex(newIndex);
+      setDisplayedImage(previousImage);
+      setSelectedMask(null);
 
       // Update parent component
-      onImageUpdate(previousImage, imageHistory.slice(0, newIndex + 1))
+      onImageUpdate(previousImage, imageHistory.slice(0, newIndex + 1));
     }
-  }
+  };
 
   // Navigate to previous image in history
   const handlePrevImage = () => {
     if (currentHistoryIndex > 0) {
-      const newIndex = currentHistoryIndex - 1
-      setCurrentHistoryIndex(newIndex)
-      setDisplayedImage(imageHistory[newIndex])
-      onImageUpdate(imageHistory[newIndex], imageHistory.slice(0, newIndex + 1))
+      const newIndex = currentHistoryIndex - 1;
+      setCurrentHistoryIndex(newIndex);
+      setDisplayedImage(imageHistory[newIndex]);
+      onImageUpdate(
+        imageHistory[newIndex],
+        imageHistory.slice(0, newIndex + 1)
+      );
     }
-  }
+  };
 
   // Navigate to next image in history
   const handleNextImage = () => {
     if (currentHistoryIndex < imageHistory.length - 1) {
-      const newIndex = currentHistoryIndex + 1
-      setCurrentHistoryIndex(newIndex)
-      setDisplayedImage(imageHistory[newIndex])
-      onImageUpdate(imageHistory[newIndex], imageHistory.slice(0, newIndex + 1))
+      const newIndex = currentHistoryIndex + 1;
+      setCurrentHistoryIndex(newIndex);
+      setDisplayedImage(imageHistory[newIndex]);
+      onImageUpdate(
+        imageHistory[newIndex],
+        imageHistory.slice(0, newIndex + 1)
+      );
     }
-  }
+  };
 
   // Determine if the current image is a mask
-  const isCurrentImageMask = hardcodedMasks.includes(displayedImage)
+  const isCurrentImageMask = hardcodedMasks.includes(displayedImage);
 
   // Handle backdrop click
   const handleBackdropClick = () => {
-    onClose()
-  }
+    onClose();
+  };
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!isOpen) return
-      if (e.key === 'ArrowLeft') {
-        handlePrevImage()
-      } else if (e.key === 'ArrowRight') {
-        handleNextImage()
-      } else if (e.key === 'Escape') {
-        onClose()
+      if (!isOpen) return;
+      if (e.key === "ArrowLeft") {
+        handlePrevImage();
+      } else if (e.key === "ArrowRight") {
+        handleNextImage();
+      } else if (e.key === "Escape") {
+        onClose();
       }
     },
     [isOpen, handlePrevImage, handleNextImage, onClose]
-  )
+  );
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [handleKeyDown])
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return (
     <AnimatePresence>
@@ -364,7 +369,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
             </Button>
 
             {/* Image Display */}
-            <div className="flex justify-center relative" onClick={handleImageClick}>
+            <div
+              className="flex justify-center relative"
+              onClick={handleImageClick}
+            >
               <Image
                 src={displayedImage}
                 alt="Expanded Image"
@@ -414,15 +422,16 @@ const ImageModal: React.FC<ImageModalProps> = ({
                 disabled={isCurrentImageMask || isGenerating}
                 className={
                   isSelectMaskActive && !isCurrentImageMask
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-500'
-                    : 'hover:bg-gray-200'
+                    ? "bg-indigo-600 text-white hover:bg-indigo-500"
+                    : "hover:bg-gray-200"
                 }
                 style={{
-                  transition: 'background-color 0.2s ease-in-out, color 0.2s ease-in-out',
+                  transition:
+                    "background-color 0.2s ease-in-out, color 0.2s ease-in-out",
                   cursor:
                     isCurrentImageMask || isGenerating
-                      ? 'not-allowed'
-                      : 'pointer',
+                      ? "not-allowed"
+                      : "pointer",
                 }}
               >
                 Select Point for Masking
@@ -435,7 +444,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
                 {masks.map((mask, index) => (
                   <div key={index} className="relative">
                     <Button
-                      variant={selectedMask === mask ? 'default' : 'outline'}
+                      variant={selectedMask === mask ? "default" : "outline"}
                       className="p-0.5"
                       onClick={() => handleMaskSelection(mask)}
                     >
@@ -445,10 +454,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
                         width={60}
                         height={60}
                         className={cn(
-                          'object-contain rounded-md cursor-pointer',
+                          "object-contain rounded-md cursor-pointer",
                           selectedMask === mask
-                            ? 'border-2 border-indigo-600'
-                            : 'border-2 border-transparent'
+                            ? "border-2 border-indigo-600"
+                            : "border-2 border-transparent"
                         )}
                       />
                     </Button>
@@ -472,11 +481,11 @@ const ImageModal: React.FC<ImageModalProps> = ({
                 onClick={handleGenerate}
                 disabled={isGenerating || !prompt.trim()}
                 style={{
-                  backgroundColor: isGenerating ? '#a5b4fc' : undefined,
-                  transition: 'background-color 0.2s ease-in-out',
+                  backgroundColor: isGenerating ? "#a5b4fc" : undefined,
+                  transition: "background-color 0.2s ease-in-out",
                 }}
               >
-                {isGenerating ? 'Generating...' : 'Generate'}
+                {isGenerating ? "Generating..." : "Generate"}
               </Button>
             </div>
 
@@ -523,28 +532,30 @@ const ImageModal: React.FC<ImageModalProps> = ({
         </motion.div>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};
 
 // Main GeneratedPosts Component
 export default function GeneratedPosts() {
-  const searchParams = useSearchParams()
-  const [selectedIdeas, setSelectedIdeas] = useState<number[]>([])
-  const [postsPerIdea, setPostsPerIdea] = useState(3)
-  const [customIdea, setCustomIdea] = useState('')
-  const [includeAI, setIncludeAI] = useState(false)
-  const [currentIdeaIndex, setCurrentIdeaIndex] = useState(0)
-  const [currentPostIndex, setCurrentPostIndex] = useState(0)
-  const [copiedCaption, setCopiedCaption] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const searchParams = useSearchParams();
+  const [selectedIdeas, setSelectedIdeas] = useState<number[]>([]);
+  const [postsPerIdea, setPostsPerIdea] = useState(3);
+  const [customIdea, setCustomIdea] = useState("");
+  const [includeAI, setIncludeAI] = useState(false);
+  const [currentIdeaIndex, setCurrentIdeaIndex] = useState(0);
+  const [currentPostIndex, setCurrentPostIndex] = useState(0);
+  const [copiedCaption, setCopiedCaption] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // States for Modal
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [imageUpdateIndex, setImageUpdateIndex] = useState<number | null>(null)
-  const [currentImageKey, setCurrentImageKey] = useState<string>('')
-  const [modalImageHistory, setModalImageHistory] = useState<string[]>([])
-  const [imageHistories, setImageHistories] = useState<{ [key: string]: string[] }>({})
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageUpdateIndex, setImageUpdateIndex] = useState<number | null>(null);
+  const [currentImageKey, setCurrentImageKey] = useState<string>("");
+  const [modalImageHistory, setModalImageHistory] = useState<string[]>([]);
+  const [imageHistories, setImageHistories] = useState<{
+    [key: string]: string[];
+  }>({});
 
   // Define your ideas
   const ideas: Idea[] = [
@@ -576,7 +587,7 @@ export default function GeneratedPosts() {
         "Craft a humorous comparison showing Zomato's delivery speed outpacing the precision of SpaceX's mechanical arms. Use an unexpected twist where a Zomato delivery person intercepts the booster mid-air to hand over an order, emphasizing lightning-fast service.",
       type: "challenge",
     },
-  ]
+  ];
 
   // Cleaned-up dummyImages array without duplicates
   const dummyImages = [
@@ -602,7 +613,7 @@ export default function GeneratedPosts() {
     // Idea 3 Post 3 Images (Indices 11-12)
     "/posts/Idea3Post3Img1.png",
     "/posts/Idea3Post3Img2.png",
-  ]
+  ];
 
   // Define your captions
   const dummyCaptions = [
@@ -611,145 +622,163 @@ export default function GeneratedPosts() {
     "When your pizza delivery is more epic than a SpaceX launch! 🍕🚀 Introducing our latest feature: Rocket Delivery Partners! Now your orders literally fly to you. Just kidding... but wouldn't that be cool? 😂 #EpicDelivery #ZomatoSpaceship",
     "Beam us some pizza! 🛰🍕 We've teamed up with SpaceX to bring you intergalactic flavors. Now available for delivery on Mars... just kidding, but we're aiming high! 🚀😉 #BeamMeAPizza #ZomatoMoonMission",
     "Alien-approved cuisine! 👽🍔 Just landed: Martian Menus exclusively on Zomato. Fresh from another planet to your plate. Are you ready to try something out of this world? 🌌✨ #AlienEats #ZomatoGalaxy",
-  ]
+  ];
 
   useEffect(() => {
-    const ideasParam = searchParams.get('ideas')
+    const ideasParam = searchParams.get("ideas");
     if (ideasParam) {
-      setSelectedIdeas(ideasParam.split(',').map(Number))
+      setSelectedIdeas(ideasParam.split(",").map(Number));
     }
-    setPostsPerIdea(Number(searchParams.get('postsPerIdea')) || 3)
-    setCustomIdea(searchParams.get('customIdea') || '')
-    setIncludeAI(searchParams.get('includeAI') === 'true')
-  }, [searchParams])
+    setPostsPerIdea(Number(searchParams.get("postsPerIdea")) || 3);
+    setCustomIdea(searchParams.get("customIdea") || "");
+    setIncludeAI(searchParams.get("includeAI") === "true");
+  }, [searchParams]);
 
   // Safely map selectedIdeas to actual ideas, filtering out any undefined
   const mappedSelectedIdeas = selectedIdeas
     .map((id) => ideas.find((idea) => idea.id === id))
-    .filter((idea): idea is Idea => idea !== undefined)
+    .filter((idea): idea is Idea => idea !== undefined);
 
   const allIdeas: Idea[] = [
     ...mappedSelectedIdeas,
     ...(customIdea
-      ? [{ id: 'custom', title: 'Custom Idea', content: customIdea, type: 'custom' }]
+      ? [
+          {
+            id: "custom",
+            title: "Custom Idea",
+            content: customIdea,
+            type: "custom",
+          },
+        ]
       : []),
     ...(includeAI
-      ? [{ id: 'ai', title: 'AI Generated Idea', content: 'An idea generated by AI', type: 'ai' }]
+      ? [
+          {
+            id: "ai",
+            title: "AI Generated Idea",
+            content: "An idea generated by AI",
+            type: "ai",
+          },
+        ]
       : []),
-  ]
+  ];
 
   const generatePosts = (ideaIndex: number, count: number) => {
-    const posts: { images: string[]; caption: string }[] = []
+    const posts: { images: string[]; caption: string }[] = [];
     for (let i = 0; i < count; i++) {
-      let images: string[]
-      let caption: string
+      let images: string[];
+      let caption: string;
       if (ideaIndex === 0 || ideaIndex === 1) {
         // For Idea 1 and 2, use the first 3 images repeatedly
-        const startIndex = ideaIndex * 3
+        const startIndex = ideaIndex * 3;
         images = [
           dummyImages[startIndex],
           dummyImages[startIndex + 1],
           dummyImages[startIndex + 2],
-        ]
-        caption = dummyCaptions[ideaIndex]
+        ];
+        caption = dummyCaptions[ideaIndex];
       } else if (ideaIndex === 2 || ideaIndex === 3) {
         // For Idea 3 and 4, conditionally assign images
-        let imagesIndices: number[] = []
+        let imagesIndices: number[] = [];
         if (i === 0) {
           // Post 1: 3 images
-          imagesIndices = [6, 7, 8]
+          imagesIndices = [6, 7, 8];
         } else if (i === 1) {
           // Post 2: 2 images
-          imagesIndices = [9, 10]
+          imagesIndices = [9, 10];
         } else if (i === 2) {
           // Post 3: 2 images
-          imagesIndices = [11, 12]
+          imagesIndices = [11, 12];
         }
-        images = imagesIndices.map((index) => dummyImages[index])
-        caption = dummyCaptions[2 + i] || 'Custom caption for Idea 3'
+        images = imagesIndices.map((index) => dummyImages[index]);
+        caption = dummyCaptions[2 + i] || "Custom caption for Idea 3";
       } else {
         // For any other ideas, use random images and captions
-        images = Array.from({ length: 3 }, () =>
-          dummyImages[Math.floor(Math.random() * dummyImages.length)]
-        )
-        caption = dummyCaptions[Math.floor(Math.random() * dummyCaptions.length)]
+        images = Array.from(
+          { length: 3 },
+          () => dummyImages[Math.floor(Math.random() * dummyImages.length)]
+        );
+        caption =
+          dummyCaptions[Math.floor(Math.random() * dummyCaptions.length)];
       }
       // Push only the object with images and caption
-      posts.push({ images, caption })
+      posts.push({ images, caption });
     }
-    return posts
-  }
+    return posts;
+  };
 
   // Initialize posts data
-  const [postsData, setPostsData] = useState<{ images: string[]; caption: string }[]>(generatePosts(currentIdeaIndex, postsPerIdea))
+  const [postsData, setPostsData] = useState<
+    { images: string[]; caption: string }[]
+  >(generatePosts(currentIdeaIndex, postsPerIdea));
 
   // Update postsData when currentIdeaIndex or postsPerIdea changes
   useEffect(() => {
-    setPostsData(generatePosts(currentIdeaIndex, postsPerIdea))
-    setCurrentPostIndex(0) // Reset to first post when idea changes
-  }, [currentIdeaIndex, postsPerIdea])
+    setPostsData(generatePosts(currentIdeaIndex, postsPerIdea));
+    setCurrentPostIndex(0); // Reset to first post when idea changes
+  }, [currentIdeaIndex, postsPerIdea]);
 
   const handleCopyCaption = () => {
-    const caption = postsData[currentPostIndex]?.caption || ''
-    navigator.clipboard.writeText(caption)
-    setCopiedCaption(true)
-    setTimeout(() => setCopiedCaption(false), 2000)
-  }
+    const caption = postsData[currentPostIndex]?.caption || "";
+    navigator.clipboard.writeText(caption);
+    setCopiedCaption(true);
+    setTimeout(() => setCopiedCaption(false), 2000);
+  };
 
   const handleNextPost = () => {
     if (currentPostIndex < postsPerIdea - 1) {
-      setCurrentPostIndex(currentPostIndex + 1)
+      setCurrentPostIndex(currentPostIndex + 1);
     } else if (currentIdeaIndex < allIdeas.length - 1) {
-      setCurrentIdeaIndex(currentIdeaIndex + 1)
-      setCurrentPostIndex(0)
+      setCurrentIdeaIndex(currentIdeaIndex + 1);
+      setCurrentPostIndex(0);
     }
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const handlePrevPost = () => {
     if (currentPostIndex > 0) {
-      setCurrentPostIndex(currentPostIndex - 1)
+      setCurrentPostIndex(currentPostIndex - 1);
     } else if (currentIdeaIndex > 0) {
-      setCurrentIdeaIndex(currentIdeaIndex - 1)
-      setCurrentPostIndex(postsPerIdea - 1)
+      setCurrentIdeaIndex(currentIdeaIndex - 1);
+      setCurrentPostIndex(postsPerIdea - 1);
     }
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const handleImageClick = (imageObj: string, imageIndex: number) => {
-    const imageKey = `${currentIdeaIndex}-${currentPostIndex}-${imageIndex}`
-    const existingHistory = imageHistories[imageKey]
-    const initialHistory = existingHistory || [imageObj]
-    setSelectedImage(initialHistory[initialHistory.length - 1])
-    setIsModalOpen(true)
-    setImageUpdateIndex(imageIndex)
-    setCurrentImageKey(imageKey)
-    setModalImageHistory(initialHistory)
-  }
+    const imageKey = `${currentIdeaIndex}-${currentPostIndex}-${imageIndex}`;
+    const existingHistory = imageHistories[imageKey];
+    const initialHistory = existingHistory || [imageObj];
+    setSelectedImage(initialHistory[initialHistory.length - 1]);
+    setIsModalOpen(true);
+    setImageUpdateIndex(imageIndex);
+    setCurrentImageKey(imageKey);
+    setModalImageHistory(initialHistory);
+  };
 
   const handleImageUpdate = (newImage: string, newHistory: string[]) => {
     if (imageUpdateIndex !== null) {
       setPostsData((prevPosts) => {
-        const updatedPosts = [...prevPosts]
-        const updatedImages = [...updatedPosts[currentPostIndex].images]
-        updatedImages[imageUpdateIndex] = newImage
+        const updatedPosts = [...prevPosts];
+        const updatedImages = [...updatedPosts[currentPostIndex].images];
+        updatedImages[imageUpdateIndex] = newImage;
         updatedPosts[currentPostIndex] = {
           ...updatedPosts[currentPostIndex],
           images: updatedImages,
-        }
-        return updatedPosts
-      })
+        };
+        return updatedPosts;
+      });
 
       // Update imageHistories
       setImageHistories((prevHistories) => ({
         ...prevHistories,
         [currentImageKey]: newHistory,
-      }))
+      }));
     }
-  }
+  };
 
   // Define currentIdea after ensuring allIdeas has at least one idea
-  const currentIdea = allIdeas[currentIdeaIndex]
+  const currentIdea = allIdeas[currentIdeaIndex];
 
   // Render component
   if (allIdeas.length === 0) {
@@ -761,12 +790,14 @@ export default function GeneratedPosts() {
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Idea Generator
         </Link>
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">No Ideas Found</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-8">
+          No Ideas Found
+        </h1>
         <p className="text-gray-600">
           Please select at least one idea or add a custom/AI-generated idea.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -791,11 +822,11 @@ export default function GeneratedPosts() {
               {allIdeas.map((idea, index) => (
                 <Button
                   key={idea.id}
-                  variant={currentIdeaIndex === index ? 'default' : 'outline'}
+                  variant={currentIdeaIndex === index ? "default" : "outline"}
                   className="w-full mb-2 justify-start text-left"
                   onClick={() => {
-                    setCurrentIdeaIndex(index)
-                    setCurrentPostIndex(0)
+                    setCurrentIdeaIndex(index);
+                    setCurrentPostIndex(0);
                   }}
                 >
                   {idea.title}
@@ -828,31 +859,37 @@ export default function GeneratedPosts() {
                   <div
                     className={`grid grid-cols-1 ${
                       postsData[currentPostIndex].images.length === 2
-                        ? 'md:grid-cols-2'
+                        ? "md:grid-cols-2"
                         : postsData[currentPostIndex].images.length === 3
-                        ? 'lg:grid-cols-3'
-                        : 'md:grid-cols-1'
+                        ? "lg:grid-cols-3"
+                        : "md:grid-cols-1"
                     } gap-4`}
                   >
-                    {postsData[currentPostIndex].images.map((imageObj, index) => (
-                      <div
-                        key={index}
-                        className="relative cursor-pointer"
-                        onClick={() => handleImageClick(imageObj, index)}
-                      >
-                        <Image
-                          src={imageObj}
-                          alt={`Image ${index + 1} for Post ${currentPostIndex + 1} of ${currentIdea.title}`}
-                          width={400}
-                          height={800}
-                          className="w-full object-cover rounded-md"
-                        />
-                      </div>
-                    ))}
+                    {postsData[currentPostIndex].images.map(
+                      (imageObj, index) => (
+                        <div
+                          key={index}
+                          className="relative cursor-pointer"
+                          onClick={() => handleImageClick(imageObj, index)}
+                        >
+                          <Image
+                            src={imageObj}
+                            alt={`Image ${index + 1} for Post ${
+                              currentPostIndex + 1
+                            } of ${currentIdea.title}`}
+                            width={400}
+                            height={800}
+                            className="w-full object-cover rounded-md"
+                          />
+                        </div>
+                      )
+                    )}
                   </div>
                   {/* Caption */}
                   <div className="bg-white p-4 rounded-md shadow">
-                    <p className="text-gray-800">{postsData[currentPostIndex].caption}</p>
+                    <p className="text-gray-800">
+                      {postsData[currentPostIndex].caption}
+                    </p>
                   </div>
                 </motion.div>
               </AnimatePresence>
@@ -883,7 +920,8 @@ export default function GeneratedPosts() {
             {/* Post Information and Caption Copy */}
             <div className="mt-4 flex justify-between items-center">
               <span className="text-sm text-gray-500">
-                Post {currentPostIndex + 1} of {postsPerIdea} for Idea {currentIdeaIndex + 1} of {allIdeas.length}
+                Post {currentPostIndex + 1} of {postsPerIdea} for Idea{" "}
+                {currentIdeaIndex + 1} of {allIdeas.length}
               </span>
               <Button variant="outline" size="sm" onClick={handleCopyCaption}>
                 {copiedCaption ? (
@@ -916,10 +954,12 @@ export default function GeneratedPosts() {
           onClose={() => setIsModalOpen(false)}
           imageSrc={selectedImage}
           onImageUpdate={handleImageUpdate}
-          originalImageSrc={postsData[currentPostIndex].images[imageUpdateIndex]}
+          originalImageSrc={
+            postsData[currentPostIndex].images[imageUpdateIndex]
+          }
           imageHistory={modalImageHistory}
         />
       )}
     </div>
-  )
+  );
 }

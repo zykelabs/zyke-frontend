@@ -75,7 +75,7 @@ export default function SignUpPage() {
                   checked={isBrand}
                   onCheckedChange={setIsBrand}
                 />
-                <Label htmlFor="brand-mode" className="text-primary">I'm registering as a brand</Label>
+                <Label htmlFor="brand-mode" className="text-primary">I&apos;m registering as a brand</Label>
               </div>
               {isBrand && (
                 <div className="grid gap-2">
