@@ -6,123 +6,187 @@ import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+import Link from "next/link"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+
+// Validation schema using Zod
+const signUpSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+})
+
+type SignUpFormData = z.infer<typeof signUpSchema>
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [isBrand, setIsBrand] = useState(false)
   const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState({
+    title: "",
+    description: "",
+    type: "",
+  })
   const router = useRouter()
 
-  async function onSubmit(event: React.SyntheticEvent) {
-    event.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+  })
+
+  async function onSubmit(data: SignUpFormData) {
     setIsLoading(true)
 
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            first_name: data.firstName,
+            last_name: data.lastName,
+            email: data.email,
+            password: data.password,
+          }),
+        }
+      )
+
+      const responseData = await response.json()
+
+      if (response.ok) {
+        router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`)
+      } else {
+        setAlertMessage({
+          title: "Error",
+          description: responseData.msg || "Registration failed.",
+          type: "error",
+        })
+        setShowAlert(true)
+      }
+    } catch (error) {
+      console.error("Sign up error:", error)
+      setAlertMessage({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        type: "error",
+      })
       setShowAlert(true)
-      setTimeout(() => {
-        setShowAlert(false)
-        router.push("/login")
-      }, 3000)
-    }, 3000)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center bg-background text-foreground">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-primary">Create an account</h1>
-          <p className="text-sm text-muted-foreground">
-            Enter your details below to create your account
-          </p>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <div className="space-y-2 text-center">
+          <h1 className="text-3xl font-bold">Create your account</h1>
+          <p className="text-gray-500">Fill in the details below to create an account</p>
         </div>
-        <div className="grid gap-6">
-          <form onSubmit={onSubmit}>
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="username" className="text-primary">Username</Label>
-                <Input id="username" placeholder="johndoe" required className="bg-accent text-accent-foreground" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email" className="text-primary">Email</Label>
-                <Input id="email" placeholder="name@example.com" type="email" required className="bg-accent text-accent-foreground" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password" className="text-primary">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    className="bg-accent text-accent-foreground"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-2 text-muted-foreground"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="brand-mode"
-                  checked={isBrand}
-                  onCheckedChange={setIsBrand}
-                />
-                <Label htmlFor="brand-mode" className="text-primary">I'm registering as a brand</Label>
-              </div>
-              {isBrand && (
-                <div className="grid gap-2">
-                  <Label htmlFor="brand-info" className="text-primary">Brand Information</Label>
-                  <Textarea
-                    id="brand-info"
-                    placeholder="Tell us about your brand, industry, and target audience"
-                    className="bg-accent text-accent-foreground"
-                  />
-                </div>
-              )}
-              <Button disabled={isLoading} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign Up
-              </Button>
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-2">
+            <Label htmlFor="firstName">First Name</Label>
+            <Input
+              id="firstName"
+              {...register("firstName")}
+              placeholder="John"
+              className="bg-accent text-accent-foreground"
+              required
+            />
+            {errors.firstName && (
+              <p className="text-sm text-red-500">{errors.firstName.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              {...register("lastName")}
+              placeholder="Doe"
+              className="bg-accent text-accent-foreground"
+              required
+            />
+            {errors.lastName && (
+              <p className="text-sm text-red-500">{errors.lastName.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              {...register("email")}
+              placeholder="name@example.com"
+              type="email"
+              className="bg-accent text-accent-foreground"
+              required
+            />
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                {...register("password")}
+                type={showPassword ? "text" : "password"}
+                placeholder=""
+                className="bg-accent text-accent-foreground"
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-gray-500" />
+                ) : (
+                  <Eye className="h-4 w-4 text-gray-500" />
+                )}
+              </button>
             </div>
-          </form>
-        </div>
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          By clicking continue, you agree to our{" "}
-          <button onClick={() => router.push("/terms")} className="underline underline-offset-4 hover:text-primary">
-            Terms of Service
-          </button>{" "}
-          and{" "}
-          <button onClick={() => router.push("/privacy")} className="underline underline-offset-4 hover:text-primary">
-            Privacy Policy
-          </button>
-          .
-        </p>
-        <div className="flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">Already have an account?</p>
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
+            )}
+          </div>
+
           <Button
-            variant="link"
-            className="text-primary ml-2"
-            onClick={() => router.push("/login")}
+            type="submit"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            disabled={isLoading}
           >
-            Log in
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Sign Up
           </Button>
+        </form>
+        <div className="text-sm text-center mt-4">
+          Already have an account?{' '}
+          <Link href="/signin" className="font-medium text-primary hover:underline">
+            Sign in
+          </Link>
         </div>
       </div>
+
       {showAlert && (
-        <Alert className="fixed bottom-4 right-4 w-auto max-w-sm bg-primary text-primary-foreground">
+        <Alert className="fixed bottom-4 right-4 w-auto max-w-sm" variant={alertMessage.type === "error" ? "destructive" : "default"}>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Success</AlertTitle>
-          <AlertDescription>
-            Account created successfully. Welcome to Zyke!
-          </AlertDescription>
+          <AlertTitle>{alertMessage.title}</AlertTitle>
+          <AlertDescription>{alertMessage.description}</AlertDescription>
         </Alert>
       )}
     </div>

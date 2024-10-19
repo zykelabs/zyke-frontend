@@ -167,7 +167,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
   const [imageHistory, setImageHistory] = useState<string[]>(initialImageHistory)
   const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number>(initialImageHistory.length - 1)
   const [isMaskSelectionReady, setIsMaskSelectionReady] = useState(false)
-  const [isSelectMaskActive, setIsSelectMaskActive] = useState(false) // To change activation state
+  const [isSelectMaskActive, setIsSelectMaskActive] = useState(false)
 
   const hardcodedMasks = [
     '/masks/L_Model_blended_img_1.png',

@@ -1,9 +1,9 @@
-import SignInPage from "@/components/authentication/Signin"
+import SignIn from "@/components/authentication/Signin"
 
 const Signin = () => {
   return (
     <div>
-      <SignInPage/>
+      <SignIn/>
     </div>
   )
 }

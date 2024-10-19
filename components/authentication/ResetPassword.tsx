@@ -11,21 +11,25 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [password, setPassword] = useState("")
   const [showAlert, setShowAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState({ title: "", description: "" })
   const router = useRouter()
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault()
     setIsLoading(true)
 
-    // Simulate API call
     setTimeout(() => {
       setIsLoading(false)
+      setAlertMessage({
+        title: "Success",
+        description: "Your password has been reset successfully."
+      })
       setShowAlert(true)
       setTimeout(() => {
         setShowAlert(false)
-        router.push("/login")
+        router.push("/signin")
       }, 3000)
     }, 2000)
   }
@@ -34,9 +38,9 @@ export default function ResetPasswordPage() {
     <div className="container flex h-screen w-screen flex-col items-center justify-center bg-background text-foreground">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-primary">Reset Password</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-primary">Reset Your Password</h1>
           <p className="text-sm text-muted-foreground">
-            Enter your new password below.
+            Enter your new password below
           </p>
         </div>
         <div className="grid gap-6">
@@ -48,6 +52,8 @@ export default function ResetPasswordPage() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                     className="bg-accent text-accent-foreground"
                   />
@@ -60,24 +66,6 @@ export default function ResetPasswordPage() {
                   </button>
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="confirm-password" className="text-primary">Confirm New Password</Label>
-                <div className="relative">
-                  <Input
-                    id="confirm-password"
-                    type={showConfirmPassword ? "text" : "password"}
-                    required
-                    className="bg-accent text-accent-foreground"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-2 top-2 text-muted-foreground"
-                  >
-                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
               <Button disabled={isLoading} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Reset Password
@@ -85,13 +73,22 @@ export default function ResetPasswordPage() {
             </div>
           </form>
         </div>
+        <div className="flex items-center justify-center">
+          <Button
+            variant="link"
+            className="text-primary"
+            onClick={() => router.push("/signin")}
+          >
+            Back to Login
+          </Button>
+        </div>
       </div>
       {showAlert && (
         <Alert className="fixed bottom-4 right-4 w-auto max-w-sm bg-primary text-primary-foreground">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Success</AlertTitle>
+          <AlertTitle>{alertMessage.title}</AlertTitle>
           <AlertDescription>
-            Your password has been reset successfully. You can now log in with your new password.
+            {alertMessage.description}
           </AlertDescription>
         </Alert>
       )}

@@ -382,7 +382,6 @@ export default function HomePage() {
                   </span>
                 </Button>
                 <Button
-                  
                   asChild
                   variant="outline"
                   className="w-full justify-between"
