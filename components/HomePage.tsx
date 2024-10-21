@@ -5,12 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChevronDown,
-  Instagram,
   Linkedin,
-  Twitter,
-  BarChart,
-  Facebook,
-  Github,
   Plus,
   Minus,
   Menu,
@@ -31,6 +26,7 @@ import {
   DialogHeader,
   DialogFooter,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -57,8 +53,7 @@ export default function HomePage() {
 
   const fadeInUp = {
     initial: { opacity: 0, y: 60 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.6 } },
   };
 
   const toggleFaq = (index: number) => {
@@ -73,25 +68,25 @@ export default function HomePage() {
     setIsModalOpen(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(formData);
     handleCloseModal();
     setShowAlert(true);
-  
-    const form = e.target;
+
+    const form = e.target as HTMLFormElement;
     const formDataToSubmit = new FormData(form);
-  
+
     fetch(form.action, {
-      method: 'POST',
+      method: "POST",
       body: formDataToSubmit,
-      mode: 'no-cors',
+      mode: "no-cors",
     })
       .then(() => {
-        console.log('Form submitted successfully');
+        console.log("Form submitted successfully");
       })
       .catch((error) => {
-        console.error('Error submitting form:', error);
+        console.error("Error submitting form:", error);
       });
 
     setFormData({
@@ -105,7 +100,7 @@ export default function HomePage() {
     }, 5000);
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -199,6 +194,7 @@ export default function HomePage() {
           <button
             className="md:hidden text-gray-300 hover:text-white transition-colors duration-300"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            title="Toggle Mobile Menu"
           >
             <Menu size={24} />
           </button>
@@ -368,7 +364,6 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <Button
-                  asChild
                   className="w-full justify-between hover:cursor-pointer"
                   size="lg"
                   onClick={handleOpenModal}
@@ -387,27 +382,25 @@ export default function HomePage() {
                   className="w-full justify-between"
                   size="lg"
                 >
-                <Link
-                      href="https://drive.google.com/file/d/1UbSBUBYX8Au5hNaMsXjqkcSVNp9plK4u/view?usp=sharing"
-                      target="_blank"
-                    >
-                  <span className="flex items-center justify-between w-full">
-                    <div className="flex items-center">
-                      <PlayCircle className="mr-2 h-5 w-5" />
-                      Watch Product Video
-                    </div>
-                    
+                  <Link
+                    href="https://drive.google.com/file/d/1UbSBUBYX8Au5hNaMsXjqkcSVNp9plK4u/view?usp=sharing"
+                    target="_blank"
+                  >
+                    <span className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <PlayCircle className="mr-2 h-5 w-5" />
+                        Watch Product Video
+                      </div>
                       <ArrowRight className="h-5 w-5" />
-                    
-                  </span>
-                </Link>
+                    </span>
+                  </Link>
                 </Button>
               </CardContent>
             </Card>
           </div>
           <div className="mt-12 text-center">
             <p className="text-gray-600 mb-4">
-              Have questions? We're here to help!
+              Have questions? We&apos;re here to help!
             </p>
             <Button asChild variant="outline">
               <Link href="mailto:zyke.work@gmail.com">Contact Us</Link>
@@ -513,7 +506,7 @@ export default function HomePage() {
       </section>
 
       <footer className="bg-black text-gray-900 py-12 sm:py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <h3 className="text-xl font-bold text-white mb-4">Zyke</h3>
             <p className="text-gray-400 mb-4">
@@ -553,6 +546,148 @@ export default function HomePage() {
           </div>
 
           <div>
+            <h4 className="text-lg font-bold text-white mb-4">Legal</h4>
+            <ul className="space-y-2">
+              <li>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="text-gray-400 hover:text-white transition-colors">
+                      Terms and Conditions
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[80vh]">
+                    <DialogHeader>
+                      <DialogTitle>Terms and Conditions</DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto max-h-[60vh] pr-4">
+                      <div className="p-6 text-sm">
+                        <p className="mb-4">Last updated on Oct 19 2024</p>
+                        <p className="mb-4">
+                          For the purpose of these Terms and Conditions, The
+                          term "we", "us", "our" used anywhere on this page
+                          shall mean TASMAY PANKAJ TIBREWAL, whose
+                          registered/operational office is Meghnad Saha Hall,
+                          IIT Kharagpur West Midnapore WEST BENGAL 721302.
+                          "you", "your", "user", "visitor" shall mean any
+                          natural or legal person who is visiting our website
+                          and/or agreed to purchase from us.
+                        </p>
+                        <h2 className="text-lg font-semibold mb-2">
+                          Your use of the website and/or purchase from us are
+                          governed by following Terms and Conditions:
+                        </h2>
+                        <ul className="list-disc pl-6 space-y-2">
+                          <li>
+                            The content of the pages of this website is subject
+                            to change without notice.
+                          </li>
+                          <li>
+                            Neither we nor any third parties provide any
+                            warranty or guarantee as to the accuracy,
+                            timeliness, performance, completeness or suitability
+                            of the information and materials found or offered on
+                            this website for any particular purpose. You
+                            acknowledge that such information and materials may
+                            contain inaccuracies or errors and we expressly
+                            exclude liability for any such inaccuracies or
+                            errors to the fullest extent permitted by law.
+                          </li>
+                          <li>
+                            Your use of any information or materials on our
+                            website and/or product pages is entirely at your own
+                            risk, for which we shall not be liable. It shall be
+                            your own responsibility to ensure that any products,
+                            services or information available through our
+                            website and/or product pages meet your specific
+                            requirements.
+                          </li>
+                          <li>
+                            Our website contains material which is owned by or
+                            licensed to us. This material includes, but is not
+                            limited to, the design, layout, look, appearance and
+                            graphics. Reproduction is prohibited other than in
+                            accordance with the copyright notice, which forms
+                            part of these terms and conditions.
+                          </li>
+                          <li>
+                            All trademarks reproduced in our website which are
+                            not the property of, or licensed to, the operator
+                            are acknowledged on the website.
+                          </li>
+                          <li>
+                            Unauthorized use of information provided by us shall
+                            give rise to a claim for damages and/or be a
+                            criminal offense.
+                          </li>
+                          <li>
+                            From time to time our website may also include links
+                            to other websites. These links are provided for your
+                            convenience to provide further information.
+                          </li>
+                          <li>
+                            You may not create a link to our website from
+                            another website or document without TASMAY PANKAJ
+                            TIBREWAL's prior written consent.
+                          </li>
+                          <li>
+                            Any dispute arising out of use of our website and/or
+                            purchase with us and/or any engagement with us is
+                            subject to the laws of India.
+                          </li>
+                          <li>
+                            We, shall be under no liability whatsoever in
+                            respect of any loss or damage arising directly or
+                            indirectly out of the decline of authorization for
+                            any Transaction, on Account of the Cardholder having
+                            exceeded the preset limit mutually agreed by us with
+                            our acquiring bank from time to time
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </li>
+              <li>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="text-gray-400 hover:text-white transition-colors">
+                      Cancellation & Refund
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Cancellation & Refund Policy</DialogTitle>
+                    </DialogHeader>
+                    <div className="p-6">
+                      <p className="mb-4">Last updated on Oct 19 2024</p>
+                      <p>No cancellations & Refunds are entertained</p>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </li>
+              <li>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="text-gray-400 hover:text-white transition-colors">
+                      Shipping & Delivery
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Shipping and Delivery</DialogTitle>
+                    </DialogHeader>
+                    <div className="p-6">
+                      <p className="mb-4">Last updated on Oct 19 2024</p>
+                      <p>Shipping is not applicable for business.</p>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </li>
+            </ul>
+          </div>
+
+          <div>
             <h4 className="text-lg font-bold text-white mb-4">Connect</h4>
             <div className="flex space-x-4">
               <Link
@@ -562,11 +697,18 @@ export default function HomePage() {
               >
                 <Linkedin size={24} />
               </Link>
+              <Link
+                href="mailto:zyke.work@gmail.com"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <Mail size={24} />
+              </Link>
             </div>
           </div>
         </div>
         <div className="mt-8 border-t border-gray-600 pt-8 text-center text-gray-400">
-          &copy; 2024 Zyke. All rights reserved.
+          <p>&copy; 2024 Zyke. All rights reserved.</p>
+          <p className="mt-2">Last updated on Oct 19 2024. IIT Kharagpur</p>
         </div>
       </footer>
 
@@ -575,7 +717,10 @@ export default function HomePage() {
           <DialogHeader>
             <DialogTitle>Schedule One-on-One Demo</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} action="https://docs.google.com/forms/d/e/1FAIpQLScnyXPJnG1fhlmjcFxy86nFR5eVTmbWVxfD1ixPBo127hC1zA/formResponse">
+          <form
+            onSubmit={handleSubmit}
+            action="https://docs.google.com/forms/d/e/1FAIpQLScnyXPJnG1fhlmjcFxy86nFR5eVTmbWVxfD1ixPBo127hC1zA/formResponse"
+          >
             <div className="space-y-4">
               <Input
                 name="entry.2127377522"

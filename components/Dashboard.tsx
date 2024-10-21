@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 interface User {
   email: string
@@ -10,14 +10,21 @@ interface User {
 }
 
 export default function Dashboard() {
+  const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isMounted) return
+
     const fetchUser = async () => {
       const token = localStorage.getItem('access_token')
       if (!token) {
-        router.push('/signin')
+        router.push('/generated-ideas')
         return
       }
 
@@ -34,7 +41,7 @@ export default function Dashboard() {
           setUser(data.user)
         } else {
           localStorage.removeItem('access_token')
-          router.push('/signin?error=Session+expired. Please+log+in+again.')
+          router.push('/signin?error=Session+expired.+Please+log+in+again.')
         }
       } catch (error) {
         console.error('Error fetching user:', error)
@@ -43,7 +50,7 @@ export default function Dashboard() {
     }
 
     fetchUser()
-  }, [router])
+  }, [isMounted, router])
 
   if (!user) {
     return null
