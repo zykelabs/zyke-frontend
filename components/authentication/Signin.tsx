@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import Link from 'next/link'
+import { useState } from 'react';
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -13,24 +13,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
-import { useRouter } from 'next/navigation'
-import { signIn } from "next-auth/react"
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import { useRouter } from 'next/navigation';
+import { signIn } from "next-auth/react";
 
 export default function SignIn() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
-  const [isSignInLoading, setIsSignInLoading] = useState(false)
-  const [isGoogleSignInLoading, setIsGoogleSignInLoading] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
-  const [alert, setAlert] = useState({ show: false, title: "", description: "", type: "" })
-  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [isSignInLoading, setIsSignInLoading] = useState(false);
+  const [isGoogleSignInLoading, setIsGoogleSignInLoading] = useState(false);
+  const [alert, setAlert] = useState({ show: false, title: "", description: "", type: "" });
+  const router = useRouter();
 
   const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSignInLoading(true)
+    e.preventDefault();
+    setIsSignInLoading(true);
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/request-reset`, {
         method: "POST",
@@ -38,9 +37,9 @@ export default function SignIn() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ email: forgotPasswordEmail })
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
         setAlert({
@@ -48,90 +47,82 @@ export default function SignIn() {
           title: "Success",
           description: data.msg || "Password reset email sent.",
           type: "success"
-        })
+        });
       } else {
         setAlert({
           show: true,
           title: "Error",
           description: data.msg || "Failed to send reset email.",
           type: "error"
-        })
+        });
       }
     } catch (error) {
-      console.error("Forgot password error:", error)
+      console.error("Forgot password error:", error);
       setAlert({
         show: true,
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
         type: "error"
-      })
+      });
     } finally {
-      setIsSignInLoading(false)
+      setIsSignInLoading(false);
     }
-  }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSignInLoading(true)
-    const form = e.currentTarget as HTMLFormElement
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value
-    const password = (form.elements.namedItem("password") as HTMLInputElement).value
+    e.preventDefault();
+    setIsSignInLoading(true);
+    const form = e.currentTarget as HTMLFormElement;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-      })
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-      const data = await response.json()
-
-      if (response.ok) {
-        if (rememberMe) {
-          localStorage.setItem("access_token", data.access_token)
-        } else {
-          sessionStorage.setItem("access_token", data.access_token)
-        }
-        router.push("/dashboard")
+      if (result?.ok) {
+        // Redirect to the protected route after successful login
+        router.push("/idea-generator");
       } else {
         setAlert({
           show: true,
           title: "Error",
-          description: data.msg || "Failed to sign in.",
+          description: result?.error || "Failed to sign in.",
           type: "error"
-        })
+        });
       }
-    } catch (error) {
-      console.error("Sign in error:", error)
+    } catch (error: any) {
       setAlert({
         show: true,
         title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: error.message || "An unexpected error occurred. Please try again.",
         type: "error"
-      })
+      });
     } finally {
-      setIsSignInLoading(false)
+      setIsSignInLoading(false);
     }
-  }
+  };
 
   const handleGoogleSignIn = async () => {
-    setIsGoogleSignInLoading(true)
+    setIsGoogleSignInLoading(true);
     try {
-      await signIn('google')
-    } catch (error) {
-      console.error("Google sign-in error:", error)
+      await signIn('google');
+      // Redirect handled by NextAuth's redirect callback
+    } catch (error: any) {
+      console.error("Google sign-in error:", error);
       setAlert({
         show: true,
         title: "Error",
         description: "Failed to sign in with Google. Please try again.",
         type: "error"
-      })
+      });
     } finally {
-      setIsGoogleSignInLoading(false)
+      setIsGoogleSignInLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/20 to-secondary/20">
@@ -213,17 +204,7 @@ export default function SignIn() {
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <input 
-                type="checkbox" 
-                id="remember" 
-                title="Remember me" 
-                className="rounded border-gray-300 text-primary focus:ring-primary" 
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-              />
-              <Label htmlFor="remember" className="text-sm text-muted-foreground">Remember me</Label>
-            </div>
+            {/* Removed Remember Me functionality since NextAuth handles session persistence */}
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="link" className="text-sm p-0">
@@ -278,5 +259,5 @@ export default function SignIn() {
         </Alert>
       )}
     </div>
-  )
+  );
 }

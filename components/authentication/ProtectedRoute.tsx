@@ -1,23 +1,39 @@
-"use client"
+'use client';
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/router'
+import { ReactNode, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { SessionProvider, useSession } from 'next-auth/react';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode
+  children: ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const router = useRouter()
+const ProtectedRouteContent = ({ children }: ProtectedRouteProps) => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
-    if (!token) {
-      router.push('/login?error=Please+log+in+to+access+this+page.')
+    if (status === 'loading') {
+      return;
     }
-  }, [router])
+    if (status === 'unauthenticated') {
+      router.push('/signin');
+    }
+  }, [status, router]);
 
-  return <>{children}</>
-}
+  if (status === 'authenticated') {
+    return <>{children}</>;
+  }
 
-export default ProtectedRoute
+  return null;
+};
+
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  return (
+    <SessionProvider>
+      <ProtectedRouteContent>{children}</ProtectedRouteContent>
+    </SessionProvider>
+  );
+};
+
+export default ProtectedRoute;
