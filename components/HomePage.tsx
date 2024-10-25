@@ -73,20 +73,20 @@ export default function HomePage() {
     console.log(formData);
     handleCloseModal();
     setShowAlert(true);
-  
+
     const form = e.target as HTMLFormElement;
     const formDataToSubmit = new FormData(form);
-  
+
     fetch(form.action, {
-      method: 'POST',
+      method: "POST",
       body: formDataToSubmit,
-      mode: 'no-cors',
+      mode: "no-cors",
     })
       .then(() => {
-        console.log('Form submitted successfully');
+        console.log("Form submitted successfully");
       })
       .catch((error) => {
-        console.error('Error submitting form:', error);
+        console.error("Error submitting form:", error);
       });
 
     setFormData({
@@ -262,7 +262,7 @@ export default function HomePage() {
               size="lg"
               className="bg-black hover:bg-gray-900 text-white px-8"
             >
-              <Link href="#product">Coming Soon</Link>
+              <Link href="">Coming Soon</Link>
             </Button>
           </div>
         </motion.div>
@@ -337,7 +337,7 @@ export default function HomePage() {
               size="lg"
               className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-4 sm:py-6 text-lg rounded-full shadow-lg hover:shadow-xl transform transition-all duration-300 hover:-translate-y-1"
             >
-              <Link href="http://zyke.in/try">Coming Soon</Link>
+              <Link href="">Coming Soon</Link>
             </Button>
           </div>
         </div>
@@ -374,7 +374,6 @@ export default function HomePage() {
                       Schedule a One-on-One Demo
                     </div>
                     <ArrowRight className="h-5 w-5" />
-                  
                   </span>
                 </Button>
                 <Button
@@ -562,22 +561,87 @@ export default function HomePage() {
                     </DialogHeader>
                     <div className="overflow-y-auto max-h-[60vh] pr-4">
                       <div className="p-6 text-sm">
-                        <p className="mb-4">Last updated on Oct 19 2024</p>
+                        <p className="mb-4">Last updated on Oct 25 2024</p>
                         <p className="mb-4">
-                          For the purpose of these Terms and Conditions, The term "we", "us", "our" used anywhere on this page shall mean TASMAY PANKAJ TIBREWAL, whose registered/operational office is Meghnad Saha Hall, IIT Kharagpur West Midnapore WEST BENGAL 721302. "you", "your", "user", "visitor" shall mean any natural or legal person who is visiting our website and/or agreed to purchase from us.
+                          For the purpose of these Terms and Conditions, The
+                          term "we", "us", "our" used anywhere on this page
+                          shall mean TASMAY PANKAJ TIBREWAL, whose
+                          registered/operational office is Meghnad Saha Hall,
+                          IIT Kharagpur West Midnapore WEST BENGAL 721302.
+                          "you", "your", "user", "visitor" shall mean any
+                          natural or legal person who is visiting our website
+                          and/or agreed to purchase from us.
                         </p>
-                        <h2 className="text-lg font-semibold mb-2">Your use of the website and/or purchase from us are governed by following Terms and Conditions:</h2>
+                        <h2 className="text-lg font-semibold mb-2">
+                          Your use of the website and/or purchase from us are
+                          governed by following Terms and Conditions:
+                        </h2>
                         <ul className="list-disc pl-6 space-y-2">
-                          <li>The content of the pages of this website is subject to change without notice.</li>
-                          <li>Neither we nor any third parties provide any warranty or guarantee as to the accuracy, timeliness, performance, completeness or suitability of the information and materials found or offered on this website for any particular purpose. You acknowledge that such information and materials may contain inaccuracies or errors and we expressly exclude liability for any such inaccuracies or errors to the fullest extent permitted by law.</li>
-                          <li>Your use of any information or materials on our website and/or product pages is entirely at your own risk, for which we shall not be liable. It shall be your own responsibility to ensure that any products, services or information available through our website and/or product pages meet your specific requirements.</li>
-                          <li>Our website contains material which is owned by or licensed to us. This material includes, but is not limited to, the design, layout, look, appearance and graphics. Reproduction is prohibited other than in accordance with the copyright notice, which forms part of these terms and conditions.</li>
-                          <li>All trademarks reproduced in our website which are not the property of, or licensed to, the operator are acknowledged on the website.</li>
-                          <li>Unauthorized use of information provided by us shall give rise to a claim for damages and/or be a criminal offense.</li>
-                          <li>From time to time our website may also include links to other websites. These links are provided for your convenience to provide further information.</li>
-                          <li>You may not create a link to our website from another website or document without TASMAY PANKAJ TIBREWAL's prior written consent.</li>
-                          <li>Any dispute arising out of use of our website and/or purchase with us and/or any engagement with us is subject to the laws of India.</li>
-                          <li>We, shall be under no liability whatsoever in respect of any loss or damage arising directly or indirectly out of the decline of authorization for any Transaction, on Account of the Cardholder having exceeded the preset limit mutually agreed by us with our acquiring bank from time to time</li>
+                          <li>
+                            The content of the pages of this website is subject
+                            to change without notice.
+                          </li>
+                          <li>
+                            Neither we nor any third parties provide any
+                            warranty or guarantee as to the accuracy,
+                            timeliness, performance, completeness or suitability
+                            of the information and materials found or offered on
+                            this website for any particular purpose. You
+                            acknowledge that such information and materials may
+                            contain inaccuracies or errors and we expressly
+                            exclude liability for any such inaccuracies or
+                            errors to the fullest extent permitted by law.
+                          </li>
+                          <li>
+                            Your use of any information or materials on our
+                            website and/or product pages is entirely at your own
+                            risk, for which we shall not be liable. It shall be
+                            your own responsibility to ensure that any products,
+                            services or information available through our
+                            website and/or product pages meet your specific
+                            requirements.
+                          </li>
+                          <li>
+                            Our website contains material which is owned by or
+                            licensed to us. This material includes, but is not
+                            limited to, the design, layout, look, appearance and
+                            graphics. Reproduction is prohibited other than in
+                            accordance with the copyright notice, which forms
+                            part of these terms and conditions.
+                          </li>
+                          <li>
+                            All trademarks reproduced in our website which are
+                            not the property of, or licensed to, the operator
+                            are acknowledged on the website.
+                          </li>
+                          <li>
+                            Unauthorized use of information provided by us shall
+                            give rise to a claim for damages and/or be a
+                            criminal offense.
+                          </li>
+                          <li>
+                            From time to time our website may also include links
+                            to other websites. These links are provided for your
+                            convenience to provide further information.
+                          </li>
+                          <li>
+                            You may not create a link to our website from
+                            another website or document without TASMAY PANKAJ
+                            TIBREWAL's prior written consent.
+                          </li>
+                          <li>
+                            Any dispute arising out of use of our website and/or
+                            purchase with us and/or any engagement with us is
+                            subject to the laws of India.
+                          </li>
+                          <li>
+                            We, shall be under no liability whatsoever in
+                            respect of any loss or damage arising directly or
+                            indirectly out of the decline of authorization for
+                            any Transaction, on Account of the Cardholder having
+                            exceeded the preset limit mutually agreed by us with
+                            our acquiring bank from time to time.
+                          </li>
                         </ul>
                       </div>
                     </div>
@@ -596,7 +660,7 @@ export default function HomePage() {
                       <DialogTitle>Cancellation & Refund Policy</DialogTitle>
                     </DialogHeader>
                     <div className="p-6">
-                      <p className="mb-4">Last updated on Oct 19 2024</p>
+                      <p className="mb-4">Last updated on Oct 25 2024</p>
                       <p>No cancellations & Refunds are entertained</p>
                     </div>
                   </DialogContent>
@@ -614,8 +678,236 @@ export default function HomePage() {
                       <DialogTitle>Shipping and Delivery</DialogTitle>
                     </DialogHeader>
                     <div className="p-6">
-                      <p className="mb-4">Last updated on Oct 19 2024</p>
+                      <p className="mb-4">Last updated on Oct 25 2024</p>
                       <p>Shipping is not applicable for business.</p>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </li>
+              <li>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="text-gray-400 hover:text-white transition-colors">
+                      Privacy Policy
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[80vh]">
+                    <DialogHeader>
+                      <DialogTitle>Privacy Policy</DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto max-h-[60vh] pr-4">
+                      <div className="p-6 text-sm">
+                        <p className="mb-4">Last updated on Oct 25 2024</p>
+                        <p>
+                          <strong>
+                            Section 1 - What do we do with your information?
+                          </strong>
+                        </p>
+                        <br></br>
+                        <p>
+                          When you purchase something from our store, as part of
+                          the buying and selling process, we collect the
+                          personal information you give us such as your name,
+                          address and email address. When you browse our store,
+                          we also automatically receive your computer’s internet
+                          protocol (IP) address in order to provide us with
+                          information that helps us learn about your browser and
+                          operating system. Email marketing (if applicable):
+                          With your permission, we may send you emails about our
+                          store, new products and other updates.
+                        </p>
+                        <br></br>
+                        <p>
+                          <strong>Section 2 - Consent</strong>
+                        </p>
+                        <br></br>
+                        <p>How do you get my consent?</p>
+                        <br></br>
+                        <p>
+                          When you provide us with personal information to
+                          complete a transaction, verify your credit card, place
+                          an order, arrange for a delivery or return a purchase,
+                          we imply that you consent to our collecting it and
+                          using it for that specific reason only.
+                        </p>
+                        <p>
+                          If we ask for your personal information for a
+                          secondary reason, like marketing, we will either ask
+                          you directly for your expressed consent, or provide
+                          you with an opportunity to say no.{" "}
+                        </p>
+                        <br></br>
+                        <p>How do I withdraw my consent? </p>
+                        <br></br>
+                        <p>
+                          If after you opt-in, you change your mind, you may
+                          withdraw your consent for us to contact you, for the
+                          continued collection, use or disclosure of your
+                          information, at anytime, by contacting us by mailing
+                          us at: zyke.work@gmail.com
+                        </p>
+                        <br></br>
+                        <p>
+                          <strong>Section 3 - Disclosure</strong>
+                        </p>
+                        <br></br>
+                        <p>
+                          We may disclose your information if required by law or
+                          if you violate our Terms of Service.
+                        </p>
+                        <p>
+                          <br></br>
+                          <strong>Section 4 - Payment</strong>
+                        </p>
+                        <br></br>
+                        <p>
+                          We use Razorpay for processing payments. We/Razorpay
+                          do not store your card data on their servers. The data
+                          is encrypted through the Payment Card Industry Data
+                          Security Standard (PCI-DSS) when processing payment.
+                          Your purchase transaction data is only used as long as
+                          is necessary to complete your purchase transaction.
+                          After that is complete, your purchase transaction
+                          information is not saved.
+                        </p>
+                        <br></br>
+                        <p>
+                          {" "}
+                          Our payment gateway adheres to the standards set by
+                          PCI-DSS as managed by the PCI Security Standards
+                          Council, which is a joint effort of brands like Visa,
+                          MasterCard, American Express and Discover.{" "}
+                        </p>
+                        <br></br>
+                        <p>
+                          PCI-DSS requirements help ensure the secure handling
+                          of credit card information by our store and its
+                          service providers. For more insight, you may also want
+                          to read terms and conditions of razorpay on
+                          https://razorpay.com
+                        </p>
+                        <br></br>
+                        <p>
+                          <strong>Section 5 - Third-Party Services</strong>
+                        </p>
+                        <br></br>
+                        <p>
+                          In general, the third-party providers used by us will
+                          only collect, use and disclose your information to the
+                          extent necessary to allow them to perform the services
+                          they provide to us.
+                        </p>
+                        <br></br>
+                        <p>
+                          {" "}
+                          However, certain third-party service providers, such
+                          as payment gateways and other payment transaction
+                          processors, have their own privacy policies in respect
+                          to the information we are required to provide to them
+                          for your purchase-related transactions.{" "}
+                        </p>
+                        <br></br>
+                        <p>
+                          For these providers, we recommend that you read their
+                          privacy policies so you can understand the manner in
+                          which your personal information will be handled by
+                          these providers.
+                        </p>
+                        <br></br>
+                        <p>
+                          {" "}
+                          In particular, remember that certain providers may be
+                          located in or have facilities that are located a
+                          different jurisdiction than either you or us. So if
+                          you elect to proceed with a transaction that involves
+                          the services of a third-party service provider, then
+                          your information may become subject to the laws of the
+                          jurisdiction(s) in which that service provider or its
+                          facilities are located.{" "}
+                        </p>
+                        <br></br>
+                        <p>
+                          Once you leave our store’s website or are redirected
+                          to a third-party website or application, you are no
+                          longer governed by this Privacy Policy or our
+                          website’s Terms of Service. Links When you click on
+                          links on our store, they may direct you away from our
+                          site. We are not responsible for the privacy practices
+                          of other sites and encourage you to read their privacy
+                          statements.
+                        </p>
+                        <br></br>
+                        <p>
+                          <strong>Section 6 - Security</strong>
+                        </p>
+                        <br></br>
+                        <p>
+                          To protect your personal information, we take
+                          reasonable precautions and follow industry best
+                          practices to make sure it is not inappropriately lost,
+                          misused, accessed, disclosed, altered or destroyed.
+                        </p>
+                        <br></br>
+                        <p>
+                          <strong>Section 7 - Cookies</strong>
+                        </p>
+                        <br></br>
+                        <p>
+                          We use cookies to maintain session of your user. It is
+                          not used to personally identify you on other websites.
+                        </p>
+                        <br></br>
+                        <p>
+                          <strong>Section 8 - Age of Consent</strong>
+                        </p>
+                        <br></br>
+                        <p>
+                          By using this site, you represent that you are at
+                          least the age of majority in your state or province of
+                          residence, or that you are the age of majority in your
+                          state or province of residence and you have given us
+                          your consent to allow any of your minor dependents to
+                          use this site.
+                        </p>
+                        <br></br>
+                        <p>
+                          <strong>
+                            Section 9 - Changes to this Privacy Policy
+                          </strong>
+                        </p>
+                        <br></br>
+                        <p>
+                          We reserve the right to modify this privacy policy at
+                          any time, so please review it frequently. Changes and
+                          clarifications will take effect immediately upon their
+                          posting on the website. If we make material changes to
+                          this policy, we will notify you here that it has been
+                          updated, so that you are aware of what information we
+                          collect, how we use it, and under what circumstances,
+                          if any, we use and/or disclose it.
+                        </p>
+                        <br></br>
+                        <p>
+                          {" "}
+                          If our store is acquired or merged with another
+                          company, your information may be transferred to the
+                          new owners so that we may continue to sell products to
+                          you.
+                        </p>
+                        <br></br>
+                        <p>
+                          <strong>Questions and Contact Information</strong>
+                        </p>
+                        <br></br>
+                        <p>
+                          If you would like to: access, correct, amend or delete
+                          any personal information we have about you, register a
+                          complaint, or simply want more information contact our
+                          Privacy Compliance Officer at{" "}
+                          <strong>IIT Kharagpur</strong> or by mail at{" "}
+                          <strong>zyke.work@gmail.com</strong>
+                        </p>
+                      </div>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -644,9 +936,7 @@ export default function HomePage() {
         </div>
         <div className="mt-8 border-t border-gray-600 pt-8 text-center text-gray-400">
           <p>&copy; 2024 Zyke. All rights reserved.</p>
-          <p className="mt-2">
-            Last updated on Oct 19 2024. IIT Kharagpur
-          </p>
+          <p className="mt-2">Last updated on Oct 25 2024. IIT Kharagpur</p>
         </div>
       </footer>
 
@@ -655,7 +945,10 @@ export default function HomePage() {
           <DialogHeader>
             <DialogTitle>Schedule One-on-One Demo</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} action="https://docs.google.com/forms/d/e/1FAIpQLScnyXPJnG1fhlmjcFxy86nFR5eVTmbWVxfD1ixPBo127hC1zA/formResponse">
+          <form
+            onSubmit={handleSubmit}
+            action="https://docs.google.com/forms/d/e/1FAIpQLScnyXPJnG1fhlmjcFxy86nFR5eVTmbWVxfD1ixPBo127hC1zA/formResponse"
+          >
             <div className="space-y-4">
               <Input
                 name="entry.2127377522"
