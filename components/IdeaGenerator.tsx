@@ -4,37 +4,22 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import {
-  Loader2,
-  Sparkles,
-  TrendingUp,
-  Hash,
-  Image,
-  Youtube,
-  Globe,
-  Menu,
-  X,
-  MessageCircle,
-  Home,
-  Settings,
-} from "lucide-react"
+import { Loader2, Sparkles, TrendingUp, Hash, Image, Youtube, Globe, Menu, X, MessageCircle, Home, Settings } from "lucide-react"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { motion, AnimatePresence } from "framer-motion"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import ProtectedRoute from "./authentication/ProtectedRoute"
-
+import ProtectedRoute from "./ProtectedRoute"
+import { useSpring, animated } from "react-spring"
+import * as Icons from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { useTheme } from "next-themes";
 interface Trend {
   name: string;
   summary: string;
@@ -64,12 +49,10 @@ const contentTypeDescriptions: { [key: string]: string } = {
   trend: "Generate trending social media topics from the latest trends.",
   blog: "Create engaging social media topics from blog content.",
   instagram_post: "Generate social media topics based on Instagram posts.",
-  news_article:
-    "Turn news articles into social media topics that spark conversations.",
+  news_article: "Turn news articles into social media topics that spark conversations.",
   tweet: "Generate social media topics based on existing tweets.",
   linkedin_post: "Create social media topics from professional LinkedIn posts.",
-  product_image:
-    "Generate topic ideas for social media based on product images.",
+  product_image: "Generate topic ideas for social media based on product images.",
   reel: "Turn Instagram Reels into social media topic ideas.",
   youtube_video: "Create social media topics based on YouTube video content.",
   text_prompt: "Generate social media topics from text prompts or ideas.",
@@ -99,6 +82,172 @@ const fetchTrends = async (): Promise<Trend[]> => {
   }
 };
 
+// Start of the Navbar Implementation
+
+const navItems = [
+  { name: "Dashboard", icon: Icons.LayoutDashboard, href: "/dashboard" },
+  { name: "Ideas", icon: Icons.Sparkles, href: "/ideas" },
+  { name: "Chatbot", icon: Icons.MessageCircle, href: "/chatbot" },
+  { name: "Analytics", icon: Icons.BarChart2, href: "/analytics" },
+  { name: "Settings", icon: Icons.Settings, href: "/settings" },
+];
+
+const useScrollDirection = () => {
+  const [scrollDirection, setScrollDirection] = useState("up");
+
+  useEffect(() => {
+    let lastScrollY = window.pageYOffset;
+
+    const updateScrollDirection = () => {
+      const scrollY = window.pageYOffset;
+      const direction = scrollY > lastScrollY ? "down" : "up";
+      if (direction !== scrollDirection && (scrollY - lastScrollY > 10 || scrollY - lastScrollY < -10)) {
+        setScrollDirection(direction);
+      }
+      lastScrollY = scrollY > 0 ? scrollY : 0;
+    };
+
+    window.addEventListener("scroll", updateScrollDirection);
+    return () => {
+      window.removeEventListener("scroll", updateScrollDirection);
+    };
+  }, [scrollDirection]);
+
+  return scrollDirection;
+};
+
+function LegendaryNavbar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const scrollDirection = useScrollDirection();
+
+  const navAnimation = useSpring({
+    transform: scrollDirection === "down" ? "translateY(-100%)" : "translateY(0%)",
+    config: { tension: 300, friction: 20 },
+  });
+
+  const logoProps = useSpring({
+    loop: { reverse: true },
+    from: { rotateY: 0 },
+    to: { rotateY: 360 },
+    config: { duration: 3000 },
+  });
+
+  return (
+    <animated.nav
+      style={navAnimation}
+      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border"
+    >
+      <div className="container mx-auto px-4 py-2">
+        <div className="flex justify-between items-center">
+          <Link href="/" className="flex items-center space-x-2">
+            <animated.div style={logoProps}>
+              <Icons.Zap className="w-8 h-8 text-primary" />
+            </animated.div>
+            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+              Zyke
+            </span>
+          </Link>
+
+          <div className="hidden md:flex items-center space-x-6">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="flex items-center space-x-1 text-muted-foreground hover:text-primary transition-colors duration-200"
+              >
+                <item.icon className="w-4 h-4" />
+                <span>{item.name}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {/* <div className="hidden md:block">
+              <Input type="search" placeholder="Search..." className="w-64" />
+            </div> */}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Icons.Bell className="w-5 h-5" />
+                  <Badge className="absolute -top-1 -right-1 px-1 min-w-[1.25rem] h-5">3</Badge>
+                  <span className="sr-only">Notifications</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuItem>New message from Alice</DropdownMenuItem>
+                <DropdownMenuItem>Your post is trending!</DropdownMenuItem>
+                <DropdownMenuItem>You have a new follower</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Avatar>
+                    <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                    <AvatarFallback>SC</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Billing</DropdownMenuItem>
+                <DropdownMenuItem>Team</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  >
+                    <Icons.Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Icons.Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="sr-only">Toggle theme</span>
+                  </Button>
+                </DropdownMenuItem>
+                <DropdownMenuItem>Log out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              <Icons.Menu className="w-6 h-6" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-background border-t border-border"
+          >
+            <div className="container mx-auto px-4 py-4 space-y-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors duration-200"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.name}</span>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </animated.nav>
+  );
+}
+
+// End of Navbar Implementation
+
 export default function Component() {
   const router = useRouter()
   const [inputData, setInputData] = useState<{ [key: string]: string }>({})
@@ -108,7 +257,6 @@ export default function Component() {
   const [trends, setTrends] = useState<Trend[]>([])
   const [isFetchingTrends, setIsFetchingTrends] = useState<boolean>(false)
   const [charCount, setCharCount] = useState<number>(0)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -207,9 +355,7 @@ export default function Component() {
                 <SelectItem key={trend.name} value={trend.name}>
                   <div className="flex flex-col">
                     <span className="font-bold">{trend.name}</span>
-                    <span className="text-sm text-gray-500 truncate">
-                      {trend.summary}
-                    </span>
+                    <span className="text-sm text-gray-500 truncate">{trend.summary}</span>
                   </div>
                 </SelectItem>
               ))}
@@ -223,13 +369,7 @@ export default function Component() {
       case "product_image":
       case "youtube_video":
       case "website":
-        return (
-          <Input
-            placeholder="Enter URL"
-            onChange={(e) => handleInputChange("url", e.target.value)}
-            className="w-full"
-          />
-        )
+        return <Input placeholder="Enter URL" onChange={(e) => handleInputChange("url", e.target.value)} className="w-full" />
       case "instagram_post":
       case "tweet":
       case "linkedin_post":
@@ -238,15 +378,8 @@ export default function Component() {
       case "hashtag":
         return (
           <>
-            <Textarea
-              placeholder="Enter your content (Max 300 characters)"
-              onChange={(e) => handleInputChange("content", e.target.value)}
-              maxLength={300}
-              className="w-full"
-            />
-            <p className="text-right text-xs text-gray-500">
-              {charCount}/300 characters
-            </p>
+            <Textarea placeholder="Enter your content (Max 300 characters)" onChange={(e) => handleInputChange("content", e.target.value)} maxLength={300} className="w-full" />
+            <p className="text-right text-xs text-gray-500">{charCount}/300 characters</p>
           </>
         )
       default:
@@ -258,107 +391,13 @@ export default function Component() {
     <ProtectedRoute>
       <TooltipProvider>
         <div className="flex bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-          {/* Dashboard Navbar */}
-          <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
-            <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-              <Link href="/" className="text-2xl font-bold text-indigo-600">
-                Zyke
-              </Link>
-              <div className="hidden md:flex space-x-4">
-                <Link href="/dashboard" className="flex items-center text-gray-700 hover:text-indigo-600">
-                  <Home className="w-5 h-5 mr-1" />
-                  Dashboard
-                </Link>
-                <Link href="/ideas" className="flex items-center text-gray-700 hover:text-indigo-600">
-                  <Sparkles className="w-5 h-5 mr-1" />
-                  Ideas
-                </Link>
-                <Link href="/chatbot" className="flex items-center text-gray-700 hover:text-indigo-600">
-                  <MessageCircle className="w-5 h-5 mr-1" />
-                  Chatbot
-                </Link>
-                <Link href="/settings" className="flex items-center text-gray-700 hover:text-indigo-600">
-                  <Settings className="w-5 h-5 mr-1" />
-                  Settings
-                </Link>
-              </div>
-              <Button
-                className="md:hidden"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                <Menu className="w-6 h-6" />
-              </Button>
-            </div>
-          </nav>
-
-          {/* Mobile menu */}
-          <AnimatePresence>
-            {isMobileMenuOpen && (
-              <motion.div
-                initial={{ x: -300 }}
-                animate={{ x: 0 }}
-                exit={{ x: -300 }}
-                transition={{ duration: 0.3 }}
-                className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg p-6"
-              >
-                <div className="flex justify-between items-center mb-8">
-                  <Link href="/" className="text-3xl font-bold text-indigo-600">
-                    Zyke
-                  </Link>
-                  <Button variant="ghost" onClick={() => setIsMobileMenuOpen(false)}>
-                    <X className="w-6 h-6" />
-                  </Button>
-                </div>
-                <nav>
-                  <ul className="space-y-2">
-                    <li>
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-indigo-100"
-                      >
-                        <Home className="w-6 h-6 mr-3" />
-                        Dashboard
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/ideas"
-                        className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-indigo-100"
-                      >
-                        <Sparkles className="w-6 h-6 mr-3" />
-                        Ideas
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/chatbot"
-                        className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-indigo-100"
-                      >
-                        <MessageCircle className="w-6 h-6 mr-3" />
-                        Chatbot
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/settings"
-                        className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-indigo-100"
-                      >
-                        <Settings className="w-6 h-6 mr-3" />
-                        Settings
-                      </Link>
-                    </li>
-                  </ul>
-                </nav>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Navbar */}
+          <LegendaryNavbar />
 
           {/* Main Content */}
           <main className="flex-1 p-4 md:p-6 lg:p-8 md:ml-30 mt-16">
             <header className="mb-8">
-              <h1 className="text-4xl font-bold text-gray-800">
-                What do you want to design today?
-              </h1>
+              <h1 className="text-4xl font-bold text-gray-800">What do you want to design today?</h1>
             </header>
 
             {error && (
@@ -375,53 +414,31 @@ export default function Component() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className={`p-3 md:p-4 bg-white shadow-lg rounded-lg transition ${
-                    contentType === value
-                      ? "border-2 border-indigo-500"
-                      : "border border-transparent"
+                    contentType === value ? "border-2 border-indigo-500" : "border border-transparent"
                   }`}
                   onClick={() => handleContentTypeChange(value)}
                 >
                   <Icon className="w-12 h-12 mb-4 text-indigo-600" />
-                  <h3 className="text-lg font-semibold text-gray-800 text-center">
-                    {label}
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-2 text-center">
-                    {contentTypeDescriptions[value]}
-                  </p>
+                  <h3 className="text-lg font-semibold text-gray-800 text-center">{label}</h3>
+                  <p className="text-sm text-gray-600 mt-2 text-center">{contentTypeDescriptions[value]}</p>
                 </motion.button>
               ))}
             </div>
 
-            
-
             <AnimatePresence>
               {contentType && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
                   <Card className="mt-8 bg-white w-full max-w-6xl mx-auto">
                     <CardHeader>
-                      <CardTitle className="text-2xl font-bold text-gray-800">
-                        {contentType === "trend"
-                          ? "Select a Trend"
-                          : "Enter Details"}
-                      </CardTitle>
+                      <CardTitle className="text-2xl font-bold text-gray-800">{contentType === "trend" ? "Select a Trend" : "Enter Details"}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {renderInputField()}
                       {selectedTrend && (
                         <div className="mt-4">
-                          <h3 className="text-lg font-semibold mb-2">
-                            Trend Description:
-                          </h3>
+                          <h3 className="text-lg font-semibold mb-2">Trend Description:</h3>
                           <div className="w-full break-words">
-                            <ReactMarkdown
-                              remarkPlugins={[remarkGfm]}
-                              className="text-gray-700"
-                            >
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} className="text-gray-700">
                               {selectedTrend.description}
                             </ReactMarkdown>
                           </div>
@@ -431,16 +448,8 @@ export default function Component() {
                   </Card>
 
                   <div className="mt-6">
-                    <Button
-                      onClick={handleGenerateIdeas}
-                      disabled={isLoading}
-                      className="flex items-center bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-indigo-700 transition-colors"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="mr-2  h-4 w-4" />
-                      )}
+                    <Button onClick={handleGenerateIdeas} disabled={isLoading} className="flex items-center bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-indigo-700 transition-colors">
+                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2  h-4 w-4" />}
                       {isLoading ? "Generating..." : "Generate Ideas"}
                     </Button>
                   </div>
@@ -451,5 +460,5 @@ export default function Component() {
         </div>
       </TooltipProvider>
     </ProtectedRoute>
-  )
+  );
 }

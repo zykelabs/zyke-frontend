@@ -1,10 +1,11 @@
 import GeneratedIdeas from '@/components/GeneratedIdeas'
+import ProtectedRoute from '@/components/ProtectedRoute'
 
 const Ideas = () => {
   return (
-    <div>
+    <ProtectedRoute>
       <GeneratedIdeas/>
-    </div>
+    </ProtectedRoute>
   )
 }
 

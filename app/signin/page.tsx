@@ -1,11 +1,7 @@
-import SignIn from "@/components/authentication/Signin"
+'use client';
 
-const Signin = () => {
-  return (
-    <div>
-      <SignIn/>
-    </div>
-  )
+import SignIn from '@/components/authentication/Signin';
+
+export default function SignInPage() {
+  return <SignIn />;
 }
-
-export default Signin

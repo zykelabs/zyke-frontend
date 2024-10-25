@@ -1,365 +1,732 @@
-"use client"
+// BrandVoice.tsx
+"use client";
 
-import { useState, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react";
+import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Loader2,
+  PlusCircle,
+  Trash2,
+  Instagram,
+  Twitter,
+  Linkedin,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import {
-  X,
-  Plus,
-  Building,
-  Globe,
-  Instagram,
-  Twitter,
-  Loader2,
-} from "lucide-react"
-
-// Import shadcn Dialog components
+} from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
-  DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-interface TagInputProps {
-  label: string
-  tags: string[]
-  setTags: (tags: string[]) => void
-}
+// Define the form schema using Zod
+const formSchema = z.object({
+  company: z.string().min(1, "Company name is required"),
+  brandVoiceName: z.string().min(1, "Brand Voice Name is required"),
+  industries: z.array(z.string()).min(1, "At least one industry is required"),
+  location: z.string().min(1, "Location is required"),
+  contentTypes: z
+    .array(z.string())
+    .min(1, "At least one content type is required"),
+  brandPersonalities: z
+    .array(z.string())
+    .min(1, "At least one brand personality is required"),
+  targetAudience: z
+    .array(z.string())
+    .min(1, "At least one target audience is required"),
+  brandTone: z.enum([
+    "completely casual",
+    "mostly casual",
+    "slightly casual",
+    "neutral",
+    "slightly formal",
+    "mostly formal",
+    "completely formal",
+  ]),
+  brandType: z.enum(["1", "2", "3", "4"]),
+  socialMedia: z.object({
+    instagram: z
+      .string()
+      .regex(/^[a-zA-Z0-9._]{1,30}$/, "Invalid Instagram username"),
+    twitter: z
+      .string()
+      .regex(/^[a-zA-Z0-9_]{1,15}$/, "Invalid Twitter username"),
+    linkedin: z
+      .string()
+      .regex(/^[a-zA-Z0-9-]{1,100}$/, "Invalid LinkedIn username"),
+  }),
+  otherUrls: z.array(z.string().url("Invalid URL")).optional(),
+  manualInputText: z.string().optional(),
+  designText: z.string().optional(),
+});
 
-const TagInput: React.FC<TagInputProps> = ({
-  label,
-  tags,
-  setTags,
-}) => {
-  const [input, setInput] = useState("")
+// Infer the form values type from the schema
+type FormValues = z.infer<typeof formSchema>;
 
-  const addTag = () => {
-    if (input.trim() && !tags.includes(input.trim())) {
-      setTags([...tags, input.trim()])
-      setInput("")
+// Define options for select fields
+const industryOptions = [
+  "Technology",
+  "Finance",
+  "Healthcare",
+  "Education",
+  "Entertainment",
+  "Retail",
+  "Manufacturing",
+  "Other",
+];
+const contentTypeOptions = [
+  "Blog Posts",
+  "Social Media",
+  "Videos",
+  "Podcasts",
+  "Infographics",
+  "Whitepapers",
+  "Case Studies",
+  "Other",
+];
+const brandPersonalityOptions = [
+  "Sincere",
+  "Exciting",
+  "Competent",
+  "Sophisticated",
+  "Rugged",
+  "Innovative",
+  "Trustworthy",
+  "Other",
+];
+
+export default function BrandVoiceForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isLoaderOpen, setIsLoaderOpen] = useState(false);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { data: session, status } = useSession();
+
+  const accountType = searchParams.get("accountType");
+
+  // Mapping accountType to brandType
+  const accountTypeToBrandTypeMap: Record<string, "1" | "2" | "3" | "4"> = {
+    big_brands: "1",
+    startup_smb: "2",
+    individual_creators: "3",
+    ecommerce_sellers: "4",
+  };
+
+  const mappedBrandType = accountType
+    ? accountTypeToBrandTypeMap[accountType]
+    : undefined;
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      industries: [""],
+      contentTypes: [""],
+      brandPersonalities: [""],
+      targetAudience: [""],
+      otherUrls: [""],
+      brandType: mappedBrandType || "1", // Default to '1' if not mapped
+    },
+  });
+
+  // Initialize field arrays for dynamic inputs
+  const {
+    fields: industryFields,
+    append: appendIndustry,
+    remove: removeIndustry,
+  } = useFieldArray({
+    control,
+    name: "industries",
+  });
+
+  const {
+    fields: contentTypeFields,
+    append: appendContentType,
+    remove: removeContentType,
+  } = useFieldArray({
+    control,
+    name: "contentTypes",
+  });
+
+  const {
+    fields: personalityFields,
+    append: appendPersonality,
+    remove: removePersonality,
+  } = useFieldArray({
+    control,
+    name: "brandPersonalities",
+  });
+
+  const {
+    fields: audienceFields,
+    append: appendAudience,
+    remove: removeAudience,
+  } = useFieldArray({
+    control,
+    name: "targetAudience",
+  });
+
+  const {
+    fields: urlFields,
+    append: appendUrl,
+    remove: removeUrl,
+  } = useFieldArray({
+    control,
+    name: "otherUrls",
+  });
+
+  // Set the brandType based on accountType from URL parameters
+  useEffect(() => {
+    if (mappedBrandType) {
+      setValue("brandType", mappedBrandType);
     }
-  }
+  }, [mappedBrandType, setValue]);
 
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove))
-  }
+  // Handle form submission
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+    setIsLoaderOpen(true);
 
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={label.toLowerCase()}>{label}</Label>
-      <div className="flex flex-wrap gap-2 p-2 bg-gray-100 rounded-md">
-        {tags.map((tag, index) => (
-          <Badge
-            key={index}
-            variant="secondary"
-            className="text-sm py-1 px-2 bg-gray-200 text-gray-800 flex items-center"
-          >
-            {tag}
-            <X
-              className="h-3 w-3 ml-1 cursor-pointer"
-              onClick={() => removeTag(tag)}
-            />
-          </Badge>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <Input
-          id={label.toLowerCase()}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={`Add ${label.toLowerCase()}...`}
-          className="flex-grow bg-white text-black border-gray-300"
-        />
-        <Button
-          onClick={addTag}
-          size="sm"
-          variant="secondary"
-          className="bg-gray-200 text-gray-800 hover:bg-gray-300"
-        >
-          <Plus className="h-4 w-4 mr-1" /> Add
-        </Button>
-      </div>
-    </div>
-  )
-}
+    try {
+      // Ensure the user is authenticated
+      if (status !== "authenticated") {
+        throw new Error("You must be logged in to perform this action.");
+      }
 
-export default function BrandVoice() {
-  const router = useRouter() // Initialize router
-  const [brandName, setBrandName] = useState("Corporation")
-  const [brandDescription, setBrandDescription] = useState(
-    "Leading provider of innovative solutions"
-  )
-  const [website, setWebsite] = useState("https://www.corp.com")
-  const [instagramHandle, setInstagramHandle] = useState("@corp")
-  const [twitterHandle, setTwitterHandle] = useState("@corp")
+      const token = session?.accessToken;
 
-  const [voiceName, setVoiceName] = useState("Corporation Voice 1")
-  const [purpose, setPurpose] = useState(
-    "To communicate our brand's commitment to innovation and quality solutions"
-  )
-  const [audience, setAudience] = useState(
-    "Business professionals and technology enthusiasts"
-  )
-  const [tone, setTone] = useState([
-    "Professional",
-    "Innovative",
-    "Trustworthy",
-  ])
-  const [emotion, setEmotion] = useState(["Confident", "Enthusiastic"])
-  const [character, setCharacter] = useState(["Expert", "Visionary"])
-  const [syntax, setSyntax] = useState(
-    "Use clear, concise language with industry-specific terminology when appropriate"
-  )
+      if (!token) {
+        throw new Error("Authentication token not found. Please log in.");
+      }
 
-  // State for Loader and Dialog
-  const [isLoading, setIsLoading] = useState(false)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+      // Transform social media usernames into URLs
+      const transformedSocialMedia = {
+        instagram: data.socialMedia.instagram
+          ? `https://instagram.com/${data.socialMedia.instagram}`
+          : "",
+        twitter: data.socialMedia.twitter
+          ? `https://twitter.com/${data.socialMedia.twitter}`
+          : "",
+        linkedin: data.socialMedia.linkedin
+          ? `https://linkedin.com/in/${data.socialMedia.linkedin}`
+          : "",
+      };
 
-  const handleSave = () => {
-    // Optionally, handle data persistence here (e.g., API call)
+      // Prepare the payload with transformed social media URLs
+      const payload = {
+        ...data,
+        socialMedia: transformedSocialMedia,
+      };
 
-    // Start loading
-    setIsLoading(true)
+      // Submit the form data to the backend API
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/create`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
-    // Simulate a delay of 5 seconds
-    setTimeout(() => {
-      setIsLoading(false)
-      setIsDialogOpen(true)
-    }, 5000)
-  }
+      const result = await response.json();
 
-  const handleDialogClose = () => {
-    setIsDialogOpen(false)
-    router.push("/idea-generator")
-  }
+      if (!response.ok) {
+        throw new Error(
+          result.error || "Something went wrong while submitting the form."
+        );
+      }
+
+      setSubmitSuccess(true);
+      reset(); // Reset the form after successful submission
+      console.log("Brand Voice Summary:", result.summary);
+      console.log("Generation Cost:", result.cost);
+
+      // Navigate to /isea-generator after a short delay to allow users to see the success message
+      setTimeout(() => {
+        router.push("/isea-generator");
+      }, 1500);
+    } catch (error: any) {
+      console.error("Error submitting form:", error);
+      setSubmitError(error.message);
+    } finally {
+      setIsSubmitting(false);
+      setIsLoaderOpen(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-white text-black p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center">
-          Brand Profile & Voice Editor
-        </h1>
-
-        {/* Loader Overlay */}
-        {isLoading && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-50">
-            <Loader2 className="animate-spin h-12 w-12 text-white" />
-            <span className="mt-4 text-white text-lg">
-              Generating Brand Voice...
-            </span>
+    <Card className="w-full max-w-4xl mx-auto my-8">
+      <CardHeader>
+        <CardTitle className="text-3xl font-bold">
+          Brand Voice Generator
+        </CardTitle>
+        <CardDescription>
+          Fill in the details to create your brand profile and generate its
+          voice.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {/* Company Name and Location */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="company">Company Name</Label>
+              <Input id="company" {...register("company")} className="mt-2" />
+              {errors.company && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertDescription>{errors.company.message}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input id="location" {...register("location")} className="mt-2" />
+              {errors.location && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertDescription>{errors.location.message}</AlertDescription>
+                </Alert>
+              )}
+            </div>
           </div>
-        )}
 
-        {/* Dialog Box */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Brand Voice Generated</DialogTitle>
-              <DialogDescription>
-                Your brand profile and voice have been successfully generated.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button onClick={handleDialogClose} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                Go to Idea Generator
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          {/* Brand Voice Name */}
+          <div>
+            <Label htmlFor="brandVoiceName">Brand Voice Name</Label>
+            <Input
+              id="brandVoiceName"
+              {...register("brandVoiceName")}
+              className="mt-2"
+              placeholder="e.g., EcoFriendly Voice"
+            />
+            {errors.brandVoiceName && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>
+                  {errors.brandVoiceName.message}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
 
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="profile" className="data-[state=active]:bg-gray-200">
-              Brand Profile
-            </TabsTrigger>
-            <TabsTrigger value="voice" className="data-[state=active]:bg-gray-200">
-              Brand Voice
-            </TabsTrigger>
-          </TabsList>
+          {/* Industries */}
+          <div>
+            <Label>Industries</Label>
+            {industryFields.map((field, index) => (
+              <div key={field.id} className="flex items-center space-x-2 mt-2">
+                <Select {...register(`industries.${index}` as const)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {industryOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeIndustry(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendIndustry("")}
+              className="mt-2"
+            >
+              <PlusCircle className="h-4 w-4 mr-2" /> Add Industry
+            </Button>
+            {errors.industries && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>{errors.industries.message}</AlertDescription>
+              </Alert>
+            )}
+          </div>
 
-          <TabsContent value="profile">
-            <Card className="bg-white text-black shadow-xl border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-2xl">Brand Profile</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage src="/placeholder.svg" alt={brandName} />
-                    <AvatarFallback>
-                      <Building className="h-10 w-10" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h2 className="text-2xl font-bold">{brandName}</h2>
-                    <p className="text-gray-600">{brandDescription}</p>
-                  </div>
-                </div>
+          {/* Content Types */}
+          <div>
+            <Label>Content Types</Label>
+            {contentTypeFields.map((field, index) => (
+              <div key={field.id} className="flex items-center space-x-2 mt-2">
+                <Select {...register(`contentTypes.${index}` as const)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a content type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contentTypeOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeContentType(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendContentType("")}
+              className="mt-2"
+            >
+              <PlusCircle className="h-4 w-4 mr-2" /> Add Content Type
+            </Button>
+            {errors.contentTypes && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>
+                  {errors.contentTypes.message}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="brand-name">Brand Name</Label>
-                  <Input
-                    id="brand-name"
-                    value={brandName}
-                    onChange={(e) => setBrandName(e.target.value)}
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
+          {/* Brand Personalities */}
+          <div>
+            <Label>Brand Personalities</Label>
+            {personalityFields.map((field, index) => (
+              <div key={field.id} className="flex items-center space-x-2 mt-2">
+                <Select {...register(`brandPersonalities.${index}` as const)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a brand personality" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brandPersonalityOptions.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removePersonality(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendPersonality("")}
+              className="mt-2"
+            >
+              <PlusCircle className="h-4 w-4 mr-2" /> Add Brand Personality
+            </Button>
+            {errors.brandPersonalities && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>
+                  {errors.brandPersonalities.message}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="brand-description">Brand Description</Label>
-                  <Textarea
-                    id="brand-description"
-                    value={brandDescription}
-                    onChange={(e) => setBrandDescription(e.target.value)}
-                    rows={3}
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
-                  <div className="flex">
-                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-600">
-                      <Globe className="h-5 w-5" />
-                    </span>
-                    <Input
-                      id="website"
-                      value={website}
-                      onChange={(e) => setWebsite(e.target.value)}
-                      className="flex-1 rounded-none rounded-r-md bg-white text-black border-gray-300"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="instagram">Instagram Handle</Label>
-                  <div className="flex">
-                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-600">
-                      <Instagram className="h-5 w-5" />
-                    </span>
-                    <Input
-                      id="instagram"
-                      value={instagramHandle}
-                      onChange={(e) => setInstagramHandle(e.target.value)}
-                      className="flex-1 rounded-none rounded-r-md bg-white text-black border-gray-300"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="twitter">Twitter Handle</Label>
-                  <div className="flex">
-                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-600">
-                      <Twitter className="h-5 w-5" />
-                    </span>
-                    <Input
-                      id="twitter"
-                      value={twitterHandle}
-                      onChange={(e) => setTwitterHandle(e.target.value)}
-                      className="flex-1 rounded-none rounded-r-md bg-white text-black border-gray-300"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="voice">
-            <Card className="bg-white text-black shadow-xl border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-2xl">Brand Voice</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="voice-name">Voice Name</Label>
-                  <Input
-                    id="voice-name"
-                    value={voiceName}
-                    onChange={(e) => setVoiceName(e.target.value)}
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="purpose">Purpose</Label>
-                  <Textarea
-                    id="purpose"
-                    value={purpose}
-                    onChange={(e) => setPurpose(e.target.value)}
-                    rows={3}
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="audience">Audience</Label>
-                  <Textarea
-                    id="audience"
-                    value={audience}
-                    onChange={(e) => setAudience(e.target.value)}
-                    rows={2}
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-
-                <TagInput label="Tone" tags={tone} setTags={setTone} />
-                <TagInput label="Emotion" tags={emotion} setTags={setEmotion} />
-                <TagInput
-                  label="Character"
-                  tags={character}
-                  setTags={setCharacter}
+          {/* Target Audience */}
+          <div>
+            <Label>Target Audience</Label>
+            {audienceFields.map((field, index) => (
+              <div key={field.id} className="flex items-center space-x-2 mt-2">
+                <Input
+                  {...register(`targetAudience.${index}` as const)}
+                  placeholder="e.g., Young professionals"
                 />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeAudience(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendAudience("")}
+              className="mt-2"
+            >
+              <PlusCircle className="h-4 w-4 mr-2" /> Add Target Audience
+            </Button>
+            {errors.targetAudience && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>
+                  {errors.targetAudience.message}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="syntax">Syntax</Label>
-                  <Textarea
-                    id="syntax"
-                    value={syntax}
-                    onChange={(e) => setSyntax(e.target.value)}
-                    rows={2}
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          {/* Brand Tone */}
+          <div>
+            <Label htmlFor="brandTone">Brand Tone</Label>
+            <Select {...register("brandTone")}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Select brand tone" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="completely casual">
+                  Completely Casual
+                </SelectItem>
+                <SelectItem value="mostly casual">Mostly Casual</SelectItem>
+                <SelectItem value="slightly casual">Slightly Casual</SelectItem>
+                <SelectItem value="neutral">Neutral</SelectItem>
+                <SelectItem value="slightly formal">Slightly Formal</SelectItem>
+                <SelectItem value="mostly formal">Mostly Formal</SelectItem>
+                <SelectItem value="completely formal">
+                  Completely Formal
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.brandTone && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>{errors.brandTone.message}</AlertDescription>
+              </Alert>
+            )}
+          </div>
 
-        <div className="mt-6">
-          <Button
-            onClick={handleSave}
-            className="w-full bg-black hover:bg-gray-800 text-white"
-            disabled={isLoading} // Disable button while loading
-          >
-            Save Brand Profile & Voice
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
+          {/* Hidden Brand Type */}
+          <input type="hidden" {...register("brandType")} />
+
+          {/* Social Media Handles */}
+          <div>
+            <Label>Social Media Handles</Label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+              <div>
+                <Label
+                  htmlFor="instagram"
+                  className="flex items-center space-x-2"
+                >
+                  <Instagram className="h-4 w-4" />
+                  <span>Instagram</span>
+                </Label>
+                <Input
+                  id="instagram"
+                  {...register("socialMedia.instagram")}
+                  placeholder="username"
+                  className="mt-2"
+                />
+                {errors.socialMedia?.instagram && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertDescription>
+                      {errors.socialMedia.instagram.message}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+              <div>
+                <Label
+                  htmlFor="twitter"
+                  className="flex items-center space-x-2"
+                >
+                  <Twitter className="h-4 w-4" />
+                  <span>Twitter</span>
+                </Label>
+                <Input
+                  id="twitter"
+                  {...register("socialMedia.twitter")}
+                  placeholder="username"
+                  className="mt-2"
+                />
+                {errors.socialMedia?.twitter && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertDescription>
+                      {errors.socialMedia.twitter.message}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+              <div>
+                <Label
+                  htmlFor="linkedin"
+                  className="flex items-center space-x-2"
+                >
+                  <Linkedin className="h-4 w-4" />
+                  <span>LinkedIn</span>
+                </Label>
+                <Input
+                  id="linkedin"
+                  {...register("socialMedia.linkedin")}
+                  placeholder="username"
+                  className="mt-2"
+                />
+                {errors.socialMedia?.linkedin && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertDescription>
+                      {errors.socialMedia.linkedin.message}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Other URLs */}
+          <div>
+            <Label>Other URLs</Label>
+            {urlFields.map((field, index) => (
+              <div key={field.id} className="flex items-center space-x-2 mt-2">
+                <Input
+                  {...register(`otherUrls.${index}` as const)}
+                  placeholder="https://example.com"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeUrl(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendUrl("")}
+              className="mt-2"
+            >
+              <PlusCircle className="h-4 w-4 mr-2" /> Add URL
+            </Button>
+            {errors.otherUrls && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>{errors.otherUrls.message}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          {/* Manual Input Text */}
+          <div>
+            <Label htmlFor="manualInputText">Manual Input Text</Label>
+            <Textarea
+              id="manualInputText"
+              {...register("manualInputText")}
+              rows={4}
+              className="mt-2"
+              placeholder="Enter additional information about your brand..."
+            />
+          </div>
+
+          {/* Design Text */}
+          <div>
+            <Label htmlFor="designText">Design Text</Label>
+            <Textarea
+              id="designText"
+              {...register("designText")}
+              rows={4}
+              className="mt-2"
+              placeholder="Enter your design style information..."
+            />
+          </div>
+        </form>
+      </CardContent>
+      <CardFooter>
+        <Button
+          onClick={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
+          className="w-full"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Brand Voice...
+            </>
+          ) : (
+            "Submit"
+          )}
+        </Button>
+      </CardFooter>
+
+      {/* Success Alert */}
+      {submitSuccess && (
+        <Alert className="mt-4">
+          <AlertTitle>Success!</AlertTitle>
+          <AlertDescription>
+            Your brand information has been successfully submitted.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Error Alert */}
+      {submitError && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertTitle>Error!</AlertTitle>
+          <AlertDescription>{submitError}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Loader Modal */}
+      <Dialog open={isLoaderOpen} onOpenChange={setIsLoaderOpen}>
+        <DialogContent className="bg-background flex flex-col items-center justify-center p-8">
+          <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+          <DialogTitle>Creating Your Brand Voice</DialogTitle>
+          <p className="text-muted-foreground mt-2">
+            Please wait while we generate your brand voice. This may take a few
+            moments.
+          </p>
+        </DialogContent>
+      </Dialog>
+    </Card>
+  );
 }

@@ -1,3 +1,4 @@
+// components/SignIn.tsx
 'use client';
 
 import { useState } from 'react';
@@ -24,7 +25,12 @@ export default function SignIn() {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [isSignInLoading, setIsSignInLoading] = useState(false);
   const [isGoogleSignInLoading, setIsGoogleSignInLoading] = useState(false);
-  const [alert, setAlert] = useState({ show: false, title: "", description: "", type: "" });
+  const [alert, setAlert] = useState<{ show: boolean, title: string, description: string, type: string }>({
+    show: false,
+    title: "",
+    description: "",
+    type: "",
+  });
   const router = useRouter();
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -84,8 +90,8 @@ export default function SignIn() {
       });
 
       if (result?.ok) {
-        // Redirect to the protected route after successful login
-        router.push("/idea-generator");
+        // Redirect to the account selection page after successful login
+        router.push("/user-type");
       } else {
         setAlert({
           show: true,
@@ -204,7 +210,6 @@ export default function SignIn() {
             </div>
           </div>
           <div className="flex items-center justify-between">
-            {/* Removed Remember Me functionality since NextAuth handles session persistence */}
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="link" className="text-sm p-0">

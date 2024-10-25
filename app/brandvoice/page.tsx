@@ -1,11 +1,16 @@
-import BrandVoice from '../../components/BrandVoice';
+'use client';
 
-const BrandVoicePage = () => {
+import ProtectedRoute from '@/components/ProtectedRoute';
+import BrandVoiceCreator from '@/components/BrandVoice';
+import { useSearchParams } from 'next/navigation';
+
+export default function BrandVoicePage() {
+  const searchParams = useSearchParams();
+  const brandType = searchParams.get('brand_type') || 'big_brands';
+
   return (
-    <div>
-      <BrandVoice/>
-    </div>
-  )
+    <ProtectedRoute>
+      <BrandVoiceCreator brandType={brandType} />
+    </ProtectedRoute>
+  );
 }
-
-export default BrandVoicePage

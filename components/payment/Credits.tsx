@@ -1,3 +1,5 @@
+// components/Credits.tsx
+
 'use client'
 
 import { useState, useRef } from 'react'
@@ -100,7 +102,13 @@ export default function Credits() {
   const fetchTransactions = async () => {
     setIsTransactionsLoading(true)
     try {
-      const response = await axios.get('/api/transactions')
+      const userToken = localStorage.getItem('access_token') || ''
+
+      const response = await axios.get('/api/transactions', {
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+        },
+      })
       const payments = response.data.payments as Transaction[]
 
       setTransactions(payments)
@@ -159,33 +167,49 @@ export default function Credits() {
         return resolve(false)
       }
 
-      // Make API call to the backend to create an order
-      const orderData = await axios
-        .post('/api/order', {
-          amount: formattedAmount,
-          currency: currency,
-        })
-        .then((res) => res.data)
-        .catch((err) => {
-          console.error(err)
-          setAlert({ type: 'error', message: 'Error creating Razorpay order.' })
-          return null
-        })
-
-      if (!orderData) {
+      // Get user token
+      const userToken = localStorage.getItem('access_token') || ''
+      if (!userToken) {
+        setAlert({ type: 'error', message: 'User not authenticated.' })
         return resolve(false)
       }
 
-      if (orderData.error) {
-        setAlert({ type: 'error', message: `Error: ${orderData.error.message || orderData.error}` })
+      // Assume that user ID is stored in localStorage or accessible via context
+      const userId = localStorage.getItem('user_id') || '' // Replace with actual user ID fetching
+
+      if (!userId) {
+        setAlert({ type: 'error', message: 'User ID not found.' })
         return resolve(false)
       }
+
+      // Make API call to Next.js /api/order to create an order
+      const orderResponse = await axios.post('/api/order', {
+        amount: formattedAmount,
+        currency: currency,
+        userId: userId,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+          'Content-Type': 'application/json',
+        }
+      }).catch((err) => {
+        console.error('Error creating order:', err)
+        setAlert({ type: 'error', message: 'Error creating order.' })
+        return null
+      })
+
+      if (!orderResponse || orderResponse.status !== 200) {
+        setAlert({ type: 'error', message: 'Failed to create order.' })
+        return resolve(false)
+      }
+
+      const order = orderResponse.data
 
       const options: any = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || '',
-        currency: orderData.currency,
-        amount: orderData.amount.toString(), // amount in smallest unit
-        order_id: orderData.orderId,
+        currency: order.currency,
+        amount: order.amount.toString(), // amount in smallest unit
+        order_id: order.id,
         name: 'Your Company Pvt Ltd',
         description: 'Credits Purchase',
         image: '/your-logo.png',
@@ -194,24 +218,22 @@ export default function Credits() {
           const orderId = response.razorpay_order_id
           const signature = response.razorpay_signature
 
-          // Verify payment on the backend
-          const verification = await axios
-            .post('/api/verify', {
-              razorpay_order_id: orderId,
-              razorpay_payment_id: paymentId,
-              razorpay_signature: signature,
-            })
-            .then((res) => res.data)
-            .catch((err) => {
-              console.error(err)
-              setAlert({ type: 'error', message: 'Error verifying Razorpay payment.' })
-              return { isOk: false }
-            })
+          // Verify payment on Next.js backend
+          const verifyResponse = await axios.post('/api/verify', {
+            razorpay_order_id: orderId,
+            razorpay_payment_id: paymentId,
+            razorpay_signature: signature,
+            userToken: userToken, // Pass user token for Flask backend
+          }).catch((err) => {
+            console.error('Error verifying payment:', err)
+            setAlert({ type: 'error', message: 'Error verifying payment.' })
+            return null
+          })
 
-          if (verification.isOk && verification.amountUSD) {
-            resolve(verification.amountUSD)
+          if (verifyResponse && verifyResponse.data.success) {
+            resolve(verifyResponse.data.amountUSD)
           } else {
-            setAlert({ type: 'error', message: `Payment Verification Failed: ${verification.message}` })
+            setAlert({ type: 'error', message: verifyResponse?.data?.error || 'Payment verification failed.' })
             resolve(false)
           }
         },
@@ -394,14 +416,14 @@ export default function Credits() {
                       <th className="px-4 py-2">Amount (USD)</th>
                       <th className="px-4 py-2">Currency</th>
                       <th className="px-4 py-2">Date</th>
-                      <th className="px-4 py-2">Status</th> {/* New Status Column */}
+                      <th className="px-4 py-2">Status</th>
                       <th className="px-4 py-2">Invoice</th>
                     </tr>
                   </thead>
                   <tbody>
                     {transactions.map((tx) => (
                       <tr key={tx.id} className="text-center">
-                        <td className="border px-4 py-2 break-all">{tx.id}</td>
+                        <td className="border px-4 py-2 break-all">{tx.transaction_id}</td>
                         <td className="border px-4 py-2">{tx.amount.toFixed(2)}</td>
                         <td className="border px-4 py-2">{tx.currency}</td>
                         <td className="border px-4 py-2">
@@ -426,7 +448,7 @@ export default function Credits() {
                         <td className="border px-4 py-2">
                           {/* Placeholder for invoice link */}
                           <a
-                            href={`https://dashboard.razorpay.com/payments/${tx.id}`}
+                            href={`https://dashboard.razorpay.com/payments/${tx.payment_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-indigo-600 underline"

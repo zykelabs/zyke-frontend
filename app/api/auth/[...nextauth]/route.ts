@@ -1,8 +1,14 @@
-import NextAuth from "next-auth";
-import { NextAuthOptions } from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
+
+interface CustomUser {
+  id: string;
+  name: string;
+  email: string;
+  accessToken?: string;
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -11,6 +17,7 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+
     // Credentials Provider for Manual Sign-In
     CredentialsProvider({
       name: "Credentials",
@@ -39,25 +46,25 @@ export const authOptions: NextAuthOptions = {
               name: `${user.first_name} ${user.last_name}`,
               email: user.email,
               accessToken: user.access_token,
-            };
+            } as CustomUser;
           }
 
           return null;
         } catch (error: any) {
           console.error("Credentials sign-in error:", error);
-          throw new Error(
-            error.response?.data?.msg || "Failed to sign in."
-          );
+          throw new Error(error.response?.data?.msg || "Failed to sign in.");
         }
       },
     }),
   ],
+
   callbacks: {
     // Handle user sign-in
     async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
         const { email, given_name, family_name, sub } = profile as any;
         try {
+          // Call your Flask backend to register or log in the user
           const response = await axios.post(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/oauth-login`,
             {
@@ -69,6 +76,11 @@ export const authOptions: NextAuthOptions = {
             }
           );
           console.log("OAuth login success:", response.data);
+
+          // Assuming the backend returns: id, access_token
+          user.id = response.data.id;
+          user.accessToken = response.data.access_token;
+
           return true;
         } catch (error: any) {
           console.error(
@@ -80,40 +92,48 @@ export const authOptions: NextAuthOptions = {
       }
       return true; // Allow sign-in for CredentialsProvider
     },
-    // Add accessToken to JWT
+
+    // Add accessToken and user ID to JWT
     async jwt({ token, user, account }) {
+      // Initial sign-in
+      if (user) {
+        token.accessToken = (user as CustomUser).accessToken;
+        token.id = (user as CustomUser).id;
+      }
+
+      // Persist the accessToken to the token right after signin
       if (account?.provider === "google") {
-        token.accessToken = account.access_token;
+        token.accessToken = user?.accessToken as string;
+        token.id = (user as CustomUser).id;
       }
-      if (user?.accessToken) {
-        token.accessToken = user.accessToken;
-      }
+
       return token;
     },
-    // Add accessToken to session
+
+    // Add accessToken and user ID to session
     async session({ session, token }) {
       session.accessToken = token.accessToken as string;
-      session.user = {
-        ...session.user,
-        email: token.email,
-        name: token.name,
-      };
+      (session.user as any).id = token.id as string;
       return session;
     },
+
     // Redirect after sign-in
     async redirect({ url, baseUrl }) {
-      return baseUrl + "/idea-generator"; // Redirect to protected page
+      return baseUrl + "/user-type"; // Redirect to account selection page
     },
   },
+
   pages: {
-    signIn: "/auth/signin", // Custom sign-in page
+    signIn: "/signin",
   },
+
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
-  secret: process.env.NEXTAUTH_SECRET,
+
+  secret: process.env.JWT_SECRET_KEY,
 };
 
 const handler = NextAuth(authOptions);
