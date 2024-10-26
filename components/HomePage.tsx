@@ -670,7 +670,7 @@ export default function HomePage() {
                 <Dialog>
                   <DialogTrigger asChild>
                     <button className="text-gray-400 hover:text-white transition-colors">
-                      Shipping & Delivery
+                      Shipping Policy
                     </button>
                   </DialogTrigger>
                   <DialogContent>
@@ -931,6 +931,17 @@ export default function HomePage() {
               >
                 <Mail size={24} />
               </Link>
+            </div>
+            <h4 className="text-lg font-bold text-white mt-6">Contact Us</h4>
+            <div className="flex flex-col space-x-4">
+              <ul>
+                <li>
+                  <h5 className="text-md text-white">zyke.work@gmail.com</h5>
+                </li>
+                <li>
+                  <h5 className="text-md text-white">+91 9452912935</h5>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
