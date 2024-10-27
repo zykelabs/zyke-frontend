@@ -4,9 +4,9 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 const IdeaGeneratorPage = () => {
   return (
-    <div>
+    <ProtectedRoute >
         <IdeaGenerator/>
-    </div>
+    </ProtectedRoute>
   )
 }
 

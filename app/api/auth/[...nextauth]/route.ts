@@ -1,3 +1,4 @@
+// auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -22,7 +23,11 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "name@example.com" },
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "name@example.com",
+        },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
@@ -78,8 +83,8 @@ export const authOptions: NextAuthOptions = {
           console.log("OAuth login success:", response.data);
 
           // Assuming the backend returns: id, access_token
-          user.id = response.data.id;
-          user.accessToken = response.data.access_token;
+          (user as CustomUser).id = response.data.id;
+          (user as CustomUser).accessToken = response.data.access_token;
 
           return true;
         } catch (error: any) {
@@ -103,7 +108,7 @@ export const authOptions: NextAuthOptions = {
 
       // Persist the accessToken to the token right after signin
       if (account?.provider === "google") {
-        token.accessToken = user?.accessToken as string;
+        token.accessToken = (user as CustomUser).accessToken as string;
         token.id = (user as CustomUser).id;
       }
 
@@ -119,7 +124,8 @@ export const authOptions: NextAuthOptions = {
 
     // Redirect after sign-in
     async redirect({ url, baseUrl }) {
-      return baseUrl + "/user-type"; // Redirect to account selection page
+      // Let the SignIn component handle redirection based on brand voice
+      return baseUrl + '/idea-generator';
     },
   },
 
@@ -129,8 +135,8 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
-    updateAge: 24 * 60 * 60,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
   },
 
   secret: process.env.JWT_SECRET_KEY,

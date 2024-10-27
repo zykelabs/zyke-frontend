@@ -1,8 +1,8 @@
+// GenerateIdeas.tsx
 "use client"
 
-import { useState, useRef } from "react"
-import { useRouter } from "next/navigation"
-import { useSearchParams } from "next/navigation"
+import { useState, useRef, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,47 +14,68 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, ChevronLeft, ChevronRight, Rocket, Share2, ThumbsUp, Loader2 } from "lucide-react"
 
-const ideas = [
-  {
-    id: 1,
-    title: "SpaceX vs Zomato Infographics",
-    content: "Create sleek infographics comparing SpaceX's precision in catching boosters to Zomato's accuracy in delivering orders. Compare Zomato delivery partner's speed with a rocket. Highlight metrics like delivery speed, order accuracy, and customer satisfaction with visually appealing space-themed graphics. Include fun facts about both SpaceX and Zomato's operations.",
-    type: "infographic"
-  },
-  {
-    id: 2,
-    title: "Zomato Mission Control",
-    content: "Share a behind-the-scenes look at Zomato's delivery operations styled as a mission control center. Use playful graphics and animations to show how orders are managed with the same dedication and teamwork as SpaceX's missions. Include interviews or fun facts about the delivery team, adding a human touch that resonates with followers. Present it as a cartoony comic and meme structure.",
-    type: "comic"
-  },
-  {
-    id: 3,
-    title: "Telee..port Your Orders",
-    content: "Playfully one-up SpaceX by claiming Zomato has developed teleportation for food delivery. Create a surprising visual where a meal materializes instantly on a dining table with sci-fi effects, adding humor by 'out-teching' the tech giants.",
-    type: "challenge"
-  },
-  {
-    id: 4,
-    title: "Lightspeed Delivery",
-    content: "Craft a humorous comparison showing Zomato's delivery speed outpacing the precision of SpaceX's mechanical arms. Use an unexpected twist where a Zomato delivery person intercepts the booster mid-air to hand over an order, emphasizing lightning-fast service.",
-    type: "challenge"
-  }
-]
+// Define the structure of an Idea and Incoming Idea
+interface Idea {
+  id: number
+  title: string
+  content: string
+  type: string
+}
+
+type IncomingIdea = [string, string]
 
 export default function GenerateIdeas() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const trend = searchParams.get("trend")
+  
+  // Retrieve the 'data' query parameter
+  const dataParam = searchParams.get("data")
 
+  // State variables
+  const [ideas, setIdeas] = useState<Idea[]>([])
+  const [trendName, setTrendName] = useState<string>("")
   const [selectedIdeas, setSelectedIdeas] = useState<number[]>([])
-  const [postsPerIdea, setPostsPerIdea] = useState(3)
-  const [currentIdeaIndex, setCurrentIdeaIndex] = useState(0)
-  const [customIdea, setCustomIdea] = useState("")
-  const [includeAIIdea, setIncludeAIIdea] = useState(false)
-  const [includeCustomIdea, setIncludeCustomIdea] = useState(false)
-  const [isLoading, setIsLoading] = useState(false) // Loading state
+  const [postsPerIdea, setPostsPerIdea] = useState<number>(3)
+  const [currentIdeaIndex, setCurrentIdeaIndex] = useState<number>(0)
+  const [customIdea, setCustomIdea] = useState<string>("")
+  const [includeAIIdea, setIncludeAIIdea] = useState<boolean>(false)
+  const [includeCustomIdea, setIncludeCustomIdea] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false) // Loading state
+  const [error, setError] = useState<string | null>(null)
 
   const customIdeaRef = useRef<HTMLDivElement>(null)
+
+  // Parse the incoming data parameter
+  useEffect(() => {
+    if (dataParam) {
+      try {
+        const parsedData = JSON.parse(decodeURIComponent(dataParam))
+        const { name, ideas: incomingIdeas } = parsedData
+
+        if (!name || !incomingIdeas || !Array.isArray(incomingIdeas)) {
+          throw new Error("Invalid data structure.")
+        }
+
+        setTrendName(name)
+
+        // Map incoming ideas (nested arrays) to Idea objects
+        const mappedIdeas: Idea[] = incomingIdeas.map((idea: IncomingIdea, index) => ({
+          id: index + 1, // Assign a unique ID
+          title: idea[0], // Use the received title
+          content: idea[1], // Use the received content
+          type: "generated" // Default type; you can customize as needed
+        }))
+
+        setIdeas(mappedIdeas)
+        setCurrentIdeaIndex(0)
+      } catch (err: any) {
+        console.error("Error parsing data:", err)
+        setError("Failed to load ideas. Invalid data.")
+      }
+    } else {
+      setError("No data received.")
+    }
+  }, [dataParam])
 
   const handleIdeaSelection = (ideaId: number) => {
     setSelectedIdeas(prev => 
@@ -102,13 +123,13 @@ export default function GenerateIdeas() {
     setIsLoading(true) // Show loader
 
     // Prepare query parameters
-    const ideasParam = selectedIdeas.join(',')
+    const selectedIdeasParam = selectedIdeas.join(',')
     const customIdeaParam = includeCustomIdea && customIdea ? encodeURIComponent(customIdea) : ''
     const aiIdeaParam = includeAIIdea ? '&includeAI=true' : ''
 
     // Set a timeout for 5 seconds before redirecting
     setTimeout(() => {
-      router.push(`/generated-posts?ideas=${ideasParam}&postsPerIdea=${postsPerIdea}&customIdea=${customIdeaParam}${aiIdeaParam}`)
+      router.push(`/generated-posts?ideas=${selectedIdeasParam}&postsPerIdea=${postsPerIdea}&customIdea=${customIdeaParam}${aiIdeaParam}`)
     }, 5000)
   }
 
@@ -125,6 +146,45 @@ export default function GenerateIdeas() {
         customIdeaRef.current?.scrollIntoView({ behavior: 'smooth' })
       }, 100)
     }
+  }
+
+  // Prevent accessing undefined ideas
+  const currentIdea = ideas[currentIdeaIndex]
+
+  if (error) {
+    return (
+      <TooltipProvider>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 relative flex flex-col items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-2xl text-red-600">Error</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-red-500">{error}</p>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={() => router.push('/idea-generator')} className="w-full">
+                Go Back
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </TooltipProvider>
+    )
+  }
+
+  // Show loading state if ideas are not yet loaded
+  if (dataParam && ideas.length === 0 && !error) {
+    return (
+      <TooltipProvider>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 relative flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center">
+            <Loader2 className="animate-spin h-12 w-12 text-indigo-600" />
+            <span className="mt-4 text-lg text-gray-700">Loading ideas...</span>
+          </div>
+        </div>
+      </TooltipProvider>
+    )
   }
 
   return (
@@ -151,7 +211,7 @@ export default function GenerateIdeas() {
         </Button>
 
         {/* Title */}
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">Generated Ideas for {trend}</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-8">Generated Ideas for {trendName}</h1>
 
         {/* Create Custom Idea Button */}
         <Button 
@@ -211,17 +271,21 @@ export default function GenerateIdeas() {
                         )}
                       </div>
                     ) : (
-                      <>
-                        <h2 className="text-2xl font-semibold mb-4">{ideas[currentIdeaIndex].title}</h2>
-                        <p className="text-gray-600 mb-4">{ideas[currentIdeaIndex].content}</p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-indigo-600">{ideas[currentIdeaIndex].type}</span>
-                          <Switch
-                            checked={selectedIdeas.includes(ideas[currentIdeaIndex].id)}
-                            onCheckedChange={() => handleIdeaSelection(ideas[currentIdeaIndex].id)}
-                          />
-                        </div>
-                      </>
+                      currentIdea ? (
+                        <>
+                          <h2 className="text-2xl font-semibold mb-4">{currentIdea.title}</h2>
+                          <p className="text-gray-600 mb-4">{currentIdea.content}</p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-indigo-600">{currentIdea.type}</span>
+                            <Switch
+                              checked={selectedIdeas.includes(currentIdea.id)}
+                              onCheckedChange={() => handleIdeaSelection(currentIdea.id)}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-gray-500">Idea not found.</p>
+                      )
                     )}
                   </motion.div>
                 </AnimatePresence>
@@ -230,6 +294,7 @@ export default function GenerateIdeas() {
                   variant="ghost" 
                   className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-full bg-white rounded-full shadow-md"
                   onClick={prevIdea}
+                  aria-label="Previous Idea"
                 >
                   <ChevronLeft className="h-6 w-6" />
                 </Button>
@@ -238,6 +303,7 @@ export default function GenerateIdeas() {
                   variant="ghost" 
                   className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-full bg-white rounded-full shadow-md"
                   onClick={nextIdea}
+                  aria-label="Next Idea"
                 >
                   <ChevronRight className="h-6 w-6" />
                 </Button>

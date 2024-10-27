@@ -1,7 +1,9 @@
+// middleware.ts
 import { withAuth } from "next-auth/middleware";
 
 export default withAuth(
   function middleware(req) {
+    // You can add additional middleware logic here if needed
   },
   {
     callbacks: {
@@ -13,9 +15,12 @@ export default withAuth(
   }
 );
 
-// Define which routes to protect
+
 export const config = {
   matcher: [
     "/idea-generator",
+    "/user-type",
+    "/brandvoice",
+    "/brandprofile"
   ],
 };

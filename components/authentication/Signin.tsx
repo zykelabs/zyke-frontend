@@ -1,12 +1,12 @@
 // components/SignIn.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from 'next/link';
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -17,33 +17,90 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { useRouter } from 'next/navigation';
-import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [isSignInLoading, setIsSignInLoading] = useState(false);
   const [isGoogleSignInLoading, setIsGoogleSignInLoading] = useState(false);
-  const [alert, setAlert] = useState<{ show: boolean, title: string, description: string, type: string }>({
+  const [alert, setAlert] = useState<{
+    show: boolean;
+    title: string;
+    description: string;
+    type: string;
+  }>({
     show: false,
     title: "",
     description: "",
     type: "",
   });
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  // Effect to handle redirection after sign-in
+  useEffect(() => {
+    if (status === "authenticated") {
+      // After authentication, check for brand voice
+      checkBrandVoice();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
+
+  const checkBrandVoice = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/brand_voice_info/profile`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            // Include the access token in the Authorization header
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const profileData = await response.json();
+        if (profileData.brandVoice) {
+          // Brand voice exists, navigate to /idea-generator
+          router.push("/idea-generator");
+        } else {
+          // No brand voice, navigate to /user-type
+          router.push("/user-type");
+        }
+      } else if (response.status === 404) {
+        // Profile or brand voice not found, navigate to /user-type
+        router.push("/user-type");
+      }
+    } catch (error: any) {
+      console.error("Error checking brand voice:", error);
+      setAlert({
+        show: true,
+        title: "Error",
+        description:
+          "An unexpected error occurred while checking brand voice. Please try again.",
+        type: "error",
+      });
+    }
+  };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSignInLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/request-reset`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email: forgotPasswordEmail })
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/request-reset`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: forgotPasswordEmail }),
+        }
+      );
 
       const data = await response.json();
 
@@ -52,14 +109,14 @@ export default function SignIn() {
           show: true,
           title: "Success",
           description: data.msg || "Password reset email sent.",
-          type: "success"
+          type: "success",
         });
       } else {
         setAlert({
           show: true,
           title: "Error",
           description: data.msg || "Failed to send reset email.",
-          type: "error"
+          type: "error",
         });
       }
     } catch (error) {
@@ -68,7 +125,7 @@ export default function SignIn() {
         show: true,
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
-        type: "error"
+        type: "error",
       });
     } finally {
       setIsSignInLoading(false);
@@ -80,7 +137,8 @@ export default function SignIn() {
     setIsSignInLoading(true);
     const form = e.currentTarget as HTMLFormElement;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement)
+      .value;
 
     try {
       const result = await signIn("credentials", {
@@ -89,23 +147,22 @@ export default function SignIn() {
         password,
       });
 
-      if (result?.ok) {
-        // Redirect to the account selection page after successful login
-        router.push("/user-type");
-      } else {
+      if (result?.error) {
         setAlert({
           show: true,
           title: "Error",
-          description: result?.error || "Failed to sign in.",
-          type: "error"
+          description: result.error || "Failed to sign in.",
+          type: "error",
         });
       }
+      // No need to handle navigation here as the useEffect will handle it upon successful sign-in
     } catch (error: any) {
       setAlert({
         show: true,
         title: "Error",
-        description: error.message || "An unexpected error occurred. Please try again.",
-        type: "error"
+        description:
+          error.message || "An unexpected error occurred. Please try again.",
+        type: "error",
       });
     } finally {
       setIsSignInLoading(false);
@@ -115,15 +172,15 @@ export default function SignIn() {
   const handleGoogleSignIn = async () => {
     setIsGoogleSignInLoading(true);
     try {
-      await signIn('google');
-      // Redirect handled by NextAuth's redirect callback
+      await signIn("google");
+      // Redirect handled by NextAuth's signIn callback and useEffect
     } catch (error: any) {
       console.error("Google sign-in error:", error);
       setAlert({
         show: true,
         title: "Error",
         description: "Failed to sign in with Google. Please try again.",
-        type: "error"
+        type: "error",
       });
     } finally {
       setIsGoogleSignInLoading(false);
@@ -138,8 +195,8 @@ export default function SignIn() {
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>
 
-        <Button 
-          type="button" 
+        <Button
+          type="button"
           variant="outline"
           className="w-full flex items-center justify-center space-x-2"
           onClick={handleGoogleSignIn}
@@ -177,14 +234,22 @@ export default function SignIn() {
             <Separator className="w-full" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-white px-2 text-muted-foreground">
+              Or continue with
+            </span>
           </div>
         </div>
 
         <form className="space-y-4" onSubmit={handleSignIn}>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="name@example.com" required />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="name@example.com"
+              required
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -220,7 +285,8 @@ export default function SignIn() {
                 <DialogHeader>
                   <DialogTitle>Forgot Password</DialogTitle>
                   <DialogDescription>
-                    Enter your email address and we&apos;ll send you a link to reset your password.
+                    Enter your email address and we&apos;ll send you a link to
+                    reset your password.
                   </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleForgotPassword} className="space-y-4">
@@ -236,31 +302,57 @@ export default function SignIn() {
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isSignInLoading || isGoogleSignInLoading}>
-                    {isSignInLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Send Reset Link"}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSignInLoading || isGoogleSignInLoading}
+                  >
+                    {isSignInLoading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      "Send Reset Link"
+                    )}
                   </Button>
                 </form>
               </DialogContent>
             </Dialog>
           </div>
-          <Button type="submit" className="w-full" disabled={isSignInLoading || isGoogleSignInLoading}>
-            {isSignInLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign In"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isSignInLoading || isGoogleSignInLoading}
+          >
+            {isSignInLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </form>
         <div className="text-sm text-center text-muted-foreground">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="font-medium text-primary hover:underline">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/signup"
+            className="font-medium text-primary hover:underline"
+          >
             Sign up
           </Link>
         </div>
       </div>
       {alert.show && (
-        <Alert className="fixed bottom-4 right-4 w-auto max-w-sm" variant={alert.type === "success" ? "default" : alert.type === "error" ? "destructive" : undefined}>
+        <Alert
+          className="fixed bottom-4 right-4 w-auto max-w-sm"
+          variant={
+            alert.type === "success"
+              ? "default"
+              : alert.type === "error"
+              ? "destructive"
+              : undefined
+          }
+        >
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>{alert.title}</AlertTitle>
-          <AlertDescription>
-            {alert.description}
-          </AlertDescription>
+          <AlertDescription>{alert.description}</AlertDescription>
         </Alert>
       )}
     </div>
