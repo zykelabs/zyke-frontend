@@ -1,4 +1,3 @@
-// GenerateIdeas.tsx
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -13,6 +12,8 @@ import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, ChevronLeft, ChevronRight, Rocket, Share2, ThumbsUp, Loader2 } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert" // Importing Shadcn's Alert components
 
 // Define the structure of an Idea and Incoming Idea
 interface Idea {
@@ -24,10 +25,16 @@ interface Idea {
 
 type IncomingIdea = [string, string]
 
-export default function GenerateIdeas() {
+// Define the structure of API Response
+interface ApiResponse {
+  saved: string // "True" or "False"
+}
+
+export default function GeneratedIdeas() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+  const { data: session } = useSession()
+
   // Retrieve the 'data' query parameter
   const dataParam = searchParams.get("data")
 
@@ -37,13 +44,13 @@ export default function GenerateIdeas() {
   const [selectedIdeas, setSelectedIdeas] = useState<number[]>([])
   const [postsPerIdea, setPostsPerIdea] = useState<number>(3)
   const [currentIdeaIndex, setCurrentIdeaIndex] = useState<number>(0)
-  const [customIdea, setCustomIdea] = useState<string>("")
   const [includeAIIdea, setIncludeAIIdea] = useState<boolean>(false)
-  const [includeCustomIdea, setIncludeCustomIdea] = useState<boolean>(false)
+  const [customIdeaName, setCustomIdeaName] = useState<string>("")
+  const [customIdeaDescription, setCustomIdeaDescription] = useState<string>("")
   const [isLoading, setIsLoading] = useState<boolean>(false) // Loading state
-  const [error, setError] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const customIdeaRef = useRef<HTMLDivElement>(null)
+  const alertRef = useRef<HTMLDivElement>(null)
 
   // Parse the incoming data parameter
   useEffect(() => {
@@ -70,16 +77,30 @@ export default function GenerateIdeas() {
         setCurrentIdeaIndex(0)
       } catch (err: any) {
         console.error("Error parsing data:", err)
-        setError("Failed to load ideas. Invalid data.")
+        triggerError("Failed to load ideas. Invalid data.")
       }
     } else {
-      setError("No data received.")
+      triggerError("No data received.")
     }
   }, [dataParam])
 
+  // Function to trigger error messages
+  const triggerError = (message: string) => {
+    setErrorMessage(message)
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      setErrorMessage(null)
+    }, 5000)
+
+    // Scroll to alert
+    setTimeout(() => {
+      alertRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, 100)
+  }
+
   const handleIdeaSelection = (ideaId: number) => {
-    setSelectedIdeas(prev => 
-      prev.includes(ideaId) 
+    setSelectedIdeas(prev =>
+      prev.includes(ideaId)
         ? prev.filter(id => id !== ideaId)
         : [...prev, ideaId]
     )
@@ -87,7 +108,11 @@ export default function GenerateIdeas() {
 
   const handlePostsPerIdeaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(event.target.value)
-    setPostsPerIdea(isNaN(value) ? 0 : Math.max(0, value))
+    if (isNaN(value)) {
+      setPostsPerIdea(1)
+    } else {
+      setPostsPerIdea(Math.min(Math.max(1, value), 5))
+    }
   }
 
   const nextIdea = () => {
@@ -106,90 +131,133 @@ export default function GenerateIdeas() {
     }
   }
 
-  const handleGenerateContent = () => {
-    if (
-      selectedIdeas.length === 0 &&
-      (!customIdea || !includeCustomIdea) &&
-      !includeAIIdea
-    ) {
-      alert("Please select at least one idea, create a custom idea, or include an AI-generated idea.")
+  const handleGenerateContent = async () => {
+    // Validation
+    const hasNonAIIdea = selectedIdeas.includes(-1) || selectedIdeas.some(id => id >=1)
+    if (includeAIIdea && !hasNonAIIdea) {
+      triggerError("Please select at least one non-AI generated idea when including an AI-generated idea.")
       return
     }
-    if (postsPerIdea === 0) {
-      alert("Please enter a number of posts greater than 0.")
+
+    if (selectedIdeas.includes(-1)) { // -1 represents Custom Idea
+      if (!customIdeaName.trim() || !customIdeaDescription.trim()) {
+        triggerError("Please provide both name and description for the custom idea.")
+        return
+      }
+    }
+
+    if (
+      selectedIdeas.length === 0 &&
+      !includeAIIdea
+    ) {
+      triggerError("Please select at least one idea or include an AI-generated idea.")
+      return
+    }
+
+    if (postsPerIdea < 1 || postsPerIdea > 5) {
+      triggerError("Please enter a number of posts between 1 and 5.")
       return
     }
 
     setIsLoading(true) // Show loader
+    setErrorMessage(null) // Reset any previous error messages
 
-    // Prepare query parameters
-    const selectedIdeasParam = selectedIdeas.join(',')
-    const customIdeaParam = includeCustomIdea && customIdea ? encodeURIComponent(customIdea) : ''
-    const aiIdeaParam = includeAIIdea ? '&includeAI=true' : ''
+    // Prepare the ideas list
+    const ideasList: [string, string][] = selectedIdeas.map(id => {
+      if (id === -1) {
+        return [customIdeaName.trim(), customIdeaDescription.trim()]
+      }
+      const idea = ideas.find(i => i.id === id)
+      return idea ? [idea.title, idea.content] : ["", ""]
+    })
 
-    // Set a timeout for 5 seconds before redirecting
-    setTimeout(() => {
-      router.push(`/generated-posts?ideas=${selectedIdeasParam}&postsPerIdea=${postsPerIdea}&customIdea=${customIdeaParam}${aiIdeaParam}`)
-    }, 5000)
+    if (includeAIIdea) {
+      ideasList.push([
+        "AI generated Idea",
+        "Create the post, using your own idea, make the idea similar or related to the other ideas provided."
+      ])
+    }
+
+    // Prepare the payload
+    const payload = {
+      ideas: ideasList,
+      num: postsPerIdea,
+      platform: selectedPlatform
+    }
+
+    // Retrieve the access token
+    const accessToken = session?.accessToken
+
+    if (!accessToken) {
+      triggerError("No access token found.")
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/idea_to_post/fetch_posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: JSON.stringify(payload)
+      })
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`)
+      }
+
+      const data: ApiResponse = await response.json()
+      console.log("API Response:", data)
+      setIsLoading(false)
+
+      if (data.saved === "True") {
+        // Navigate to GeneratedPosts page upon successful save
+        router.push("/generated-posts")
+      } else {
+        // If 'saved' is not true, show an alert
+        triggerError("Failed to save the generated content.")
+      }
+    } catch (err: any) {
+      console.error("Error fetching posts:", err)
+      triggerError("Failed to generate content. Please try again.")
+      setIsLoading(false)
+    }
   }
 
-  const handleIncludeCustomIdeaChange = (checked: boolean) => {
-    setIncludeCustomIdea(checked)
-    if (!checked) {
-      setCustomIdea("")
-      if (currentIdeaIndex === -1) {
-        setCurrentIdeaIndex(0) // Navigate away from custom idea section
-      }
-    } else {
-      setCurrentIdeaIndex(-1)
-      setTimeout(() => {
-        customIdeaRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
-    }
+  // Platform Selection State
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("instagram")
+
+  const handlePlatformChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedPlatform(event.target.value)
   }
 
   // Prevent accessing undefined ideas
   const currentIdea = ideas[currentIdeaIndex]
 
-  if (error) {
-    return (
-      <TooltipProvider>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 relative flex flex-col items-center justify-center">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle className="text-2xl text-red-600">Error</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-red-500">{error}</p>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={() => router.push('/idea-generator')} className="w-full">
-                Go Back
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      </TooltipProvider>
-    )
-  }
-
-  // Show loading state if ideas are not yet loaded
-  if (dataParam && ideas.length === 0 && !error) {
-    return (
-      <TooltipProvider>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 relative flex flex-col items-center justify-center">
-          <div className="flex flex-col items-center">
-            <Loader2 className="animate-spin h-12 w-12 text-indigo-600" />
-            <span className="mt-4 text-lg text-gray-700">Loading ideas...</span>
-          </div>
-        </div>
-      </TooltipProvider>
-    )
-  }
-
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8 relative">
+        {/* Error Alert */}
+        <AnimatePresence>
+          {errorMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              ref={alertRef}
+              className="mb-4 border border-red-500 bg-transparent rounded p-4"
+            >
+              <Alert variant="destructive" className="border-0 bg-transparent">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Loading Overlay */}
         <AnimatePresence>
           {isLoading && (
@@ -214,13 +282,13 @@ export default function GenerateIdeas() {
         <h1 className="text-4xl font-bold text-gray-800 mb-8">Generated Ideas for {trendName}</h1>
 
         {/* Create Custom Idea Button */}
-        <Button 
+        <Button
           className="mb-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold"
           onClick={() => {
             setCurrentIdeaIndex(-1)
-            setIncludeCustomIdea(true)
             setTimeout(() => {
-              customIdeaRef.current?.scrollIntoView({ behavior: 'smooth' })
+              // Scroll to the custom idea card
+              document.getElementById("customIdeaCard")?.scrollIntoView({ behavior: 'smooth' })
             }, 100)
           }}
         >
@@ -248,27 +316,53 @@ export default function GenerateIdeas() {
                     `}
                   >
                     {currentIdeaIndex === -1 ? (
-                      <div ref={customIdeaRef} id="customIdeaSection">
+                      <div id="customIdeaCard">
                         <h2 className="text-2xl font-semibold mb-4 text-indigo-600">Create Your Own Idea</h2>
-                        <Textarea
-                          placeholder="Describe your custom idea here..."
-                          value={customIdea}
-                          onChange={(e) => setCustomIdea(e.target.value)}
-                          className="w-full h-32"
-                        />
-                        {customIdea && (
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="mt-4"
-                            onClick={() => {
-                              setCustomIdea("")
-                              setIncludeCustomIdea(false)
+                        <div className="mb-4">
+                          <Label htmlFor="customIdeaName" className="block mb-1">
+                            Idea Name
+                          </Label>
+                          <Input
+                            id="customIdeaName"
+                            type="text"
+                            value={customIdeaName}
+                            onChange={(e) => setCustomIdeaName(e.target.value)}
+                            className="w-full"
+                            placeholder="Enter idea name..."
+                          />
+                        </div>
+                        <div className="mb-4">
+                          <Label htmlFor="customIdeaDescription" className="block mb-1">
+                            Idea Description
+                          </Label>
+                          <Textarea
+                            id="customIdeaDescription"
+                            placeholder="Describe your custom idea here..."
+                            value={customIdeaDescription}
+                            onChange={(e) => setCustomIdeaDescription(e.target.value)}
+                            className="w-full h-32"
+                          />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            checked={selectedIdeas.includes(-1)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                if (customIdeaName.trim() && customIdeaDescription.trim()) {
+                                  setSelectedIdeas(prev => [...prev, -1])
+                                  // Scroll to selected ideas section
+                                  document.getElementById("selectedIdeasSection")?.scrollIntoView({ behavior: 'smooth' })
+                                } else {
+                                  triggerError("Please provide both name and description for the custom idea.")
+                                }
+                              } else {
+                                setSelectedIdeas(prev => prev.filter(id => id !== -1))
+                              }
                             }}
-                          >
-                            Remove Custom Idea
-                          </Button>
-                        )}
+                            disabled={!(customIdeaName.trim() && customIdeaDescription.trim())}
+                          />
+                          <span className="text-gray-700">Select Custom Idea</span>
+                        </div>
                       </div>
                     ) : (
                       currentIdea ? (
@@ -290,8 +384,8 @@ export default function GenerateIdeas() {
                   </motion.div>
                 </AnimatePresence>
                 {/* Previous Button */}
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-full bg-white rounded-full shadow-md"
                   onClick={prevIdea}
                   aria-label="Previous Idea"
@@ -299,8 +393,8 @@ export default function GenerateIdeas() {
                   <ChevronLeft className="h-6 w-6" />
                 </Button>
                 {/* Next Button */}
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-full bg-white rounded-full shadow-md"
                   onClick={nextIdea}
                   aria-label="Next Idea"
@@ -344,45 +438,69 @@ export default function GenerateIdeas() {
               <CardTitle>Idea Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Platform Selection */}
+              <div>
+                <Label htmlFor="platform" className="block mb-1">
+                  Select Platform
+                </Label>
+                <select
+                  id="platform"
+                  value={selectedPlatform}
+                  onChange={handlePlatformChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
+                >
+                  <option value="instagram">Instagram</option>
+                  <option value="linkedin">LinkedIn</option>
+                </select>
+              </div>
+
               {/* Posts per Idea */}
               <div>
-                <Label htmlFor="postsPerIdea">Posts per Idea</Label>
+                <Label htmlFor="postsPerIdea" className="block mb-1">
+                  Posts per Idea
+                </Label>
                 <Input
                   id="postsPerIdea"
                   type="number"
                   min={1}
+                  max={5}
                   value={postsPerIdea}
                   onChange={handlePostsPerIdeaChange}
                   className="mt-1"
                 />
+                <p className="text-sm text-gray-500">Maximum of 5 posts per idea.</p>
               </div>
+
               {/* Selected Ideas */}
-              <div>
-                <Label>Selected Ideas</Label>
+              <div id="selectedIdeasSection">
+                <Label className="block mb-2">Selected Ideas</Label>
                 <ScrollArea className="h-[200px] w-full rounded-md border p-4">
                   {selectedIdeas.map(id => {
+                    if (id === -1) {
+                      return (
+                        <div key={id} className="flex items-center space-x-2 mb-2">
+                          <span className="text-gray-700">Custom Idea</span>
+                          <Switch
+                            checked={true}
+                            onCheckedChange={() => handleIdeaSelection(id)}
+                          />
+                        </div>
+                      )
+                    }
                     const idea = ideas.find(i => i.id === id)
                     return (
                       <div key={id} className="flex items-center space-x-2 mb-2">
-                        <Switch 
-                          checked={true} 
-                          onCheckedChange={() => handleIdeaSelection(id)} 
+                        <Switch
+                          checked={true}
+                          onCheckedChange={() => handleIdeaSelection(id)}
                         />
                         <span>{idea?.title}</span>
                       </div>
                     )
                   })}
-                  {includeCustomIdea && customIdea && (
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Switch 
-                        checked={includeCustomIdea} 
-                        onCheckedChange={(checked) => handleIncludeCustomIdeaChange(checked)} 
-                      />
-                      <span>Custom Idea</span>
-                    </div>
-                  )}
                 </ScrollArea>
               </div>
+
               {/* Include AI-Generated Idea */}
               <div className="flex items-center space-x-2 p-2 rounded-lg bg-gradient-to-r from-indigo-100 to-purple-100">
                 <Switch
@@ -390,11 +508,11 @@ export default function GenerateIdeas() {
                   onCheckedChange={setIncludeAIIdea}
                   className="data-[state=checked]:bg-indigo-500"
                 />
-                <span className="text-sm font-medium text-gray-700">Include 1 more AI-Generated Idea</span>
+                <span className="text-sm font-medium text-gray-700">Include 1 AI-Generated Idea</span>
               </div>
             </CardContent>
             <CardFooter>
-              <Button 
+              <Button
                 className="w-full flex items-center justify-center"
                 onClick={handleGenerateContent}
                 disabled={isLoading} // Disable button while loading

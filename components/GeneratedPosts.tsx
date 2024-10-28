@@ -16,6 +16,9 @@ import {
   ChevronRight,
   X,
 } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import JSZip from 'jszip'
+import { saveAs } from 'file-saver'
 
 // Utility function to combine class names
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -133,12 +136,17 @@ const ScrollArea: React.FC<ScrollAreaProps> = ({
   )
 }
 
-// Define the Idea Type
+// Define the Post and Idea Types
+interface Post {
+  caption: string
+  images: string[]
+}
+
 interface Idea {
-  id: number | string
+  id: string
   title: string
-  content: string
   type: string
+  posts: Post[]
 }
 
 // ImageModal Component
@@ -165,7 +173,9 @@ const ImageModal: React.FC<ImageModalProps> = ({
   const [selectedMask, setSelectedMask] = useState<string | null>(null)
   const [displayedImage, setDisplayedImage] = useState<string>(imageSrc)
   const [imageHistory, setImageHistory] = useState<string[]>(initialImageHistory)
-  const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number>(initialImageHistory.length - 1)
+  const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number>(
+    initialImageHistory.length - 1
+  )
   const [isMaskSelectionReady, setIsMaskSelectionReady] = useState(false)
   const [isSelectMaskActive, setIsSelectMaskActive] = useState(false)
 
@@ -220,7 +230,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
       }
 
       // Update image history
-      const newImageHistory = [...imageHistory.slice(0, currentHistoryIndex + 1), newImage]
+      const newImageHistory = [
+        ...imageHistory.slice(0, currentHistoryIndex + 1),
+        newImage,
+      ]
       setImageHistory(newImageHistory)
       setCurrentHistoryIndex(newImageHistory.length - 1)
       setDisplayedImage(newImage)
@@ -233,8 +246,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   const handleSelectMask = () => {
     // Toggle mask selection mode
-    const canActivate =
-      !isCurrentImageMask && !isGenerating
+    const canActivate = !isCurrentImageMask && !isGenerating
 
     if (!canActivate) return
 
@@ -365,13 +377,32 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
             {/* Image Display */}
             <div className="flex justify-center relative" onClick={handleImageClick}>
-              <Image
-                src={displayedImage}
-                alt="Expanded Image"
-                width={350}
-                height={500}
-                className="object-contain rounded-md cursor-pointer"
-              />
+              {imageSrc.startsWith('data:image') ? (
+                <img
+                  src={displayedImage}
+                  alt="Expanded Image"
+                  className="object-contain rounded-md cursor-pointer"
+                  loading="lazy"
+                  style={
+                    initialImageHistory.length === 1
+                      ? { maxHeight: '400px', width: 'auto' }
+                      : {}
+                  }
+                />
+              ) : (
+                <Image
+                  src={displayedImage}
+                  alt="Expanded Image"
+                  width={350}
+                  height={500}
+                  className="object-contain rounded-md cursor-pointer"
+                  style={
+                    initialImageHistory.length === 1
+                      ? { maxHeight: '400px', width: 'auto' }
+                      : {}
+                  }
+                />
+              )}
               {/* Navigation Buttons */}
               {imageHistory.length > 1 && (
                 <>
@@ -530,7 +561,6 @@ const ImageModal: React.FC<ImageModalProps> = ({
 export default function GeneratedPosts() {
   const searchParams = useSearchParams()
   const [selectedIdeas, setSelectedIdeas] = useState<number[]>([])
-  const [postsPerIdea, setPostsPerIdea] = useState(3)
   const [customIdea, setCustomIdea] = useState('')
   const [includeAI, setIncludeAI] = useState(false)
   const [currentIdeaIndex, setCurrentIdeaIndex] = useState(0)
@@ -546,148 +576,134 @@ export default function GeneratedPosts() {
   const [modalImageHistory, setModalImageHistory] = useState<string[]>([])
   const [imageHistories, setImageHistories] = useState<{ [key: string]: string[] }>({})
 
-  // Define your ideas
-  const ideas: Idea[] = [
-    {
-      id: 1,
-      title: "SpaceX vs Zomato Infographics",
-      content:
-        "Create sleek infographics comparing SpaceX's precision in catching boosters to Zomato's accuracy in delivering orders. Compare Zomato delivery partner's speed with a rocket. Highlight metrics like delivery speed, order accuracy, and customer satisfaction with visually appealing space-themed graphics. Include fun facts about both SpaceX and Zomato's operations.",
-      type: "infographic",
-    },
-    {
-      id: 2,
-      title: "Zomato Mission Control",
-      content:
-        "Share a behind-the-scenes look at Zomato's delivery operations styled as a mission control center. Use playful graphics and animations to show how orders are managed with the same dedication and teamwork as SpaceX's missions. Include interviews or fun facts about the delivery team, adding a human touch that resonates with followers. Present it as a cartoony comic and meme structure.",
-      type: "comic",
-    },
-    {
-      id: 3,
-      title: "Telee..port Your Orders",
-      content:
-        "Playfully one-up SpaceX by claiming Zomato has developed teleportation for food delivery. Create a surprising visual where a meal materializes instantly on a dining table with sci-fi effects, adding humor by 'out-teching' the tech giants.",
-      type: "challenge",
-    },
-    {
-      id: 4,
-      title: "Lightspeed Delivery",
-      content:
-        "Craft a humorous comparison showing Zomato's delivery speed outpacing the precision of SpaceX's mechanical arms. Use an unexpected twist where a Zomato delivery person intercepts the booster mid-air to hand over an order, emphasizing lightning-fast service.",
-      type: "challenge",
-    },
-  ]
+  // Session Management
+  const { data: session, status } = useSession()
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
 
-  // Cleaned-up dummyImages array without duplicates
-  const dummyImages = [
-    // Idea 1 Post 1 Images (Indices 0-2)
-    "/posts/Idea1Post1Img1.jpg",
-    "/posts/Idea1Post1Img2.png",
-    "/posts/Idea1Post1Img3.png",
+  // State for API Posts
+  const [apiPosts, setApiPosts] = useState<{ [idea: string]: Post[] }>({})
 
-    // Idea 2 Post 1 Images (Indices 3-5)
-    "/posts/Idea2Post1Img2.png",
-    "/posts/Idea2Post1Img3.png",
-    "/posts/Idea2Post1Img1.png",
+  useEffect(() => {
+    const fetchStoredPost = async () => {
+      const accessToken = session?.accessToken // Adjust this line based on where your accessToken is stored
+      if (!accessToken) {
+        console.error("No access token found.")
+        setError("No access token found.")
+        setLoading(false)
+        return
+      }
 
-    // Idea 3 Post 1 Images (Indices 6-8)
-    "/posts/Idea3Post1Img2.png",
-    "/posts/Idea3Post1Img3.png",
-    "/posts/Idea3Post1Img1.png",
+      try {
+        setLoading(true)
+        const response = await fetch("http://127.0.0.1:5000/fetch_last_post/get_stored_post", {
+          method: 'POST', // Ensure this matches your API's method
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          // body: JSON.stringify({}) // Include if your API expects a body
+        })
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        const data = await response.json()
+        console.log("API Response:", data)
 
-    // Idea 3 Post 2 Images (Indices 9-10)
-    "/posts/Idea3Post2Img1.png",
-    "/posts/Idea3Post2Img2.png",
+        // Process the API response
+        const processedPosts: { [idea: string]: Post[] } = {}
+        for (const [ideaName, posts] of Object.entries(data.posts)) {
+          processedPosts[ideaName] = posts.map((postObj: any) => {
+            const [caption, images] = Object.entries(postObj)[0]
+            return { caption, images }
+          })
+        }
+        setApiPosts(processedPosts)
+      } catch (err) {
+        console.error("Error fetching stored post:", err)
+        setError("Error fetching stored post.")
+      } finally {
+        setLoading(false)
+      }
+    }
 
-    // Idea 3 Post 3 Images (Indices 11-12)
-    "/posts/Idea3Post3Img1.png",
-    "/posts/Idea3Post3Img2.png",
-  ]
+    if (status === 'authenticated') {
+      fetchStoredPost()
+    } else if (status === 'unauthenticated') {
+      console.error("User is not authenticated.")
+      setError("User is not authenticated.")
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, status]) // Dependencies
 
-  // Define your captions
-  const dummyCaptions = [
-    "Rocket science? More like Rocket delivery! 🚀🍕 When SpaceX catches boosters, Zomato catches your cravings on time! #PrecisionDelivery #RocketPoweredMeals",
-    "Houston, we have Zomato! 🚀🍕 Our delivery heroes are on a mission to make your taste buds soar. Here's how we keep everything running smoothly in Mission Control Zomato! #BehindTheOrder #ZomatoMissionControl",
-    "When your pizza delivery is more epic than a SpaceX launch! 🍕🚀 Introducing our latest feature: Rocket Delivery Partners! Now your orders literally fly to you. Just kidding... but wouldn't that be cool? 😂 #EpicDelivery #ZomatoSpaceship",
-    "Beam us some pizza! 🛰🍕 We've teamed up with SpaceX to bring you intergalactic flavors. Now available for delivery on Mars... just kidding, but we're aiming high! 🚀😉 #BeamMeAPizza #ZomatoMoonMission",
-    "Alien-approved cuisine! 👽🍔 Just landed: Martian Menus exclusively on Zomato. Fresh from another planet to your plate. Are you ready to try something out of this world? 🌌✨ #AlienEats #ZomatoGalaxy",
-  ]
+  // Define your ideas from API
+  const fetchedIdeas: Idea[] = Object.keys(apiPosts).map((ideaName, index) => ({
+    id: `fetched-${index}`,
+    title: ideaName,
+    type: 'fetched',
+    posts: apiPosts[ideaName],
+  }))
 
+  // Handle Search Params to set selected ideas and other configurations
   useEffect(() => {
     const ideasParam = searchParams.get('ideas')
     if (ideasParam) {
       setSelectedIdeas(ideasParam.split(',').map(Number))
     }
-    setPostsPerIdea(Number(searchParams.get('postsPerIdea')) || 3)
     setCustomIdea(searchParams.get('customIdea') || '')
     setIncludeAI(searchParams.get('includeAI') === 'true')
   }, [searchParams])
 
-  // Safely map selectedIdeas to actual ideas, filtering out any undefined
-  const mappedSelectedIdeas = selectedIdeas
-    .map((id) => ideas.find((idea) => idea.id === id))
-    .filter((idea): idea is Idea => idea !== undefined)
+  // Define existing predefined ideas (if any)
+  const predefinedIdeas: Idea[] = [
+    // Add your predefined ideas here if needed
+    // Example:
+    // {
+    //   id: '1',
+    //   title: "SpaceX vs Zomato Infographics",
+    //   type: "infographic",
+    //   posts: [], // Populate if you have predefined posts
+    // },
+  ]
 
+  // Combine fetched ideas with predefined, custom, and AI-generated ideas
   const allIdeas: Idea[] = [
-    ...mappedSelectedIdeas,
+    ...fetchedIdeas,
+    ...predefinedIdeas.filter((idea) => selectedIdeas.includes(Number(idea.id))),
     ...(customIdea
-      ? [{ id: 'custom', title: 'Custom Idea', content: customIdea, type: 'custom' }]
+      ? [{ id: 'custom', title: 'Custom Idea', type: 'custom', posts: [] }]
       : []),
     ...(includeAI
-      ? [{ id: 'ai', title: 'AI Generated Idea', content: 'An idea generated by AI', type: 'ai' }]
+      ? [{ id: 'ai', title: 'AI Generated Idea', type: 'ai', posts: [] }]
       : []),
   ]
 
-  const generatePosts = (ideaIndex: number, count: number) => {
-    const posts: { images: string[]; caption: string }[] = []
-    for (let i = 0; i < count; i++) {
-      let images: string[]
-      let caption: string
-      if (ideaIndex === 0 || ideaIndex === 1) {
-        // For Idea 1 and 2, use the first 3 images repeatedly
-        const startIndex = ideaIndex * 3
-        images = [
-          dummyImages[startIndex],
-          dummyImages[startIndex + 1],
-          dummyImages[startIndex + 2],
-        ]
-        caption = dummyCaptions[ideaIndex]
-      } else if (ideaIndex === 2 || ideaIndex === 3) {
-        // For Idea 3 and 4, conditionally assign images
-        let imagesIndices: number[] = []
-        if (i === 0) {
-          // Post 1: 3 images
-          imagesIndices = [6, 7, 8]
-        } else if (i === 1) {
-          // Post 2: 2 images
-          imagesIndices = [9, 10]
-        } else if (i === 2) {
-          // Post 3: 2 images
-          imagesIndices = [11, 12]
-        }
-        images = imagesIndices.map((index) => dummyImages[index])
-        caption = dummyCaptions[2 + i] || 'Custom caption for Idea 3'
-      } else {
-        // For any other ideas, use random images and captions
-        images = Array.from({ length: 3 }, () =>
-          dummyImages[Math.floor(Math.random() * dummyImages.length)]
-        )
-        caption = dummyCaptions[Math.floor(Math.random() * dummyCaptions.length)]
-      }
-      // Push only the object with images and caption
-      posts.push({ images, caption })
-    }
-    return posts
-  }
+  // Initialize postsData based on currentIdeaIndex and allIdeas
+  const [postsData, setPostsData] = useState<Post[]>([])
 
-  // Initialize posts data
-  const [postsData, setPostsData] = useState<{ images: string[]; caption: string }[]>(generatePosts(currentIdeaIndex, postsPerIdea))
+  // State to track current post index for each idea
+  const [postIndices, setPostIndices] = useState<{ [ideaIndex: number]: number }>({})
 
-  // Update postsData when currentIdeaIndex or postsPerIdea changes
   useEffect(() => {
-    setPostsData(generatePosts(currentIdeaIndex, postsPerIdea))
-    setCurrentPostIndex(0) // Reset to first post when idea changes
-  }, [currentIdeaIndex, postsPerIdea])
+    if (allIdeas.length > 0) {
+      const currentIdea = allIdeas[currentIdeaIndex]
+      if (currentIdea.type === 'fetched' && currentIdea.posts) {
+        setPostsData(currentIdea.posts)
+        // Initialize post index for the current idea if not already set
+        setPostIndices((prev) => ({
+          ...prev,
+          [currentIdeaIndex]: prev[currentIdeaIndex] ?? 0,
+        }))
+        // Set currentPostIndex based on postIndices
+        setCurrentPostIndex(postIndices[currentIdeaIndex] ?? 0)
+      } else {
+        // Handle other idea types (custom, AI-generated) if necessary
+        // For simplicity, setting postsData as empty or you can implement similar fetching
+        setPostsData([])
+        setCurrentPostIndex(0)
+      }
+    }
+  }, [allIdeas, currentIdeaIndex, postIndices])
 
   const handleCopyCaption = () => {
     const caption = postsData[currentPostIndex]?.caption || ''
@@ -697,21 +713,45 @@ export default function GeneratedPosts() {
   }
 
   const handleNextPost = () => {
-    if (currentPostIndex < postsPerIdea - 1) {
-      setCurrentPostIndex(currentPostIndex + 1)
+    const currentIdea = allIdeas[currentIdeaIndex]
+    const totalPosts = postsData.length
+
+    if (currentPostIndex < totalPosts - 1) {
+      const newPostIndex = currentPostIndex + 1
+      setCurrentPostIndex(newPostIndex)
+      setPostIndices((prev) => ({
+        ...prev,
+        [currentIdeaIndex]: newPostIndex,
+      }))
     } else if (currentIdeaIndex < allIdeas.length - 1) {
-      setCurrentIdeaIndex(currentIdeaIndex + 1)
-      setCurrentPostIndex(0)
+      const newIdeaIndex = currentIdeaIndex + 1
+      setCurrentIdeaIndex(newIdeaIndex)
+      // The useEffect will handle setting the correct post index
     }
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const handlePrevPost = () => {
+    const currentIdea = allIdeas[currentIdeaIndex]
+
     if (currentPostIndex > 0) {
-      setCurrentPostIndex(currentPostIndex - 1)
+      const newPostIndex = currentPostIndex - 1
+      setCurrentPostIndex(newPostIndex)
+      setPostIndices((prev) => ({
+        ...prev,
+        [currentIdeaIndex]: newPostIndex,
+      }))
     } else if (currentIdeaIndex > 0) {
-      setCurrentIdeaIndex(currentIdeaIndex - 1)
-      setCurrentPostIndex(postsPerIdea - 1)
+      const newIdeaIndex = currentIdeaIndex - 1
+      const previousIdea = allIdeas[newIdeaIndex]
+      const previousIdeaPostCount = previousIdea.posts.length
+      const newPostIndex = postIndices[newIdeaIndex] ?? (previousIdeaPostCount > 0 ? previousIdeaPostCount - 1 : 0)
+      setCurrentIdeaIndex(newIdeaIndex)
+      setCurrentPostIndex(newPostIndex)
+      setPostIndices((prev) => ({
+        ...prev,
+        [newIdeaIndex]: newPostIndex,
+      }))
     }
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -751,8 +791,91 @@ export default function GeneratedPosts() {
   // Define currentIdea after ensuring allIdeas has at least one idea
   const currentIdea = allIdeas[currentIdeaIndex]
 
+  // Function to handle exporting the current post
+  const handleExportPost = async () => {
+    const currentPost = postsData[currentPostIndex]
+    if (!currentPost) {
+      alert("No post available to export.")
+      return
+    }
+
+    const zip = new JSZip()
+    const folder = zip.folder(`Post_${currentPostIndex + 1}`) || zip
+
+    // Add caption as a text file
+    folder.file("caption.txt", currentPost.caption)
+
+    // Function to convert base64 to blob
+    const base64ToBlob = (base64: string, mime: string) => {
+      const byteCharacters = atob(base64.split(',')[1])
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      return new Blob([byteArray], { type: mime })
+    }
+
+    // Iterate through images and add them to the zip
+    for (let i = 0; i < currentPost.images.length; i++) {
+      const image = currentPost.images[i]
+      let blob: Blob | null = null
+      let filename = `image_${i + 1}.png` // Default extension
+
+      if (image.startsWith('data:image')) {
+        // Handle base64 encoded images
+        const mime = image.substring("data:".length, image.indexOf(';'))
+        blob = base64ToBlob(image, mime)
+        const extension = mime.split('/')[1]
+        filename = `image_${i + 1}.${extension}`
+      } else {
+        // Handle image URLs
+        try {
+          const response = await fetch(image)
+          if (response.ok) {
+            blob = await response.blob()
+            const contentDisposition = response.headers.get('Content-Disposition')
+            if (contentDisposition && contentDisposition.includes('filename=')) {
+              const matches = /filename="?(.+)"?/.exec(contentDisposition)
+              if (matches && matches[1]) {
+                filename = matches[1]
+              }
+            } else {
+              // Try to extract filename from URL
+              const urlParts = image.split('/')
+              const lastPart = urlParts[urlParts.length - 1]
+              filename = lastPart || `image_${i + 1}.png`
+            }
+          } else {
+            console.error(`Failed to fetch image at ${image}: ${response.statusText}`)
+          }
+        } catch (error) {
+          console.error(`Error fetching image at ${image}:`, error)
+        }
+      }
+
+      if (blob) {
+        folder.file(filename, blob)
+      }
+    }
+
+    // Generate the zip file and trigger download with updated filename
+    zip.generateAsync({ type: 'blob' })
+      .then((content) => {
+        // Construct the new filename with Idea number and Post number
+        const ideaNumber = currentIdeaIndex + 1
+        const postNumber = currentPostIndex + 1
+        const zipFilename = `Idea_${ideaNumber}_Post_${postNumber}.zip`
+        saveAs(content, zipFilename)
+      })
+      .catch((error) => {
+        console.error("Error generating zip:", error)
+        alert("Failed to export the post.")
+      })
+  }
+
   // Render component
-  if (allIdeas.length === 0) {
+  if (allIdeas.length === 0 && !loading && !error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 p-8">
         <Link
@@ -780,133 +903,176 @@ export default function GeneratedPosts() {
 
       <h1 className="text-4xl font-bold text-gray-800 mb-8">Generated Posts</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Selected Ideas Sidebar */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Selected Ideas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[calc(90vh-200px)]">
-              {allIdeas.map((idea, index) => (
-                <Button
-                  key={idea.id}
-                  variant={currentIdeaIndex === index ? 'default' : 'outline'}
-                  className="w-full mb-2 justify-start text-left"
-                  onClick={() => {
-                    setCurrentIdeaIndex(index)
-                    setCurrentPostIndex(0)
-                  }}
-                >
-                  {idea.title}
-                </Button>
-              ))}
-            </ScrollArea>
-          </CardContent>
-        </Card>
+      {/* Display Loading and Error Messages */}
+      {loading && (
+        <div className="mb-4 p-4 bg-yellow-100 text-yellow-800 rounded-md">
+          Loading data from API...
+        </div>
+      )}
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-md">
+          {error}
+        </div>
+      )}
+      {!loading && !error && Object.keys(apiPosts).length === 0 && (
+        <div className="mb-4 p-4 bg-gray-100 text-gray-800 rounded-md">
+          No posts available.
+        </div>
+      )}
 
-        {/* Current Post Display */}
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>{currentIdea.title}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <p className="text-gray-600">{currentIdea.content}</p>
-            </div>
-            <div className="relative" ref={scrollRef}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${currentIdeaIndex}-${currentPostIndex}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-4"
-                >
-                  {/* Dynamic Grid Layout Based on Number of Images */}
-                  <div
-                    className={`grid grid-cols-1 ${
-                      postsData[currentPostIndex].images.length === 2
-                        ? 'md:grid-cols-2'
-                        : postsData[currentPostIndex].images.length === 3
-                        ? 'lg:grid-cols-3'
-                        : 'md:grid-cols-1'
-                    } gap-4`}
+      {allIdeas.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Selected Ideas Sidebar */}
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle>Selected Ideas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[calc(90vh-200px)]">
+                {allIdeas.map((idea, index) => (
+                  <Button
+                    key={idea.id}
+                    variant={currentIdeaIndex === index ? 'default' : 'outline'}
+                    className="w-full mb-2 justify-start text-left"
+                    onClick={() => {
+                      setCurrentIdeaIndex(index)
+                      // The useEffect will handle setting currentPostIndex based on postIndices
+                    }}
                   >
-                    {postsData[currentPostIndex].images.map((imageObj, index) => (
-                      <div
-                        key={index}
-                        className="relative cursor-pointer"
-                        onClick={() => handleImageClick(imageObj, index)}
-                      >
-                        <Image
-                          src={imageObj}
-                          alt={`Image ${index + 1} for Post ${currentPostIndex + 1} of ${currentIdea.title}`}
-                          width={400}
-                          height={800}
-                          className="w-full object-cover rounded-md"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  {/* Caption */}
-                  <div className="bg-white p-4 rounded-md shadow">
-                    <p className="text-gray-800">{postsData[currentPostIndex].caption}</p>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+                    {idea.title}
+                  </Button>
+                ))}
+              </ScrollArea>
+            </CardContent>
+          </Card>
 
-              {/* Navigation Buttons */}
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white bg-opacity-75 hover:bg-opacity-100"
-                onClick={handlePrevPost}
-                disabled={currentIdeaIndex === 0 && currentPostIndex === 0}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white bg-opacity-75 hover:bg-opacity-100"
-                onClick={handleNextPost}
-                disabled={
-                  currentIdeaIndex === allIdeas.length - 1 &&
-                  currentPostIndex === postsPerIdea - 1
-                }
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            {/* Post Information and Caption Copy */}
-            <div className="mt-4 flex justify-between items-center">
-              <span className="text-sm text-gray-500">
-                Post {currentPostIndex + 1} of {postsPerIdea} for Idea {currentIdeaIndex + 1} of {allIdeas.length}
-              </span>
-              <Button variant="outline" size="sm" onClick={handleCopyCaption}>
-                {copiedCaption ? (
-                  <>
-                    <Check className="h-4 w-4 mr-2" /> Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4 mr-2" /> Copy Caption
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Current Post Display */}
+          <Card className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle>{currentIdea?.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative" ref={scrollRef}>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${currentIdeaIndex}-${currentPostIndex}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4"
+                  >
+                    {/* Dynamic Grid Layout Based on Number of Images */}
+                    <div
+                      className={`grid gap-4`}
+                      style={{
+                        gridTemplateColumns:
+                          postsData[currentPostIndex]?.images.length > 0
+                            ? `repeat(${postsData[currentPostIndex].images.length}, 1fr)`
+                            : '1fr',
+                      }}
+                    >
+                      {postsData[currentPostIndex]?.images.map((imageObj, index) => (
+                        <div
+                          key={index}
+                          className="relative cursor-pointer"
+                          onClick={() => handleImageClick(imageObj, index)}
+                          style={
+                            postsData[currentPostIndex].images.length === 1
+                              ? { display: 'flex', justifyContent: 'center' }
+                              : {}
+                          }
+                        >
+                          {imageObj.startsWith('data:image') ? (
+                            <img
+                              src={imageObj}
+                              alt={`Image ${index + 1} for Post ${currentPostIndex + 1} of ${currentIdea?.title}`}
+                              className="object-cover rounded-md cursor-pointer"
+                              loading="lazy"
+                              style={
+                                postsData[currentPostIndex].images.length === 1
+                                  ? { maxHeight: '400px', width: 'auto' }
+                                  : {}
+                              }
+                            />
+                          ) : (
+                            <Image
+                              src={imageObj}
+                              alt={`Image ${index + 1} for Post ${currentPostIndex + 1} of ${currentIdea?.title}`}
+                              width={400}
+                              height={800}
+                              className="object-cover rounded-md cursor-pointer"
+                              style={
+                                postsData[currentPostIndex].images.length === 1
+                                  ? { maxHeight: '400px', width: 'auto' }
+                                  : {}
+                              }
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Caption */}
+                    <div className="bg-white p-4 rounded-md shadow">
+                      <p className="text-gray-800">{postsData[currentPostIndex]?.caption}</p>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
 
-      {/* Export All Posts Button */}
-      <div className="mt-8 flex justify-end">
-        <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
-          <Download className="mr-2 h-4 w-4" /> Export All Posts
-        </Button>
-      </div>
+                {/* Navigation Buttons */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white bg-opacity-75 hover:bg-opacity-100"
+                  onClick={handlePrevPost}
+                  disabled={currentIdeaIndex === 0 && currentPostIndex === 0}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white bg-opacity-75 hover:bg-opacity-100"
+                  onClick={handleNextPost}
+                  disabled={
+                    currentIdeaIndex === allIdeas.length - 1 &&
+                    currentPostIndex === (currentIdea?.posts?.length || 0) - 1
+                  }
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              {/* Post Information and Caption Copy */}
+              <div className="mt-4 flex justify-between items-center">
+                <span className="text-sm text-gray-500">
+                  Post {currentPostIndex + 1} of {postsData.length} for Idea {currentIdeaIndex + 1} of {allIdeas.length}
+                </span>
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="sm" onClick={handleCopyCaption}>
+                    {copiedCaption ? (
+                      <>
+                        <Check className="h-4 w-4 mr-2" /> Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-2" /> Copy Caption
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportPost}
+                    className="flex items-center"
+                  >
+                    <Download className="h-4 w-4 mr-2" /> Export Post
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Image Modal */}
       {selectedImage && imageUpdateIndex !== null && (
@@ -916,7 +1082,7 @@ export default function GeneratedPosts() {
           onClose={() => setIsModalOpen(false)}
           imageSrc={selectedImage}
           onImageUpdate={handleImageUpdate}
-          originalImageSrc={postsData[currentPostIndex].images[imageUpdateIndex]}
+          originalImageSrc={postsData[currentPostIndex]?.images[imageUpdateIndex] || ''}
           imageHistory={modalImageHistory}
         />
       )}

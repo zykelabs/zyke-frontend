@@ -21,6 +21,7 @@ export const config = {
     "/idea-generator",
     "/user-type",
     "/brandvoice",
-    "/brandprofile"
+    "/brandprofile",
+    "/generated-posts"
   ],
 };
