@@ -1,531 +1,818 @@
 "use client";
 
-import { useState } from "react";
-import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
+import * as React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  useFieldArray,
+  useForm,
+  Controller,
+  SubmitHandler,
+} from "react-hook-form";
+import {
+  Facebook,
+  Instagram,
+  Linkedin,
+  Loader2,
+  PlusCircle,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import * as z from "zod";
-import { Loader2 } from "lucide-react";
-import { PlusCircle, Trash2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useRouter } from "next/navigation";
-import { Slider } from "@/components/ui/slider";
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@/components/ui/radio-group";
 
-// Define the Zod schema for form validation
+import { DevTool } from "@hookform/devtools"; // Import DevTools
+
+// Zod Schemas
+const socialMediaSchema = z
+  .object({
+    platform: z.string(),
+    username: z.string().optional().or(z.literal("")),
+    url: z.string().url().optional().or(z.literal("")),
+  })
+  .refine(
+    (data) => {
+      if (!data.username && !data.url) {
+        // Both fields are empty; no validation needed
+        return true;
+      }
+      if (data.platform === "instagram" || data.platform === "facebook") {
+        return data.username.trim() !== "" && data.url === "";
+      }
+      if (data.platform === "linkedin") {
+        return data.url.trim() !== "" && data.username === "";
+      }
+      return false;
+    },
+    {
+      message: "Invalid social media configuration",
+    }
+  );
+
+// Main Form Schema
 const formSchema = z.object({
   company: z.string().min(1, "Company name is required"),
-  brandVoiceName: z.string().optional(),
-  industries: z.array(z.string()).min(1, "At least one industry is required"),
-  contentTypes: z
-    .array(z.string())
-    .min(1, "At least one content type is required"),
-  brandPersonalities: z
-    .array(z.string())
-    .min(1, "At least one brand personality is required"),
-  targetAudience: z
-    .array(z.string())
-    .min(1, "At least one target audience is required"),
-  brandTone: z.number().min(0).max(100, "Brand tone must be between 0 and 100"),
-  website: z.string().url("Invalid URL").optional().or(z.literal("")),
   location: z.string().min(1, "Location is required"),
-  brandType: z.number().min(1, "Brand type is required"),
-  socialMedia: z.object({
-    instagram: z.string().optional(),
-    twitter: z.string().optional(),
-    linkedin: z.string().url("Invalid LinkedIn URL").optional(),
-  }),
-  otherUrls: z.array(z.string()).optional(),
+  brandVoiceName: z.string().min(1, "Brand voice name is required"),
+  industries: z.array(z.string()).min(1, "At least one industry is required"),
+  otherIndustries: z.array(z.string()).optional(),
+  files: z.array(z.any()).optional(),
+  website: z.string().url("Invalid URL format").optional(),
+  socialMedia: z.array(socialMediaSchema).optional(),
+  otherUrls: z
+    .array(
+      z.object({
+        label: z.string().min(1, "Label is required"),
+        url: z.string().url("Invalid URL format"),
+      })
+    )
+    .optional(),
+  contentTypes: z.array(z.string()).min(1, "At least one content type is required"),
+  otherContentTypes: z.array(z.string()).optional(),
+  targetAudience: z.array(z.string()).min(1, "At least one target audience is required"),
+  otherTargetAudiences: z.array(z.string()).optional(),
+  brandPersonalities: z.array(z.string()).min(1, "At least one personality trait is required"),
+  brandTone: z.string().min(1, "Brand tone is required"),
+  brandType: z.number().int().min(1, "Brand type is required"),
   manualInputText: z.string().optional(),
   designText: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
-
-const contentTypeOptions = [
-  "Blog Posts",
-  "Social Media",
-  "Product Descriptions",
-  "Email Marketing",
-  "Ad Copy",
-];
-
-const targetAudienceOptions = [
-  "Millennials",
-  "Gen Z",
-  "Baby Boomers",
-  "Entrepreneurs",
-  "Parents",
-  "Students",
-  "Professionals",
-];
-
-const brandPersonalityOptions = [
-  "Friendly",
-  "Professional",
-  "Bold",
-  "Playful",
-  "Innovative",
-  "Traditional",
-  "Luxurious",
-  "Casual",
-];
-
-const industryOptions = [
-  "Technology",
-  "Finance",
-  "Healthcare",
-  "Education",
-  "Entertainment",
-  "Retail",
-  "Manufacturing",
-  "Other",
-];
-
+// Options Arrays
 const brandTypeOptions = [
   { label: "Product-Based", value: 1 },
   { label: "Service-Based", value: 2 },
   { label: "Influencer", value: 3 },
   { label: "Non-Profit", value: 4 },
-  // Add more as needed
+];
+
+const industryOptions = [
+  "Technology",
+  "Healthcare",
+  "Finance",
+  "Education",
+  "Retail",
+  "Entertainment",
+  "Manufacturing",
+  "Real Estate",
+  "Travel",
+  "Food & Beverage",
+];
+
+const contentTypeOptions = [
+  "Blog Posts",
+  "Social Media",
+  "Website Copy",
+  "Email Marketing",
+  "Ad Copy",
+  "Product Descriptions",
+  "Video Scripts",
+  "Podcast Scripts",
+  "Press Releases",
+  "Technical Documentation",
+];
+
+const targetAudienceOptions = [
+  "Gen Z",
+  "Millennials",
+  "Gen X",
+  "Baby Boomers",
+  "Business Professionals",
+  "Students",
+  "Parents",
+  "Tech Enthusiasts",
+  "Luxury Consumers",
+  "Budget Shoppers",
+];
+
+const personalityTraits = [
+  "Professional",
+  "Friendly",
+  "Innovative",
+  "Traditional",
+  "Luxurious",
+  "Playful",
+  "Bold",
+  "Conservative",
+  "Casual",
+  "Authoritative",
+];
+
+const brandToneOptions = [
+  "Completely casual",
+  "Mostly casual",
+  "Slightly casual",
+  "Neutral",
+  "Slightly formal",
+  "Mostly formal",
+  "Completely formal",
 ];
 
 export default function BrandVoiceCreator() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const params = useParams();
   const router = useRouter();
+  const { brandType: brandTypeParam } = params;
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm<FormValues>({
+  const { data: session, status } = useSession();
+
+  React.useEffect(() => {
+    if (status === "loading") return; // Do nothing while loading
+    if (!session) {
+      // Redirect to login or show a message
+      router.push("/login"); // Adjust the path as needed
+    }
+  }, [session, status, router]);
+
+  const selectedBrandType = React.useMemo(() => {
+    const type = Number(brandTypeParam);
+    const found = brandTypeOptions.find((option) => option.value === type);
+    return found ? found.value : 1; // Default to 1 (Product-Based) if not found
+  }, [brandTypeParam]);
+
+  const [step, setStep] = React.useState(1);
+  const [validatedSteps, setValidatedSteps] = React.useState<number[]>([]); // Track validated steps
+  const [files, setFiles] = React.useState<File[]>([]);
+  const [isGenerating, setIsGenerating] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [submissionError, setSubmissionError] = React.useState<string | null>(null); // For error messages
+
+  // Initialize the form with the standard Zod resolver
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       company: "",
+      location: "",
       brandVoiceName: "",
       industries: [],
-      contentTypes: [],
-      brandPersonalities: [],
-      targetAudience: [],
-      brandTone: 50,
+      otherIndustries: [],
+      files: [],
       website: "",
-      location: "",
-      brandType: undefined,
-      socialMedia: {
-        instagram: "",
-        twitter: "",
-        linkedin: "",
-      },
-      otherUrls: [""],
+      socialMedia: [
+        { platform: "instagram", username: "", url: "" },
+        { platform: "facebook", username: "", url: "" },
+        { platform: "linkedin", username: "", url: "" },
+      ],
+      otherUrls: [],
+      contentTypes: [],
+      otherContentTypes: [],
+      targetAudience: [],
+      otherTargetAudiences: [],
+      brandPersonalities: [],
+      brandTone: "", // Ensure brandTone has a default value
+      brandType: selectedBrandType,
       manualInputText: "",
       designText: "",
     },
+    mode: "onSubmit", // Validate only on form submission
+    reValidateMode: "onSubmit",
+    shouldUnregister: false, // Retain all fields in form state
   });
 
+  React.useEffect(() => {
+    form.setValue("brandType", selectedBrandType);
+  }, [selectedBrandType, form]);
+
   const {
-    fields: otherUrlsFields,
-    append: appendOtherUrl,
-    remove: removeOtherUrl,
+    fields: urlFields,
+    append: appendUrl,
+    remove: removeUrl,
   } = useFieldArray({
-    control,
+    control: form.control,
     name: "otherUrls",
   });
 
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    setIsSubmitting(true);
-    setApiError(null);
+  const {
+    fields: otherIndustryFields,
+    append: appendIndustry,
+    remove: removeIndustry,
+  } = useFieldArray({
+    control: form.control,
+    name: "otherIndustries",
+  });
 
-    // Prepare the payload as per backend requirements
+  const {
+    fields: otherContentTypeFields,
+    append: appendContentType,
+    remove: removeContentType,
+  } = useFieldArray({
+    control: form.control,
+    name: "otherContentTypes",
+  });
+
+  const {
+    fields: otherTargetAudienceFields,
+    append: appendTargetAudience,
+    remove: removeTargetAudience,
+  } = useFieldArray({
+    control: form.control,
+    name: "otherTargetAudiences",
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setFiles((prev) => {
+        const updatedFiles = [...prev, ...newFiles];
+        form.setValue("files", updatedFiles);
+        return updatedFiles;
+      });
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((prev) => {
+      const updatedFiles = prev.filter((_, i) => i !== index);
+      form.setValue("files", updatedFiles);
+      return updatedFiles;
+    });
+  };
+
+  // Watch fields for debugging
+  const industriesValue = form.watch("industries");
+  const contentTypesValue = form.watch("contentTypes");
+
+  React.useEffect(() => {
+    console.log("Selected Industries:", industriesValue);
+  }, [industriesValue]);
+
+  React.useEffect(() => {
+    console.log("Selected Content Types:", contentTypesValue);
+  }, [contentTypesValue]);
+
+  // Helper function to get fields based on the current step for validation
+  const getFieldsByStep = (step: number) => {
+    switch (step) {
+      case 1:
+        return [
+          "company",
+          "location",
+          "brandVoiceName",
+          "industries",
+          "socialMedia",
+          "otherUrls",
+        ];
+      case 2:
+        return ["contentTypes"];
+      case 3:
+        return ["targetAudience"];
+      case 4:
+        return ["brandPersonalities", "brandTone"];
+      default:
+        return [];
+    }
+  };
+
+  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (data) => {
+    console.log("Form submitted with data:", data); // Debugging log
+    setIsGenerating(true);
+    setSubmissionError(null); // Reset any previous errors
+
+    // Safeguard: Ensure 'industries' is an array
+    const allIndustries = [
+      ...(Array.isArray(data.industries) ? data.industries : []),
+      ...(Array.isArray(data.otherIndustries) ? data.otherIndustries : []).filter(
+        (industry) => industry.trim() !== ""
+      ),
+    ];
+
+    // Similarly, safeguard other array fields
+    const allContentTypes = [
+      ...(Array.isArray(data.contentTypes) ? data.contentTypes : []),
+      ...(Array.isArray(data.otherContentTypes) ? data.otherContentTypes : []).filter(
+        (type) => type.trim() !== ""
+      ),
+    ];
+
+    const allTargetAudiences = [
+      ...(Array.isArray(data.targetAudience) ? data.targetAudience : []),
+      ...(Array.isArray(data.otherTargetAudiences) ? data.otherTargetAudiences : []).filter(
+        (audience) => audience.trim() !== ""
+      ),
+    ];
+
     const payload = {
       company: data.company,
-      brandVoiceName: data.brandVoiceName,
-      industries: data.industries,
       location: data.location,
-      contentTypes: data.contentTypes,
+      brandVoiceName: data.brandVoiceName,
+      industries: allIndustries,
+      files: data.files,
+      website: data.website,
+      socialMedia: {
+        instagram:
+          Array.isArray(data.socialMedia)
+            ? data.socialMedia.find((sm) => sm.platform === "instagram")?.username || ""
+            : "",
+        facebook:
+          Array.isArray(data.socialMedia)
+            ? data.socialMedia.find((sm) => sm.platform === "facebook")?.username || ""
+            : "",
+        linkedin:
+          Array.isArray(data.socialMedia)
+            ? data.socialMedia.find((sm) => sm.platform === "linkedin")?.url || ""
+            : "",
+      },
+      otherUrls: data.otherUrls,
+      contentTypes: allContentTypes,
+      targetAudience: allTargetAudiences,
       brandPersonalities: data.brandPersonalities,
-      targetAudience: data.targetAudience,
       brandTone: data.brandTone,
       brandType: data.brandType,
-      socialMedia: {
-        instagram: data.socialMedia.instagram,
-        twitter: data.socialMedia.twitter,
-        linkedin: data.socialMedia.linkedin,
-      },
-      otherUrls: data.otherUrls.filter((url) => url.trim() !== ""),
       manualInputText: data.manualInputText,
       designText: data.designText,
     };
 
     try {
-      const response = await fetch("/api/brand_voice/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Include JWT token if required
-          // "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const formData = new FormData();
+      for (const key in payload) {
+        if (key === "files") {
+          payload.files.forEach((file: File) => {
+            formData.append("files", file);
+          });
+        } else if (key === "socialMedia") {
+          formData.append("socialMedia", JSON.stringify(payload.socialMedia));
+        } else if (Array.isArray(payload[key])) {
+          formData.append(key, JSON.stringify(payload[key]));
+        } else if (payload[key] !== undefined && payload[key] !== null) {
+          formData.append(key, payload[key]);
+        }
+      }
 
+      const accessToken = session?.accessToken;
+      if (!accessToken) {
+        console.error("No access token found.");
+        setSubmissionError("Authentication error. Please log in again.");
+        setIsGenerating(false);
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/brand_voice_info/create`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: formData,
+        }
+      );
+
+      console.log("API response status:", response.status);
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Something went wrong");
+        throw new Error(errorData.error || "Failed to create brand voice.");
       }
 
       const result = await response.json();
-      console.log(result);
-
-      // Redirect or show success message
+      // Redirect to the desired page after successful submission
       router.push("/idea-generator");
     } catch (error: any) {
-      console.error(error);
-      setApiError(error.message || "An unexpected error occurred");
+      console.error("Submission error:", error);
+      setSubmissionError(error.message || "An unexpected error occurred.");
     } finally {
-      setIsSubmitting(false);
+      setIsGenerating(false);
     }
   };
 
-  const steps = [
-    { title: "Brand Personality", fields: ["brandPersonalities", "brandTone"] },
-    { title: "Content Type", fields: ["contentTypes"] },
-    { title: "Target Audience", fields: ["targetAudience"] },
-    {
-      title: "Brand Information",
-      fields: ["company", "website", "location", "brandType"],
-    },
-    {
-      title: "Industry & Social Media",
-      fields: [
-        "industries",
-        "socialMedia",
-        "otherUrls",
-        "manualInputText",
-        "designText",
-      ],
-    },
-  ];
+  const totalSteps = 4;
+  const progress = (step / totalSteps) * 100;
 
-  const nextStep = () =>
-    setCurrentStep((prev) => Math.min(prev + 1, steps.length));
-  const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
+  if (isGenerating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
+        <Card className="w-full max-w-md text-center p-6">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">
+              Creating Your Brand Voice
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              Please wait, this may take a while...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto my-8">
-      <CardHeader>
-        <CardTitle className="text-3xl font-bold">
-          Brand Voice Creator
-        </CardTitle>
-        <CardDescription>Define your unique brand personality</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-          <div
-            className="bg-primary h-2.5 rounded-full"
-            style={{ width: `${(currentStep / steps.length) * 100}%` }}
-          ></div>
-        </div>
-        {apiError && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{apiError}</AlertDescription>
-          </Alert>
-        )}
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {currentStep === 1 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold mb-4">Brand Personality</h2>
-              <div>
-                <Label className="text-base">
-                  Select personality traits that describe your brand:
-                </Label>
-                <div className="grid grid-cols-2 gap-4 mt-2">
-                  {brandPersonalityOptions.map((trait) => (
-                    <div key={trait} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={trait}
-                        {...register("brandPersonalities")}
-                        value={trait}
+    <div className="min-h-screen bg-gray-50/50 p-4 md:p-8">
+      <Card className="mx-auto max-w-3xl">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold">Brand Voice Creator</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Define your unique brand personality
+          </p>
+          <div className="mt-4">
+            <div className="relative h-2 overflow-hidden rounded-full bg-gray-200">
+              <div
+                className="h-full bg-primary transition-all duration-500 ease-in-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className="mt-2 text-sm text-muted-foreground">
+              Step {step} of {totalSteps}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {step === 1 && (
+              <div className="space-y-4">
+                {/* Step 1 Fields */}
+                <div>
+                  <Label htmlFor="company">Company/Brand Name</Label>
+                  <Input
+                    id="company"
+                    {...form.register("company")}
+                    className="mt-1"
+                  />
+                  {form.formState.errors.company && validatedSteps.includes(1) && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertDescription>
+                        {form.formState.errors.company.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    {...form.register("location")}
+                    className="mt-1"
+                  />
+                  {form.formState.errors.location && validatedSteps.includes(1) && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertDescription>
+                        {form.formState.errors.location.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="brandVoiceName">Brand Voice Name</Label>
+                  <Input
+                    id="brandVoiceName"
+                    {...form.register("brandVoiceName")}
+                    className="mt-1"
+                  />
+                  {form.formState.errors.brandVoiceName && validatedSteps.includes(1) && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertDescription>
+                        {form.formState.errors.brandVoiceName.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Industries</Label>
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    {industryOptions.map((industry) => (
+                      <Controller
+                        key={industry}
+                        control={form.control}
+                        name="industries"
+                        render={({ field }) => (
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id={industry}
+                              checked={field.value.includes(industry)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  field.onChange([...field.value, industry]);
+                                } else {
+                                  field.onChange(
+                                    field.value.filter(
+                                      (val: string) => val !== industry
+                                    )
+                                  );
+                                }
+                              }}
+                              value={industry}
+                            />
+                            <Label htmlFor={industry}>{industry}</Label>
+                          </div>
+                        )}
                       />
-                      <Label htmlFor={trait}>{trait}</Label>
+                    ))}
+                  </div>
+                  {form.formState.errors.industries && validatedSteps.includes(1) && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertDescription>
+                        {form.formState.errors.industries.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {otherIndustryFields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="flex items-center space-x-2 mt-2"
+                    >
+                      <Input
+                        {...form.register(`otherIndustries.${index}`)}
+                        placeholder="Other industry"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeIndustry(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
-                </div>
-                {errors.brandPersonalities && (
-                  <Alert variant="destructive" className="mt-2">
-                    <AlertDescription>
-                      {errors.brandPersonalities.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="brandTone" className="text-base">
-                  Brand Tone
-                </Label>
-                <div className="flex items-center space-x-4 mt-2">
-                  <span>Casual</span>
-                  <Slider
-                    id="brandTone"
-                    {...register("brandTone", { valueAsNumber: true })}
-                    min={0}
-                    max={100}
-                    step={1}
-                    className="flex-grow"
-                  />
-                  <span>Formal</span>
-                </div>
-                {errors.brandTone && (
-                  <Alert variant="destructive" className="mt-2">
-                    <AlertDescription>
-                      {errors.brandTone.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            </div>
-          )}
-
-          {currentStep === 2 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold mb-4">Content Type</h2>
-              <Label className="text-base">
-                What type of content do you need help with? (Optional)
-              </Label>
-              <div className="grid grid-cols-1 gap-4 mt-2">
-                {contentTypeOptions.map((type) => (
-                  <div key={type} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={type}
-                      {...register("contentTypes")}
-                      value={type}
-                    />
-                    <Label htmlFor={type}>{type}</Label>
-                  </div>
-                ))}
-              </div>
-              {errors.contentTypes && (
-                <Alert variant="destructive" className="mt-2">
-                  <AlertDescription>
-                    {errors.contentTypes.message}
-                  </AlertDescription>
-                </Alert>
-              )}
-              <div>
-                <Label htmlFor="otherInfo">Other (Please specify)</Label>
-                <Input
-                  id="otherInfo"
-                  {...register("manualInputText")}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-          )}
-
-          {currentStep === 3 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold mb-4">Target Audience</h2>
-              <Label className="text-base">
-                Who is your target audience? (Select all that apply)
-              </Label>
-              <div className="grid grid-cols-2 gap-4 mt-2">
-                {targetAudienceOptions.map((audience) => (
-                  <div key={audience} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={audience}
-                      {...register("targetAudience")}
-                      value={audience}
-                    />
-                    <Label htmlFor={audience}>{audience}</Label>
-                  </div>
-                ))}
-              </div>
-              {errors.targetAudience && (
-                <Alert variant="destructive" className="mt-2">
-                  <AlertDescription>
-                    {errors.targetAudience.message}
-                  </AlertDescription>
-                </Alert>
-              )}
-              <div>
-                <Label htmlFor="otherAudience">Other (Please specify)</Label>
-                <Input
-                  id="otherAudience"
-                  {...register("designText")}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-          )}
-
-          {currentStep === 4 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold mb-4">Brand Information</h2>
-              <div>
-                <Label htmlFor="company">Brand/Business/Influencer Name</Label>
-                <Input id="company" {...register("company")} className="mt-1" />
-                {errors.company && (
-                  <Alert variant="destructive" className="mt-2">
-                    <AlertDescription>
-                      {errors.company.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="website">Website (Optional)</Label>
-                <Input id="website" {...register("website")} className="mt-1" />
-                {errors.website && (
-                  <Alert variant="destructive" className="mt-2">
-                    <AlertDescription>
-                      {errors.website.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  {...register("location")}
-                  className="mt-1"
-                />
-                {errors.location && (
-                  <Alert variant="destructive" className="mt-2">
-                    <AlertDescription>
-                      {errors.location.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="brandType">Brand Type</Label>
-                <Select {...register("brandType", { valueAsNumber: true })}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select brand type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {brandTypeOptions.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.brandType && (
-                  <Alert variant="destructive" className="mt-2">
-                    <AlertDescription>
-                      {errors.brandType.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            </div>
-          )}
-
-          {currentStep === 5 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold mb-4">
-                Industry & Social Media
-              </h2>
-              <div>
-                <Label htmlFor="industry">Select your industry</Label>
-                <Select {...register("industries")}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Choose an industry" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {industryOptions.map((industry) => (
-                      <SelectItem key={industry} value={industry}>
-                        {industry}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.industries && (
-                  <Alert variant="destructive" className="mt-2">
-                    <AlertDescription>
-                      {errors.industries.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-              <div>
-                <Label className="block mb-2">Social Media Handles</Label>
-                <div className="space-y-2">
-                  <div>
-                    <Label htmlFor="instagram">Instagram Username</Label>
-                    <Input
-                      id="instagram"
-                      placeholder="e.g., zomato"
-                      {...register("socialMedia.instagram")}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="twitter">Twitter Username</Label>
-                    <Input
-                      id="twitter"
-                      placeholder="e.g., EcoTechInnov"
-                      {...register("socialMedia.twitter")}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="linkedin">LinkedIn URL</Label>
-                    <Input
-                      id="linkedin"
-                      placeholder="https://www.linkedin.com/company/your-company"
-                      {...register("socialMedia.linkedin")}
-                      className="mt-1"
-                    />
-                    {errors.socialMedia?.linkedin && (
-                      <Alert variant="destructive" className="mt-2">
-                        <AlertDescription>
-                          {errors.socialMedia.linkedin.message}
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div>
-                <Label className="block mb-2">Other URLs</Label>
-                {otherUrlsFields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="flex items-center space-x-2 mb-2"
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => appendIndustry("")}
+                    className="mt-2"
                   >
-                    <Input
-                      {...register(`otherUrls.${index}` as const)}
-                      placeholder="https://example.com"
-                      className="flex-grow"
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Other Industry
+                  </Button>
+                </div>
+
+                <div>
+                  <Label>Upload Files</Label>
+                  <div className="mt-2 space-y-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      className="hidden"
+                      multiple
                     />
                     <Button
                       type="button"
-                      variant="destructive"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Files
+                    </Button>
+                    {files.length > 0 && (
+                      <div className="space-y-2">
+                        {files.map((file, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between rounded-md border p-2"
+                          >
+                            <span className="text-sm truncate">{file.name}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeFile(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    {...form.register("website")}
+                    placeholder="https://example.com"
+                    className="mt-1"
+                  />
+                  {form.formState.errors.website && validatedSteps.includes(1) && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertDescription>
+                        {form.formState.errors.website.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  <Label>Social Media</Label>
+                  <div className="space-y-4">
+                    {/* Instagram */}
+                    <Controller
+                      control={form.control}
+                      name="socialMedia.0.username"
+                      render={({ field }) => (
+                        <div className="flex items-center space-x-2">
+                          <Instagram className="h-5 w-5 text-pink-500" />
+                          <Input
+                            placeholder="Instagram username"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              // Clear the URL field for Instagram/Facebook
+                              form.setValue("socialMedia.0.url", "");
+                            }}
+                          />
+                        </div>
+                      )}
+                    />
+                    {/* Facebook */}
+                    <Controller
+                      control={form.control}
+                      name="socialMedia.1.username"
+                      render={({ field }) => (
+                        <div className="flex items-center space-x-2">
+                          <Facebook className="h-5 w-5 text-blue-600" />
+                          <Input
+                            placeholder="Facebook username"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              // Clear the URL field for Instagram/Facebook
+                              form.setValue("socialMedia.1.url", "");
+                            }}
+                          />
+                        </div>
+                      )}
+                    />
+                    {/* LinkedIn */}
+                    <Controller
+                      control={form.control}
+                      name="socialMedia.2.url"
+                      render={({ field }) => (
+                        <div className="flex items-center space-x-2">
+                          <Linkedin className="h-5 w-5 text-blue-700" />
+                          <Input
+                            placeholder="LinkedIn URL"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              // Clear the Username field for LinkedIn
+                              form.setValue("socialMedia.2.username", "");
+                            }}
+                          />
+                        </div>
+                      )}
+                    />
+                  </div>
+                  {form.formState.errors.socialMedia && validatedSteps.includes(1) && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertDescription>
+                        {form.formState.errors.socialMedia.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Other URLs</Label>
+                  <div className="space-y-2 mt-2">
+                    {urlFields.map((field, index) => (
+                      <div key={field.id} className="flex gap-2">
+                        <Input
+                          placeholder="Label"
+                          {...form.register(`otherUrls.${index}.label`)}
+                        />
+                        <Input
+                          placeholder="URL"
+                          {...form.register(`otherUrls.${index}.url`)}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeUrl(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => appendUrl({ label: "", url: "" })}
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add URL
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-4">
+                {/* Step 2 Fields */}
+                <h2 className="text-xl font-semibold">Content Type</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {contentTypeOptions.map((type) => (
+                    <Controller
+                      key={type}
+                      control={form.control}
+                      name="contentTypes"
+                      render={({ field }) => (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={type}
+                            checked={field.value.includes(type)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                field.onChange([...field.value, type]);
+                              } else {
+                                field.onChange(
+                                  field.value.filter(
+                                    (val: string) => val !== type
+                                  )
+                                );
+                              }
+                            }}
+                            value={type}
+                          />
+                          <Label htmlFor={type}>{type}</Label>
+                        </div>
+                      )}
+                    />
+                  ))}
+                </div>
+                {form.formState.errors.contentTypes && validatedSteps.includes(2) && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertDescription>
+                      {form.formState.errors.contentTypes.message}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {otherContentTypeFields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="flex items-center space-x-2 mt-2"
+                  >
+                    <Input
+                      {...form.register(`otherContentTypes.${index}`)}
+                      placeholder="Other content type"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
                       size="icon"
-                      onClick={() => removeOtherUrl(index)}
+                      onClick={() => removeContentType(index)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -535,68 +822,231 @@ export default function BrandVoiceCreator() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => appendOtherUrl("")}
+                  onClick={() => appendContentType("")}
                   className="mt-2"
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Add URL
+                  Add Other Content Type
                 </Button>
               </div>
-              <div>
-                <Label htmlFor="manualInputText">Manual Input Text</Label>
-                <Textarea
-                  id="manualInputText"
-                  {...register("manualInputText")}
-                  className="mt-1"
-                  placeholder="Leading the way in sustainable technology solutions."
-                />
+            )}
+
+            {step === 3 && (
+              <div className="space-y-4">
+                {/* Step 3 Fields */}
+                <h2 className="text-xl font-semibold">Target Audience</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {targetAudienceOptions.map((audience) => (
+                    <Controller
+                      key={audience}
+                      control={form.control}
+                      name="targetAudience"
+                      render={({ field }) => (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={audience}
+                            checked={field.value.includes(audience)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                field.onChange([...field.value, audience]);
+                              } else {
+                                field.onChange(
+                                  field.value.filter(
+                                    (val: string) => val !== audience
+                                  )
+                                );
+                              }
+                            }}
+                            value={audience}
+                          />
+                          <Label htmlFor={audience}>{audience}</Label>
+                        </div>
+                      )}
+                    />
+                  ))}
+                </div>
+                {form.formState.errors.targetAudience && validatedSteps.includes(3) && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertDescription>
+                      {form.formState.errors.targetAudience.message}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {otherTargetAudienceFields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="flex items-center space-x-2 mt-2"
+                  >
+                    <Input
+                      {...form.register(`otherTargetAudiences.${index}`)}
+                      placeholder="Other target audience"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeTargetAudience(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => appendTargetAudience("")}
+                  className="mt-2"
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Other Target Audience
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="designText">Design Text</Label>
-                <Textarea
-                  id="designText"
-                  {...register("designText")}
-                  className="mt-1"
-                  placeholder="Modern and clean design with a focus on green aesthetics."
-                />
+            )}
+
+            {step === 4 && (
+              <div className="space-y-6">
+                {/* Step 4 Fields */}
+                <h2 className="text-xl font-semibold">Brand Personality</h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {personalityTraits.map((trait) => (
+                    <Controller
+                      key={trait}
+                      control={form.control}
+                      name="brandPersonalities"
+                      render={({ field }) => (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={trait}
+                            checked={field.value.includes(trait)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                field.onChange([...field.value, trait]);
+                              } else {
+                                field.onChange(
+                                  field.value.filter(
+                                    (val: string) => val !== trait
+                                  )
+                                );
+                              }
+                            }}
+                            value={trait}
+                          />
+                          <Label htmlFor={trait}>{trait}</Label>
+                        </div>
+                      )}
+                    />
+                  ))}
+                </div>
+                {form.formState.errors.brandPersonalities && validatedSteps.includes(4) && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertDescription>
+                      {form.formState.errors.brandPersonalities.message}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="space-y-4">
+                  <Label>Brand Tone</Label>
+                  <Controller
+                    control={form.control}
+                    name="brandTone"
+                    render={({ field }) => (
+                      <RadioGroup
+                        value={field.value}
+                        onValueChange={(value) => {
+                          console.log("Selected Brand Tone:", value); // Debugging
+                          field.onChange(value);
+                        }}
+                        className="flex flex-col space-y-1"
+                      >
+                        {brandToneOptions.map((tone) => (
+                          <div
+                            key={tone}
+                            className="flex items-center space-x-3"
+                          >
+                            <RadioGroupItem value={tone} id={tone} />
+                            <Label htmlFor={tone}>{tone}</Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    )}
+                  />
+                  {form.formState.errors.brandTone && validatedSteps.includes(4) && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertDescription>
+                        {form.formState.errors.brandTone.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manualInputText">Manual Input Text</Label>
+                  <Textarea
+                    id="manualInputText"
+                    {...form.register("manualInputText")}
+                    placeholder="Enter any additional information about your brand voice"
+                    className="min-h-[100px]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="designText">Design Text</Label>
+                  <Textarea
+                    id="designText"
+                    {...form.register("designText")}
+                    placeholder="Describe the visual design elements of your brand"
+                    className="min-h-[100px]"
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="brandVoicePreview">Brand Voice Preview</Label>
-                <Textarea
-                  id="brandVoicePreview"
-                  className="mt-1"
-                  placeholder="Based on your inputs, your brand voice is... You're targeting in the industry. Your content will have a formal tone."
-                  readOnly
-                />
-              </div>
+            )}
+
+            {/* Display Submission Error if any */}
+            {submissionError && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>
+                  {submissionError}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex justify-between pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStep(step > 1 ? step - 1 : step)}
+                disabled={step === 1}
+              >
+                Previous
+              </Button>
+              {step === totalSteps ? (
+                <Button type="submit" disabled={isGenerating || !session}>
+                  Generate Brand Voice
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    const currentStepFields = getFieldsByStep(step);
+                    const isValid = await form.trigger(currentStepFields);
+                    if (isValid) {
+                      setValidatedSteps((prev) => [...prev, step]);
+                      setStep(step + 1);
+                    }
+                  }}
+                >
+                  Next
+                </Button>
+              )}
             </div>
-          )}
-        </form>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button onClick={prevStep} disabled={currentStep === 1}>
-          Previous
-        </Button>
-        <Button
-          onClick={
-            currentStep === steps.length ? handleSubmit(onSubmit) : nextStep
-          }
-          disabled={isSubmitting}
-        >
-          {currentStep === steps.length ? (
-            isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating Brand Voice...
-              </>
-            ) : (
-              "Generate Brand Voice"
-            )
-          ) : (
-            "Next"
-          )}
-        </Button>
-      </CardFooter>
-    </Card>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Integrate DevTools for debugging */}
+      <DevTool control={form.control} /> {/* Remove or conditionally render in production */}
+    </div>
   );
 }
