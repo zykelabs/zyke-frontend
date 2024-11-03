@@ -170,10 +170,33 @@ export default function BrandVoiceCreator() {
 
   React.useEffect(() => {
     if (status === "loading") return; // Do nothing while loading
-    if (!session) {
-      // Redirect to login or show a message
-      router.push("/login"); // Adjust the path as needed
-    }
+    const checkBrandVoice = async () => {
+      if (!session) {
+        router.push("/login");
+        return;
+      }
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/brand_voice_info/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.brandVoice) {
+            router.push("/idea-generator"); // Redirect if brand voice exists
+          }
+        }
+      } catch (error) {
+        console.error("Error checking brand voice:", error);
+      }
+    };
+
+    checkBrandVoice();
   }, [session, status, router]);
 
   const selectedBrandType = React.useMemo(() => {

@@ -195,7 +195,7 @@ export default function GeneratedIdeas() {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/idea_to_post/fetch_posts", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/idea_to_post/fetch_posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -5,7 +5,7 @@ import BrandProfile from '@/components/BrandProfile';
 
 export default function BrandProfilePage() {
   return (
-    <ProtectedRoute >
+    <ProtectedRoute requireBrandVoice>
       <BrandProfile />
     </ProtectedRoute>
   );

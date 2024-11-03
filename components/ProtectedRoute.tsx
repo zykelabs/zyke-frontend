@@ -1,3 +1,4 @@
+// ProtectedRoute.tsx
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -20,9 +21,7 @@ export default function ProtectedRoute({
   const [hasBrandVoice, setHasBrandVoice] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (status === "loading") {
-      return; // Do nothing while loading
-    }
+    if (status === "loading") return;
 
     if (!session) {
       router.push("/signin");
@@ -30,6 +29,11 @@ export default function ProtectedRoute({
     }
 
     const checkBrandVoice = async () => {
+      if (!requireBrandVoice) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/brand_voice_info/profile`,
@@ -44,16 +48,8 @@ export default function ProtectedRoute({
 
         if (response.ok) {
           const data = await response.json();
-          if (data.brandVoice) {
-            setHasBrandVoice(true);
-          } else {
-            setHasBrandVoice(false);
-          }
+          setHasBrandVoice(!!data.brandVoice);
         } else if (response.status === 404) {
-          setHasBrandVoice(false);
-        } else {
-          // Handle other response statuses
-          console.error("Failed to fetch brand voice:", response.statusText);
           setHasBrandVoice(false);
         }
       } catch (error) {
@@ -65,17 +61,22 @@ export default function ProtectedRoute({
     };
 
     checkBrandVoice();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, status]);
+  }, [session, status, requireBrandVoice, router]);
 
   useEffect(() => {
-    if (isLoading) return;
-  }, []);
+    if (!isLoading && requireBrandVoice && hasBrandVoice === false) {
+      router.push("/user-type"); // Redirect to brand voice setup if required
+    }
+  }, [isLoading, hasBrandVoice, requireBrandVoice, router]);
 
-  if (isLoading || status === "loading" || hasBrandVoice === null) {
+  if (
+    isLoading ||
+    status === "loading" ||
+    (requireBrandVoice && hasBrandVoice === null)
+  ) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <LoaderSpinner /> {/* Replace with your preferred loading component */}
+        <LoaderSpinner /> {/* Loading spinner component */}
       </div>
     );
   }

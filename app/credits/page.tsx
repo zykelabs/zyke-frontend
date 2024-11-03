@@ -3,7 +3,7 @@ import ProtectedRoute from "@/components/ProtectedRoute"
 
 const CreditsPage = () => {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireBrandVoice>
       <Credits/>
     </ProtectedRoute>
   )

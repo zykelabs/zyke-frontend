@@ -1,11 +1,12 @@
 import GeneratedPosts from "@/components/GeneratedPosts"
+import ProtectedRoute from "@/components/ProtectedRoute"
 
 
 const Posts = () => {
   return (
-    <div>
+    <ProtectedRoute requireBrandVoice>
       <GeneratedPosts/>
-    </div>
+    </ProtectedRoute>
   )
 }
 

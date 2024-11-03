@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import Link from "next/link"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 // Validation schema using Zod
 const signUpSchema = z.object({
@@ -18,20 +18,26 @@ const signUpSchema = z.object({
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-})
+});
 
-type SignUpFormData = z.infer<typeof signUpSchema>
+type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showAlert, setShowAlert] = useState(false)
-  const [alertMessage, setAlertMessage] = useState({
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [alert, setAlert] = useState<{
+    show: boolean;
+    title: string;
+    description: string;
+    type: "success" | "error";
+  }>({
+    show: false,
     title: "",
     description: "",
-    type: "",
-  })
-  const router = useRouter()
+    type: "error",
+  });
+
+  const router = useRouter();
 
   const {
     register,
@@ -39,10 +45,10 @@ export default function SignUpPage() {
     formState: { errors },
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
-  })
+  });
 
   async function onSubmit(data: SignUpFormData) {
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       const response = await fetch(
@@ -59,30 +65,32 @@ export default function SignUpPage() {
             password: data.password,
           }),
         }
-      )
+      );
 
-      const responseData = await response.json()
+      const responseData = await response.json();
 
       if (response.ok) {
-        router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`)
+        // Redirect to OTP verification page
+        router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
       } else {
-        setAlertMessage({
+        // Show error alert
+        setAlert({
+          show: true,
           title: "Error",
           description: responseData.msg || "Registration failed.",
           type: "error",
-        })
-        setShowAlert(true)
+        });
       }
     } catch (error) {
-      console.error("Sign up error:", error)
-      setAlertMessage({
+      console.error("Sign up error:", error);
+      setAlert({
+        show: true,
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
         type: "error",
-      })
-      setShowAlert(true)
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -91,8 +99,11 @@ export default function SignUpPage() {
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Create your account</h1>
-          <p className="text-gray-500">Fill in the details below to create an account</p>
+          <p className="text-gray-500">
+            Fill in the details below to create an account
+          </p>
         </div>
+
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-2">
             <Label htmlFor="firstName">First Name</Label>
@@ -144,7 +155,7 @@ export default function SignUpPage() {
                 id="password"
                 {...register("password")}
                 type={showPassword ? "text" : "password"}
-                placeholder=""
+                placeholder="Enter your password"
                 className="bg-accent text-accent-foreground"
                 required
               />
@@ -174,21 +185,28 @@ export default function SignUpPage() {
             Sign Up
           </Button>
         </form>
+
         <div className="text-sm text-center mt-4">
-          Already have an account?{' '}
-          <Link href="/signin" className="font-medium text-primary hover:underline">
+          Already have an account?{" "}
+          <Link
+            href="/signin"
+            className="font-medium text-primary hover:underline"
+          >
             Sign in
           </Link>
         </div>
       </div>
 
-      {showAlert && (
-        <Alert className="fixed bottom-4 right-4 w-auto max-w-sm" variant={alertMessage.type === "error" ? "destructive" : "default"}>
+      {alert.show && (
+        <Alert
+          className="fixed bottom-4 right-4 w-auto max-w-sm"
+          variant={alert.type === "error" ? "destructive" : "default"}
+        >
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{alertMessage.title}</AlertTitle>
-          <AlertDescription>{alertMessage.description}</AlertDescription>
+          <AlertTitle>{alert.title}</AlertTitle>
+          <AlertDescription>{alert.description}</AlertDescription>
         </Alert>
       )}
     </div>
-  )
+  );
 }

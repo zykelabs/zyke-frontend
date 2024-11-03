@@ -1,13 +1,13 @@
-import React from 'react'
-import IdeaGenerator from '../../components/IdeaGenerator';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import React from "react";
+import IdeaGenerator from "../../components/IdeaGenerator";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const IdeaGeneratorPage = () => {
   return (
-    <ProtectedRoute >
-        <IdeaGenerator/>
+    <ProtectedRoute requireBrandVoice>
+      <IdeaGenerator />
     </ProtectedRoute>
-  )
-}
+  );
+};
 
-export default IdeaGeneratorPage
+export default IdeaGeneratorPage;

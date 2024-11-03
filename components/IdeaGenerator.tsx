@@ -200,7 +200,7 @@ function LegendaryNavbar() {
 
           <div className="flex items-center space-x-4">
             {/* Notifications Dropdown */}
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                   <Bell className="w-5 h-5" />
@@ -221,7 +221,7 @@ function LegendaryNavbar() {
                   You have a new follower
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
 
             {/* User Avatar Dropdown */}
             <DropdownMenu>
@@ -252,39 +252,10 @@ function LegendaryNavbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="whitespace-normal break-words">
-                  <Link href="/billing" className="flex items-center space-x-2">
+                  <Link href="/credits" className="flex items-center space-x-2">
                     <CreditCard className="w-4 h-4" />
-                    <span>Billing</span>
+                    <span>Credits</span>
                   </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="whitespace-normal break-words">
-                  <Link href="/team" className="flex items-center space-x-2">
-                    <Users className="w-4 h-4" />
-                    <span>Team</span>
-                  </Link>
-                </DropdownMenuItem>
-                {/* Theme Toggle */}
-                <DropdownMenuItem asChild className="whitespace-normal break-words">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
-                    className="w-full flex items-center space-x-2"
-                  >
-                    {theme === "dark" ? (
-                      <>
-                        <Sun className="w-4 h-4" />
-                        <span>Light Mode</span>
-                      </>
-                    ) : (
-                      <>
-                        <Moon className="w-4 h-4" />
-                        <span>Dark Mode</span>
-                      </>
-                    )}
-                  </Button>
                 </DropdownMenuItem>
                 {/* Logout Handling */}
                 <DropdownMenuItem asChild className="whitespace-normal break-words">

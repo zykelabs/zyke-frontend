@@ -1,3 +1,4 @@
+// route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -8,6 +9,7 @@ interface CustomUser {
   name: string;
   email: string;
   accessToken?: string;
+  refreshToken?: string;
 }
 
 export const authOptions: NextAuthOptions = {
@@ -33,23 +35,22 @@ export const authOptions: NextAuthOptions = {
         if (!credentials) return null;
 
         try {
+          // Send login request to Flask backend
           const response = await axios.post(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
-            {
-              email: credentials.email,
-              password: credentials.password,
-            }
+            { email: credentials.email, password: credentials.password }
           );
 
-          const user = response.data;
+          const data = response.data;
 
-          if (response.status === 200 && user) {
-            // Return user object to be stored in the session
+          if (response.status === 200 && data.access_token) {
+            // Return user data, including tokens, to store in session
             return {
-              id: user.id,
-              name: `${user.first_name} ${user.last_name}`,
-              email: user.email,
-              accessToken: user.access_token,
+              id: data.user.id,
+              name: `${data.user.first_name} ${data.user.last_name}`,
+              email: data.user.email,
+              accessToken: data.access_token,
+              refreshToken: data.refresh_token,
             } as CustomUser;
           }
 
@@ -63,68 +64,80 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    // Handle user sign-in
+    // Google OAuth Callback
     async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
-        const { email, given_name, family_name, sub } = profile as any;
         try {
-          // Call your Flask backend to register or log in the user
+          // Send OAuth login request to Flask backend
           const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/oauth-login`,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/oauth/callback`,
             {
-              email,
-              first_name: given_name,
-              last_name: family_name,
-              provider_id: sub,
-              auth_provider: "google",
+              token: account.access_token, // Send the access token received from Google
             }
           );
-          console.log("OAuth login success:", response.data);
 
-          // Assuming the backend returns: id, access_token
-          (user as CustomUser).id = response.data.id;
-          (user as CustomUser).accessToken = response.data.access_token;
+          const data = response.data;
 
-          return true;
+          if (response.status === 200 && data.access_token) {
+            // Attach tokens to user object
+            (user as CustomUser).accessToken = data.access_token;
+            (user as CustomUser).refreshToken = data.refresh_token;
+            (user as CustomUser).id = data.user.id;
+            return true;
+          }
+
+          return false;
         } catch (error: any) {
-          console.error(
-            "Error creating/updating user:",
-            error.response ? error.response.data : error
-          );
+          console.error("Google sign-in error:", error.response?.data || error);
           return false;
         }
       }
-      return true; // Allow sign-in for CredentialsProvider
+      return true;
     },
 
-    // Add accessToken and user ID to JWT
-    async jwt({ token, user, account }) {
-      // Initial sign-in
+    // JWT Callback to handle tokens
+    async jwt({ token, user }) {
       if (user) {
         token.accessToken = (user as CustomUser).accessToken;
+        token.refreshToken = (user as CustomUser).refreshToken;
         token.id = (user as CustomUser).id;
       }
 
-      // Persist the accessToken to the token right after signin
-      if (account?.provider === "google") {
-        token.accessToken = (user as CustomUser).accessToken as string;
-        token.id = (user as CustomUser).id;
+      // Token refresh logic
+      const now = Math.floor(Date.now() / 1000);
+      const accessTokenExpiration = (token.accessTokenExpiresAt as number) || 0;
+      if (accessTokenExpiration < now && token.refreshToken) {
+        try {
+          const response = await axios.post(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`,
+            {
+              refresh_token: token.refreshToken,
+            }
+          );
+          const newToken = response.data;
+
+          token.accessToken = newToken.access_token;
+          token.accessTokenExpiresAt = now + 15 * 60; // Assuming 15 minutes expiry
+        } catch (error) {
+          console.error("Error refreshing access token:", error);
+          // Optionally, you can sign out the user here
+        }
       }
 
       return token;
     },
 
-    // Add accessToken and user ID to session
+    // Session Callback to pass tokens to client
     async session({ session, token }) {
       session.accessToken = token.accessToken as string;
-      (session.user as any).id = token.id as string;
+      session.refreshToken = token.refreshToken as string;
+      session.user.id = token.id as string;
       return session;
     },
 
     // Redirect after sign-in
     async redirect({ url, baseUrl }) {
-      // Let the SignIn component handle redirection based on brand voice
-      return baseUrl + '/idea-generator';
+      return baseUrl + "/idea-generator";
     },
   },
 

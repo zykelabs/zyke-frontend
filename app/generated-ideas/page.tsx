@@ -3,7 +3,7 @@ import ProtectedRoute from '@/components/ProtectedRoute'
 
 const Ideas = () => {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireBrandVoice>
       <GeneratedIdeas/>
     </ProtectedRoute>
   )

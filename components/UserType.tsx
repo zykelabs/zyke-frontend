@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -116,6 +116,39 @@ export default function AccountSelectionJourney() {
       icon: ShoppingBag,
     },
   ];
+
+  useEffect(() => {
+    if (status === "loading") return;
+
+    const checkBrandVoice = async () => {
+      if (!session) {
+        router.push("/signin");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/brand_voice_info/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.brandVoice) {
+            router.push("/idea-generator"); // Redirect if brand voice exists
+          }
+        }
+      } catch (error) {
+        console.error("Error checking brand voice:", error);
+      }
+    };
+
+    checkBrandVoice();
+  }, [session, status, router]);
 
   const handleOptionSelect = (option: string) => {
     setSelectedOption(option);
