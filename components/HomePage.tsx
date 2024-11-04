@@ -17,9 +17,6 @@ import {
   Edit,
   TrendingUp,
   CheckCircle2,
-  Github,
-  Twitter,
-  Facebook,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,11 +30,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+
+import { useSession, signOut } from "next-auth/react"; // Import useSession and signOut
 
 export default function HomePage() {
+  // Access session data and authentication status
+  const { data: session, status } = useSession();
+
   const [navbarSolid, setNavbarSolid] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -145,6 +144,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white text-gray-900 font-sans">
+      {/* Navigation Bar */}
       <nav
         className={`fixed w-full z-50 transition-all duration-300 ${
           navbarSolid ? "bg-gray-900 shadow-md" : "bg-white backdrop-blur-lg"
@@ -188,17 +188,42 @@ export default function HomePage() {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/signin">
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-black text-black hover:bg-gray-100 px-8"
-            >
-              Sign In
-            </Button>
-            </Link>
+            {/* Conditionally render buttons based on authentication status */}
+            {status === "loading" ? (
+              // Optionally, show a loading state
+              <Button size="lg" variant="ghost" disabled>
+                Loading...
+              </Button>
+            ) : session ? (
+              <>
+                {/* "Generate Ideas" Button for Authenticated Users */}
+                <Link href="/idea-generator">
+                  <Button
+                    size="lg"
+                    variant="primary"
+                    className="bg-black hover:bg-gray-900 text-white px-8"
+                  >
+                    Generate Ideas
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                {/* "Sign In" Button for Unauthenticated Users */}
+                <Link href="/signin">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-black text-black hover:bg-gray-100 px-8"
+                  >
+                    Sign In
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
+          {/* Mobile Menu Toggle */}
           <button
             className="md:hidden text-gray-300 hover:text-white transition-colors duration-300"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -208,6 +233,7 @@ export default function HomePage() {
           </button>
         </div>
 
+        {/* Mobile Menu */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -235,19 +261,44 @@ export default function HomePage() {
                 >
                   FAQs
                 </Link>
-                <Button
-                  onClick={() => setIsAuthModalOpen(true)}
-                  size="sm"
-                  className="w-full bg-white text-black hover:bg-gray-200 mt-2 transition-colors duration-300"
-                >
-                  Sign In
-                </Button>
+                {/* Conditionally render mobile buttons based on authentication */}
+                {status === "loading" ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled
+                    className="w-full bg-white text-black hover:bg-gray-100 px-8"
+                  >
+                    Loading...
+                  </Button>
+                ) : session ? (
+                  <>
+                    <Link href="/idea-generator">
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        className="w-full bg-white text-black hover:bg-gray-100 px-8"
+                      >
+                        Generate Ideas
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => setIsAuthModalOpen(true)}
+                    size="sm"
+                    className="w-full bg-white text-black hover:bg-gray-200 mt-2 transition-colors duration-300"
+                  >
+                    Sign In
+                  </Button>
+                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </nav>
 
+      {/* Header Section */}
       <header className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-blue-70 via-blue-100 to-white">
         <motion.div className="z-10 space-y-6 max-w-4xl" {...fadeInUp}>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-black">
@@ -258,13 +309,28 @@ export default function HomePage() {
             cheaper and faster
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button
-              onClick={() => setIsAuthModalOpen(true)}
-              size="lg"
-              className="bg-black hover:bg-gray-900 text-white px-8"
-            >
-              Get Started
-            </Button>
+            {status === "loading" ? (
+              <Button size="lg" variant="ghost" disabled>
+                Loading...
+              </Button>
+            ) : session ? (
+              <Link href="/idea-generator">
+                <Button
+                  size="lg"
+                  className="bg-black hover:bg-gray-900 text-white px-8"
+                >
+                  Generate Ideas
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                onClick={() => setIsAuthModalOpen(true)}
+                size="lg"
+                className="bg-black hover:bg-gray-900 text-white px-8"
+              >
+                Get Started
+              </Button>
+            )}
             <Button
               asChild
               size="lg"
@@ -285,6 +351,7 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* Product Section */}
       <section id="product" className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -352,6 +419,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Book Session Section */}
       <section id="book-session" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -412,12 +480,13 @@ export default function HomePage() {
               Have questions? We&apos;re here to help!
             </p>
             <Button asChild variant="outline">
-              <Link href="mailto:zyke.work@gmail.com">Contact Us</Link>
+              <Link href="mailto:founders@zyke.in">Contact Us</Link>
             </Button>
           </div>
         </div>
       </section>
 
+      {/* FAQs Section */}
       <section id="faqs" className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -472,44 +541,6 @@ export default function HomePage() {
                 </div>
               </motion.div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-24 bg-gray-50 text-black">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.h2
-              className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-tight"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Interested in learning more or collaborating with us? <br />
-              Get in touch!
-            </motion.h2>
-            <motion.p
-              className="text-lg sm:text-xl md:text-2xl mb-8 text-gray-700"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              Join us in this journey of making AI as creative as Picasso
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <Link
-                href="mailto:zyke.work@gmail.com"
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-black bg-white rounded-full hover:bg-gray-100 transition-colors duration-300 shadow-lg hover:shadow-xl"
-              >
-                <Mail className="mr-2 h-5 w-5" />
-                zyke.work@gmail.com
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </motion.div>
           </div>
         </div>
       </section>
@@ -753,7 +784,7 @@ export default function HomePage() {
                           withdraw your consent for us to contact you, for the
                           continued collection, use or disclosure of your
                           information, at anytime, by contacting us by mailing
-                          us at: zyke.work@gmail.com
+                          us at: founders@zyke.in
                         </p>
                         <br></br>
                         <p>
@@ -914,7 +945,7 @@ export default function HomePage() {
                           complaint, or simply want more information contact our
                           Privacy Compliance Officer at{" "}
                           <strong>IIT Kharagpur</strong> or by mail at{" "}
-                          <strong>zyke.work@gmail.com</strong>
+                          <strong>founders@zyke.in</strong>
                         </p>
                       </div>
                     </div>
@@ -935,7 +966,7 @@ export default function HomePage() {
                 <Linkedin size={24} />
               </Link>
               <Link
-                href="mailto:zyke.work@gmail.com"
+                href="mailto:founders@zyke.in"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <Mail size={24} />
@@ -945,7 +976,7 @@ export default function HomePage() {
             <div className="flex flex-col space-x-4">
               <ul>
                 <li>
-                  <h5 className="text-md text-white">zyke.work@gmail.com</h5>
+                  <h5 className="text-md text-white">founders@zyke.in</h5>
                 </li>
                 <li>
                   <h5 className="text-md text-white">+91 9452912935</h5>

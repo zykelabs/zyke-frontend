@@ -23,6 +23,7 @@ import {
   Instagram,
   Twitter,
   Linkedin,
+  Facebook, // Added Facebook icon
   Loader2,
   MapPin,
   Users,
@@ -37,10 +38,18 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+// Updated SocialMedia interface to include Facebook and make fields optional
 export interface SocialMedia {
-  instagram: string;
-  twitter: string;
-  linkedin: string;
+  instagram?: string;
+  facebook?: string;
+  linkedin?: string;
+  twitter?: string; // Optional in case it's present
+}
+
+// Updated OtherUrl interface to handle label and url
+export interface OtherUrl {
+  label: string;
+  url: string;
 }
 
 export interface BrandVoice {
@@ -51,6 +60,7 @@ export interface BrandVoice {
   updated_at: string;
 }
 
+// Updated BrandProfile interface
 export interface BrandProfile {
   company: string;
   brandVoiceName: string;
@@ -60,9 +70,10 @@ export interface BrandProfile {
   brandPersonalities: string[];
   targetAudience: string[];
   brandTone: string;
-  brandType: string;
+  brandType: number; // Changed from string to number
+  website?: string; // Added website
   socialMedia: SocialMedia;
-  otherUrls: string[];
+  otherUrls: OtherUrl[]; // Changed from string[] to OtherUrl[]
   manualInputText: string;
   designText: string;
   brandVoice: BrandVoice;
@@ -171,17 +182,19 @@ export default function BrandProfile() {
     manualInputText,
     designText,
     brandVoice,
+    website, // Destructured website
   } = brandProfile;
 
-  const getBrandTypeDescription = (type: string) => {
+  const getBrandTypeDescription = (type: number) => {
+    // Updated parameter type
     switch (type) {
-      case "1":
+      case 1:
         return "Big Corporation";
-      case "2":
+      case 2:
         return "Startup or SMB";
-      case "3":
+      case 3:
         return "Independent Creator";
-      case "4":
+      case 4:
         return "Dropshipper";
       default:
         return "Unknown";
@@ -209,9 +222,10 @@ export default function BrandProfile() {
             <h1 className="text-4xl font-bold mb-2 text-purple-800">
               {company}
             </h1>
-            <p className="text-xl text-gray-600 mb-4">
+            {/* Uncommented to display manual input text */}
+            {/* <p className="text-xl text-gray-600 mb-4 whitespace-pre-line">
               {manualInputText || "No description available."}
-            </p>
+            </p> */}
             <div className="flex justify-center space-x-4">
               {socialMedia.instagram && (
                 <TooltipProvider>
@@ -234,7 +248,7 @@ export default function BrandProfile() {
                   </Tooltip>
                 </TooltipProvider>
               )}
-              {socialMedia.twitter && (
+              {socialMedia.twitter && ( // Optional Twitter
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -251,6 +265,27 @@ export default function BrandProfile() {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Follow us on Twitter</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {socialMedia.facebook && ( // Added Facebook
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" asChild>
+                        <a
+                          href={`https://www.facebook.com/${socialMedia.facebook}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-700 transition-colors"
+                        >
+                          <Facebook className="h-5 w-5" />
+                        </a>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Follow us on Facebook</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -341,6 +376,19 @@ export default function BrandProfile() {
                         {getBrandTypeDescription(brandType)}
                       </Badge>
                     </div>
+                    {website && ( // Added Website section
+                      <div>
+                        <h3 className="font-semibold mb-1">Website:</h3>
+                        <Link
+                          href={website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          {website}
+                        </Link>
+                      </div>
+                    )}
                     <div>
                       <h3
                         className="font-semibold mb-1 flex items-center cursor-pointer"
@@ -420,16 +468,16 @@ export default function BrandProfile() {
                     <div>
                       <h3
                         className="font-semibold mb-1 flex items-center cursor-pointer"
-                        onClick={() => toggleSection("audience")}
+                        onClick={() => toggleSection("audienceSegments")} // Changed section name to avoid conflict
                       >
                         Audience Segments
-                        {expandedSections.includes("audience") ? (
+                        {expandedSections.includes("audienceSegments") ? (
                           <ChevronUp className="ml-2 h-4 w-4" />
                         ) : (
                           <ChevronDown className="ml-2 h-4 w-4" />
                         )}
                       </h3>
-                      {expandedSections.includes("audience") && (
+                      {expandedSections.includes("audienceSegments") && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
@@ -467,7 +515,7 @@ export default function BrandProfile() {
                             </Link>
                           </div>
                         )}
-                        {socialMedia.twitter && (
+                        {socialMedia.twitter && ( // Optional Twitter
                           <div className="flex items-center">
                             <Twitter className="h-5 w-5 mr-2 text-blue-400" />
                             <Link
@@ -477,6 +525,19 @@ export default function BrandProfile() {
                               className="text-blue-500 hover:underline"
                             >
                               @{socialMedia.twitter}
+                            </Link>
+                          </div>
+                        )}
+                        {socialMedia.facebook && ( // Added Facebook
+                          <div className="flex items-center">
+                            <Facebook className="h-5 w-5 mr-2 text-blue-600" />
+                            <Link
+                              href={`https://www.facebook.com/${socialMedia.facebook}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:underline"
+                            >
+                              @{socialMedia.facebook}
                             </Link>
                           </div>
                         )}
@@ -585,15 +646,15 @@ export default function BrandProfile() {
                             transition={{ duration: 0.3 }}
                             className="flex flex-wrap gap-2 mt-2"
                           >
-                            {otherUrls.map((url, index) => (
+                            {otherUrls.map((urlObj, index) => (
                               <Link
                                 key={index}
-                                href={url}
+                                href={urlObj.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-500 hover:underline"
                               >
-                                {url}
+                                {urlObj.label}
                               </Link>
                             ))}
                           </motion.div>

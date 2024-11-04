@@ -1,4 +1,3 @@
-// Signin.tsx
 "use client";
 
 import { useState, FormEvent } from "react";
@@ -187,7 +186,7 @@ export default function SignIn() {
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>
 
-        <Button
+        {/* <Button
           type="button"
           variant="outline"
           className="w-full flex items-center justify-center space-x-2"
@@ -220,9 +219,9 @@ export default function SignIn() {
               <span>Sign in with Google</span>
             </>
           )}
-        </Button>
+        </Button> */}
 
-        <div className="relative">
+        {/* <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <Separator className="w-full" />
           </div>
@@ -231,7 +230,7 @@ export default function SignIn() {
               Or continue with
             </span>
           </div>
-        </div>
+        </div> */}
 
         <form className="space-y-4" onSubmit={handleSignIn}>
           <div className="space-y-2">

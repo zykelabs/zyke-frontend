@@ -1,10 +1,9 @@
-// GeneratedPosts.tsx
+// components/GeneratedPosts.tsx
 
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -23,14 +22,13 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
 
 // Utility function to combine class names
 function cn(...classes: (string | undefined | null | false)[]) {
@@ -54,10 +52,10 @@ interface Idea {
 interface ImageModalProps {
   isOpen: boolean;
   onClose: () => void;
-  imageSrc: string;
-  onImageUpdate: (newImage: string, imageHistory: string[]) => void; // Function to update image in parent component
-  originalImageSrc: string; // Original image to allow reverting back
-  imageHistory: string[];
+  imageSrc: string; // Currently displayed image (could be original or modified)
+  onImageUpdate: (newImage: string, imageHistory: string[]) => void;
+  originalImageSrc: string; // The original image
+  imageHistory: string[]; // History of images for this slot
 }
 
 const ImageModal: React.FC<ImageModalProps> = ({
@@ -68,13 +66,15 @@ const ImageModal: React.FC<ImageModalProps> = ({
   originalImageSrc,
   imageHistory: initialImageHistory,
 }) => {
+  const { data: session } = useSession();
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [blendedImages, setBlendedImages] = useState<string[]>([]);
+  const [dilatedMasks, setDilatedMasks] = useState<string[]>([]);
   const [masks, setMasks] = useState<string[]>([]);
-  const [selectedMask, setSelectedMask] = useState<string | null>(null);
+  const [selectedDilatedMask, setSelectedDilatedMask] = useState<string>("");
   const [displayedImage, setDisplayedImage] = useState<string>(imageSrc);
-  const [imageHistory, setImageHistory] =
-    useState<string[]>(initialImageHistory);
+  const [imageHistory, setImageHistory] = useState<string[]>(initialImageHistory);
   const [currentHistoryIndex, setCurrentHistoryIndex] = useState<number>(
     initialImageHistory.length - 1
   );
@@ -82,161 +82,225 @@ const ImageModal: React.FC<ImageModalProps> = ({
   const [isSelectMaskActive, setIsSelectMaskActive] = useState(false);
   const [loadingMasks, setLoadingMasks] = useState<boolean>(false);
   const [errorMasks, setErrorMasks] = useState<string | null>(null);
+  const [originalDimensions, setOriginalDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
 
-  // Fetch masks from API when mask selection is activated
-  useEffect(() => {
-    if (isSelectMaskActive) {
-      const fetchMasks = async () => {
-        setLoadingMasks(true);
-        setErrorMasks(null);
-        try {
-          const response = await fetch("/api/masks"); // Replace with your actual API endpoint
-          if (!response.ok) {
-            throw new Error(`Error fetching masks: ${response.statusText}`);
-          }
-          const data = await response.json();
-          setMasks(data.masks); // Assuming the API returns { masks: string[] }
-        } catch (error: any) {
-          console.error(error);
-          setErrorMasks(error.message || "Failed to load masks.");
-        } finally {
-          setLoadingMasks(false);
-        }
+  const [blendedWithDilated, setBlendedWithDilated] = useState<
+    { blendedImage: string; dilatedMask: string }[]
+  >([]);
+
+  const [isLoadingMask, setIsLoadingMask] = useState<boolean>(false);
+
+  const [remove, setRemove] = useState<boolean>(false);
+
+  const [isGenerated, setIsGenerated] = useState<boolean>(false);
+
+  // Utility function to convert image URL to base64
+  const convertImageToBase64 = async (url: string): Promise<string> => {
+    if (url.startsWith("data:image")) return url;
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) resolve(reader.result as string);
+        else reject("Failed to convert image to base64.");
       };
-
-      fetchMasks();
-    }
-  }, [isSelectMaskActive]);
-
-  // Fetch generated image based on mask and prompt
-  const fetchGeneratedImage = async (
-    mask: string,
-    promptText: string
-  ): Promise<string> => {
-    try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ mask, prompt: promptText }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error generating image: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return data.generatedImage; // Assuming the API returns { generatedImage: string }
-    } catch (error: any) {
-      console.error(error);
-      throw new Error(error.message || "Failed to generate image.");
-    }
+      reader.onerror = () => reject("Failed to convert image to base64.");
+      reader.readAsDataURL(blob);
+    });
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      setPrompt("");
-      setIsGenerating(false);
-      setMasks([]);
-      setSelectedMask(null);
-      setDisplayedImage(imageHistory[currentHistoryIndex]);
-      setIsMaskSelectionReady(false);
-      setIsSelectMaskActive(false);
-      setErrorMasks(null);
+  // Fetch masks from initial segmentation API and then blend them
+  const handleImageClick = async (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    if (!isSelectMaskActive) return;
+
+    if (!originalDimensions) {
+      console.error("Original dimensions not available.");
+      return;
     }
-  }, [isOpen, imageHistory, currentHistoryIndex]);
 
-  const handleGenerate = async () => {
-    if (isGenerating) return;
-
-    setIsGenerating(true);
-
-    try {
-      let newImage = imageSrc; // Default to current image
-
-      if (selectedMask) {
-        // Fetch generated image based on selected mask and prompt
-        newImage = await fetchGeneratedImage(selectedMask, prompt);
-      }
-
-      // Update image history
-      const newImageHistory = [
-        ...imageHistory.slice(0, currentHistoryIndex + 1),
-        newImage,
-      ];
-      setImageHistory(newImageHistory);
-      setCurrentHistoryIndex(newImageHistory.length - 1);
-      setDisplayedImage(newImage);
-
-      // Update image in parent component
-      onImageUpdate(newImage, newImageHistory);
-    } catch (error: any) {
-      console.error(error);
-      alert(error.message || "Failed to generate image.");
-    } finally {
-      setIsGenerating(false);
+    const img = imageRef.current;
+    if (!img) {
+      console.error("Image reference is not available.");
+      return;
     }
-  };
 
-  const handleSelectMask = () => {
-    // Toggle mask selection mode
-    const canActivate = !isCurrentImageMask && !isGenerating;
+    const rect = img.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
 
-    if (!canActivate) return;
-
-    setIsMaskSelectionReady(!isMaskSelectionReady);
-    setIsSelectMaskActive(!isSelectMaskActive);
-
-    if (!isMaskSelectionReady) {
-      // Activating mask selection
-      setMasks([]);
-      setSelectedMask(null);
-    } else {
-      // Deactivating mask selection
-      setMasks([]);
-      setSelectedMask(null);
-    }
-  };
-
-  const handleImageClick = () => {
+    // Check if click is inside the image
     if (
-      isSelectMaskActive &&
-      masks.length === 0 &&
-      !loadingMasks &&
-      !errorMasks
+      clickX < 0 ||
+      clickY < 0 ||
+      clickX > rect.width ||
+      clickY > rect.height
     ) {
-      // Activate mask selection when user clicks on the image
+      // Click is outside the image
+      return;
+    }
+
+    // Calculate proportional coordinates
+    const x_proportion = clickX / rect.width;
+    const y_proportion = clickY / rect.height;
+
+    // Prepare the original image in base64 format for segmentation
+    let base64Image = "";
+    try {
+      base64Image = await convertImageToBase64(originalImageSrc); // Always use originalImageSrc
+    } catch (error) {
+      console.error("Error converting image to base64:", error);
+      return;
+    }
+
+    // Prepare the payload for segmentation with proportional coordinates
+    const segmentPayload = {
+      x: parseFloat(x_proportion.toFixed(4)),
+      y: parseFloat(y_proportion.toFixed(4)),
+      user_id: session?.user?.id || "unknown_user",
+      image: base64Image,
+    };
+
+    // Make initial segmentation API call
+    setLoadingMasks(true);
+    setErrorMasks(null);
+    setIsLoadingMask(true); // Start loading cursor
+    try {
+      const segmentResponse = await fetch(
+        "https://4f4b-152-59-165-182.ngrok-free.app/segment",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(segmentPayload),
+        }
+      );
+
+      if (!segmentResponse.ok) {
+        throw new Error(`Error segmenting image: ${segmentResponse.statusText}`);
+      }
+
+      const segmentData = await segmentResponse.json();
+      if (segmentData.masks && Array.isArray(segmentData.masks)) {
+        // Now send masks along with original image to blend_masks API
+        const blendPayload = {
+          masks: segmentData.masks,
+          img: base64Image,
+        };
+
+        const blendResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/blend/blend_masks`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(blendPayload),
+          }
+        );
+
+        if (!blendResponse.ok) {
+          throw new Error(`Error blending masks: ${blendResponse.statusText}`);
+        }
+
+        const blendData = await blendResponse.json();
+        if (
+          blendData.blended_images &&
+          Array.isArray(blendData.blended_images) &&
+          blendData.dilated_masks &&
+          Array.isArray(blendData.dilated_masks)
+        ) {
+          // Ensure both arrays are of the same length
+          if (blendData.blended_images.length !== blendData.dilated_masks.length) {
+            throw new Error("Mismatch between blended images and dilated masks count.");
+          }
+
+          // Map blended images with their corresponding dilated masks
+          const combinedData = blendData.blended_images.map(
+            (blendedImg: string, index: number) => ({
+              blendedImage: blendedImg,
+              dilatedMask: blendData.dilated_masks[index],
+            })
+          );
+          setBlendedWithDilated(combinedData);
+
+          // Update masks state to display blended images
+          setMasks(blendData.blended_images);
+
+          // Deactivate selection mode after successfully setting masks
+          setIsSelectMaskActive(false);
+        } else {
+          throw new Error("Invalid data format from blend_masks API.");
+        }
+      } else {
+        throw new Error("Invalid masks data received from segmentation API.");
+      }
+    } catch (error: any) {
+      console.error(error);
+      setErrorMasks(error.message || "Failed to process masks.");
+    } finally {
+      setLoadingMasks(false);
+      setIsLoadingMask(false); // End loading cursor
+      // Ensure selection mode is turned off even if there's an error
       setIsSelectMaskActive(false);
-      setIsMaskSelectionReady(true);
     }
   };
 
-  const handleMaskSelection = (mask: string) => {
-    setSelectedMask(mask);
-    setDisplayedImage(mask); // Optionally display the mask as an overlay or replace the image
+  // Handle mask selection
+  const handleMaskSelection = (index: number) => {
+    const selectedData = blendedWithDilated[index];
+    if (!selectedData) {
+      console.error("Selected mask data not found.");
+      return;
+    }
+
+    setSelectedDilatedMask(selectedData.dilatedMask);
+    setDisplayedImage(selectedData.blendedImage); // Display the selected blended image
+
     // Update image history
     const newImageHistory = [
       ...imageHistory.slice(0, currentHistoryIndex + 1),
-      mask,
+      selectedData.blendedImage,
     ];
     setImageHistory(newImageHistory);
     setCurrentHistoryIndex(newImageHistory.length - 1);
     setMasks([]); // Hide masks after selection
-    setIsSelectMaskActive(false);
+    setIsSelectMaskActive(false); // Deactivate selection mode
     setIsMaskSelectionReady(false);
+    setIsGenerated(false); // Reset generation state when a new mask is selected
   };
 
+  // Functions for Activating and Canceling Mask Selection
+  const activateSelectMask = () => {
+    if (isSelectMaskActive || isGenerating) return;
+    setIsSelectMaskActive(true);
+    setMasks([]);
+    setSelectedDilatedMask("");
+  };
+
+  const cancelSelectMask = () => {
+    if (!isSelectMaskActive) return;
+    setIsSelectMaskActive(false);
+    setMasks([]);
+    setSelectedDilatedMask("");
+  };
+
+  // Revert to previous image in history
   const handleRevert = () => {
     if (currentHistoryIndex > 0) {
       const newIndex = currentHistoryIndex - 1;
       const previousImage = imageHistory[newIndex];
       setCurrentHistoryIndex(newIndex);
       setDisplayedImage(previousImage);
-      setSelectedMask(null);
-
-      // Update parent component
       onImageUpdate(previousImage, imageHistory.slice(0, newIndex + 1));
+      setIsGenerated(false); // Re-enable controls when reverting
     }
   };
 
@@ -246,10 +310,8 @@ const ImageModal: React.FC<ImageModalProps> = ({
       const newIndex = currentHistoryIndex - 1;
       setCurrentHistoryIndex(newIndex);
       setDisplayedImage(imageHistory[newIndex]);
-      onImageUpdate(
-        imageHistory[newIndex],
-        imageHistory.slice(0, newIndex + 1)
-      );
+      onImageUpdate(imageHistory[newIndex], imageHistory.slice(0, newIndex + 1));
+      setIsGenerated(false); // Re-enable controls when navigating
     }
   };
 
@@ -259,15 +321,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
       const newIndex = currentHistoryIndex + 1;
       setCurrentHistoryIndex(newIndex);
       setDisplayedImage(imageHistory[newIndex]);
-      onImageUpdate(
-        imageHistory[newIndex],
-        imageHistory.slice(0, newIndex + 1)
-      );
+      onImageUpdate(imageHistory[newIndex], imageHistory.slice(0, newIndex + 1));
+      setIsGenerated(false); // Re-enable controls when navigating
     }
   };
-
-  // Determine if the current image is a mask
-  const isCurrentImageMask = false; // Update logic if masks are overlays
 
   // Handle backdrop click
   const handleBackdropClick = () => {
@@ -296,6 +353,106 @@ const ImageModal: React.FC<ImageModalProps> = ({
     };
   }, [handleKeyDown]);
 
+  // Capture original image dimensions
+  const handleImageLoad = (
+    event: React.SyntheticEvent<HTMLImageElement, Event>
+  ) => {
+    const img = event.currentTarget;
+    setOriginalDimensions({
+      width: img.naturalWidth,
+      height: img.naturalHeight,
+    });
+  };
+
+  // Cleanup on modal close
+  useEffect(() => {
+    if (isOpen) {
+      setPrompt("");
+      setIsGenerating(false);
+      setBlendedImages([]);
+      setDilatedMasks([]);
+      setMasks([]);
+      setSelectedDilatedMask("");
+      setDisplayedImage(imageHistory[currentHistoryIndex]);
+      setIsMaskSelectionReady(false);
+      setIsSelectMaskActive(false);
+      setErrorMasks(null);
+      setBlendedWithDilated([]);
+      setRemove(false); // Reset remove state
+      setIsGenerated(false); // Reset generation state
+    }
+  }, [isOpen]);
+
+  // Fetch generated image based on mask and prompt
+  const handleGenerate = async () => {
+    if (isGenerating) return;
+
+    setIsGenerating(true);
+
+    try {
+      // Prepare the payload
+      const base64Image = await convertImageToBase64(originalImageSrc); // Always use originalImageSrc
+      let dilatedMask = "";
+      if (selectedDilatedMask) {
+        dilatedMask = selectedDilatedMask;
+      }
+
+      const payload = {
+        prompt: remove ? "" : prompt,
+        neg_prompt: "",
+        remove: remove.toString(),
+        mask: dilatedMask,
+        image: base64Image,
+      };
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/inpaint/inpaint_image`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error generating image: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const generatedImage = data.result;
+
+      // Update image history
+      const newImageHistory = [
+        ...imageHistory.slice(0, currentHistoryIndex + 1),
+        generatedImage,
+      ];
+      setImageHistory(newImageHistory);
+      setCurrentHistoryIndex(newImageHistory.length - 1);
+      setDisplayedImage(generatedImage);
+      setSelectedDilatedMask("");
+      setIsGenerated(true); // Disable controls after generation
+
+      // Update image in parent component
+      onImageUpdate(
+        newImageHistory[newImageHistory.length - 1],
+        newImageHistory
+      );
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "Failed to generate image.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Determine if a blended image is selected
+  const isBlendedImageSelected = selectedDilatedMask !== "";
+
+  // Determine if the currently displayed image is the original image
+  const isOriginalImage = currentHistoryIndex === 0;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -307,191 +464,277 @@ const ImageModal: React.FC<ImageModalProps> = ({
           onClick={handleBackdropClick}
         >
           <motion.div
-            className="bg-white rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto w-full max-w-3xl"
+            className="bg-white rounded-2xl p-6 relative w-full max-w-3xl h-[90vh] flex flex-col"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.8 }}
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              cursor: isLoadingMask || isGenerating ? "wait" : "default",
+            }}
           >
             {/* Close Button */}
             <Button
               variant="ghost"
               className="absolute top-4 right-4 z-10"
               onClick={onClose}
+              aria-label="Close Modal"
             >
               <X className="h-6 w-6" />
             </Button>
 
-            {/* Image Display */}
-            <div
-              className="flex justify-center relative"
-              onClick={handleImageClick}
-            >
-              {/* Display the image */}
-              {imageSrc.startsWith("data:image") ? (
-                <img
-                  src={displayedImage}
-                  alt="Expanded Image"
-                  className="object-contain rounded-md cursor-pointer"
-                  loading="lazy"
-                  style={
-                    initialImageHistory.length === 1
-                      ? { maxHeight: "400px", width: "auto" }
-                      : {}
-                  }
-                />
-              ) : (
-                <Image
-                  src={displayedImage}
-                  alt="Expanded Image"
-                  width={350}
-                  height={500}
-                  className="object-contain rounded-md cursor-pointer"
-                  style={
-                    initialImageHistory.length === 1
-                      ? { maxHeight: "400px", width: "auto" }
-                      : {}
-                  }
-                />
-              )}
-              {/* Navigation Buttons */}
-              {imageHistory.length > 1 && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-1/2 left-4 transform -translate-y-1/2"
-                    onClick={handlePrevImage}
-                    disabled={currentHistoryIndex === 0}
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-1/2 right-4 transform -translate-y-1/2"
-                    onClick={handleNextImage}
-                    disabled={currentHistoryIndex === imageHistory.length - 1}
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </Button>
-                </>
-              )}
-            </div>
-
-            {/* Revert Button */}
-            {currentHistoryIndex > 0 && (
-              <div className="mt-2 flex justify-center">
-                <Button variant="ghost" onClick={handleRevert}>
-                  Revert to Previous Image
-                </Button>
+            {/* Loader Overlay for Mask Processing */}
+            {isLoadingMask && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-2xl z-20">
+                <div className="loader"></div>
               </div>
             )}
 
-            {/* Select Point for Masking Button */}
-            <div className="mt-4 flex justify-center">
-              <Button
-                variant="outline"
-                onClick={handleSelectMask}
-                disabled={isCurrentImageMask || isGenerating}
-                className={
-                  isSelectMaskActive && !isCurrentImageMask
-                    ? "bg-indigo-600 text-white hover:bg-indigo-500"
-                    : "hover:bg-gray-200"
-                }
-                style={{
-                  transition:
-                    "background-color 0.2s ease-in-out, color 0.2s ease-in-out",
-                  cursor:
-                    isCurrentImageMask || isGenerating
-                      ? "not-allowed"
-                      : "pointer",
-                }}
-              >
-                Select Point for Masking
-              </Button>
-            </div>
+            {/* Content Container */}
+            <div className="flex-1 flex flex-col space-y-6 overflow-y-auto pr-4">
+              {/* Image Display */}
+              <div className="flex justify-center relative flex-shrink-0">
+                {/* Display the image */}
+                <div
+                  className="relative w-full max-h-1/2 flex justify-center items-center cursor-pointer"
+                  onClick={handleImageClick}
+                >
+                  <img
+                    src={displayedImage}
+                    alt="Expanded Image"
+                    className="object-contain rounded-md"
+                    loading="lazy"
+                    ref={imageRef}
+                    onLoad={handleImageLoad}
+                    style={{
+                      maxHeight: "50vh",
+                      maxWidth: "100%",
+                      width: "auto",
+                      height: "auto",
+                    }}
+                  />
+                  {/* Loader Overlay for Image Generation */}
+                  {isGenerating && (
+                    <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50">
+                      <div className="loader"></div>
+                    </div>
+                  )}
+                </div>
 
-            {/* Segmentation Masks */}
-            {isMaskSelectionReady && (
-              <div className="mt-4">
-                <Label className="block mb-2">Select a Mask</Label>
-                {loadingMasks ? (
-                  <div className="flex justify-center">
-                    <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-                  </div>
-                ) : errorMasks ? (
-                  <div className="text-red-500">{errorMasks}</div>
-                ) : (
-                  <div className="grid grid-cols-3 gap-4">
-                    {masks.map((mask, index) => (
-                      <div key={index} className="relative">
-                        <Button
-                          variant={
-                            selectedMask === mask ? "default" : "outline"
-                          }
-                          className="p-0.5"
-                          onClick={() => handleMaskSelection(mask)}
-                        >
-                          <Image
-                            src={mask}
-                            alt={`Mask ${index + 1}`}
-                            width={60}
-                            height={60}
-                            className={cn(
-                              "object-contain rounded-md cursor-pointer",
-                              selectedMask === mask
-                                ? "border-2 border-indigo-600"
-                                : "border-2 border-transparent"
-                            )}
-                          />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                {/* Navigation Buttons */}
+                {imageHistory.length > 1 && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white bg-opacity-75 hover:bg-opacity-100"
+                      onClick={handlePrevImage}
+                      disabled={currentHistoryIndex === 0}
+                      aria-label="Previous Image"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white bg-opacity-75 hover:bg-opacity-100"
+                      onClick={handleNextImage}
+                      disabled={
+                        currentHistoryIndex === imageHistory.length - 1
+                      }
+                      aria-label="Next Image"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </Button>
+                  </>
                 )}
               </div>
-            )}
 
-            {/* Prompt Input and Generate Button */}
-            <div className="mt-4">
-              <input
-                type="text"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Enter your prompt"
-                className="w-full p-2 border border-gray-300 rounded-md"
-                disabled={isGenerating}
-              />
-              <Button
-                className="mt-2 w-full flex items-center justify-center"
-                onClick={handleGenerate}
-                disabled={isGenerating || !prompt.trim()}
-                style={{
-                  backgroundColor: isGenerating ? "#a5b4fc" : undefined,
-                  transition: "background-color 0.2s ease-in-out",
-                }}
-              >
-                {isGenerating ? "Generating..." : "Generate"}
-              </Button>
-            </div>
+              {/* Revert Button */}
+              {currentHistoryIndex > 0 && (
+                <div className="flex justify-center">
+                  <Button
+                    variant="ghost"
+                    onClick={handleRevert}
+                    aria-label="Revert Image"
+                  >
+                    Revert to Previous Image
+                  </Button>
+                </div>
+              )}
 
-            {/* Loader */}
-            {isGenerating && (
-              <div className="mt-4 flex justify-center">
-                <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+              {/* Select Point for Masking or Cancel Mask Selection Button */}
+              {isSelectMaskActive ? (
+                <div className="flex justify-center">
+                  <Button
+                    variant="outline"
+                    onClick={cancelSelectMask}
+                    disabled={isGenerating}
+                    className="bg-red-600 text-white hover:bg-red-500"
+                    style={{
+                      transition:
+                        "background-color 0.2s ease-in-out, color 0.2s ease-in-out",
+                      cursor: isGenerating ? "not-allowed" : "pointer",
+                    }}
+                    aria-label="Cancel Mask Selection"
+                  >
+                    Cancel Mask Selection
+                  </Button>
+                </div>
+              ) : (
+                isOriginalImage && !selectedDilatedMask && (
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={activateSelectMask}
+                      disabled={
+                        isSelectMaskActive || isGenerating || !originalDimensions
+                      }
+                      className="hover:bg-gray-200"
+                      style={{
+                        transition:
+                          "background-color 0.2s ease-in-out, color 0.2s ease-in-out",
+                        cursor:
+                          isSelectMaskActive ||
+                          isGenerating ||
+                          !originalDimensions
+                            ? "not-allowed"
+                            : "pointer",
+                      }}
+                      aria-label="Select Point for Masking"
+                    >
+                      Select Point for Masking
+                    </Button>
+                  </div>
+                )
+              )}
+
+              {/* Segmentation Masks Section */}
+              {masks.length > 0 && (
+                <div className="mt-6">
+                  <Label className="block mb-3 text-lg font-semibold">
+                    Select a Mask
+                  </Label>
+                  {loadingMasks ? (
+                    <div className="flex justify-center">
+                      <div className="loader"></div>
+                    </div>
+                  ) : errorMasks ? (
+                    <div className="text-red-500">{errorMasks}</div>
+                  ) : (
+                    <div className="flex space-x-4 overflow-x-auto items-start h-60 sm:h-72 flex-shrink-0 pr-4 mr-4">
+                      {masks.map((mask, index) => (
+                        <div
+                          key={index}
+                          className="relative group flex-shrink-0"
+                        >
+                          <Button
+                            variant={
+                              selectedDilatedMask ===
+                              blendedWithDilated[index].dilatedMask
+                                ? "default"
+                                : "outline"
+                            }
+                            className="rounded-lg overflow-hidden w-60 sm:w-72 h-60 sm:h-72 flex items-center justify-center"
+                            onClick={() => handleMaskSelection(index)}
+                            aria-label={`Select Mask ${index + 1}`}
+                          >
+                            <img
+                              src={mask}
+                              alt={`Mask ${index + 1}`}
+                              className={cn(
+                                "object-contain w-full h-full rounded-md transition-transform duration-200 transform group-hover:scale-105",
+                                selectedDilatedMask ===
+                                  blendedWithDilated[index].dilatedMask
+                                  ? "border-2 border-indigo-600"
+                                  : "border-2 border-transparent"
+                              )}
+                            />
+                          </Button>
+                          {selectedDilatedMask ===
+                            blendedWithDilated[index].dilatedMask && (
+                            <span className="absolute top-2 right-2 bg-indigo-600 text-white rounded-full p-1">
+                              <Check className="h-4 w-4" />
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Remove Slider and Prompt Input */}
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-1">
+                  <Label className="text-lg font-semibold">Remove:</Label>
+                  <Switch
+                    checked={remove}
+                    onCheckedChange={(checked) => setRemove(checked)}
+                    aria-label="Remove Toggle"
+                    disabled={!isBlendedImageSelected || isGenerated}
+                  />
+                </div>
+                <div className="mb-3">
+                  <Label className="text-gray-600-base font-extralight">
+                    Toggle to remove selection region (blend with background or
+                    remove object). Prompt is ignored if turned on.
+                  </Label>
+                </div>
+                <input
+                  type="text"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Write what to generate in the region. ex: 'boy' and not 'replace the girl with a boy'"
+                  className={cn(
+                    "w-full p-3 border rounded-md",
+                    isBlendedImageSelected
+                      ? "border-gray-300 bg-white text-gray-900"
+                      : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                  )}
+                  disabled={!isBlendedImageSelected || remove || isGenerated}
+                  aria-label="Prompt Input"
+                />
+                <Button
+                  className={cn(
+                    "mt-3 w-full flex items-center justify-center",
+                    isBlendedImageSelected
+                      ? "bg-indigo-600 text-white hover:bg-indigo-500"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  )}
+                  onClick={handleGenerate}
+                  disabled={
+                    !isBlendedImageSelected ||
+                    isGenerated ||
+                    isGenerating ||
+                    (!remove && !prompt.trim())
+                  }
+                  style={{
+                    transition: "background-color 0.2s ease-in-out",
+                  }}
+                  aria-label="Generate Image"
+                >
+                  {isGenerating ? "Generating..." : "Generate"}
+                </Button>
               </div>
-            )}
+            </div>
 
             {/* Inline Styles for Loader and Scrollbar */}
             <style jsx>{`
               .loader {
-                border-top-color: #3498db;
-                animation: spin 1s infinite linear;
+                border: 8px solid #f3f3f3; /* Light grey */
+                border-top: 8px solid #3498db; /* Blue */
+                border-radius: 50%;
+                width: 64px;
+                height: 64px;
+                animation: spin 2s linear infinite;
               }
 
               @keyframes spin {
-                to {
+                0% {
+                  transform: rotate(0deg);
+                }
+                100% {
                   transform: rotate(360deg);
                 }
               }
@@ -553,7 +796,7 @@ export default function GeneratedPosts() {
 
   useEffect(() => {
     const fetchStoredPost = async () => {
-      const accessToken = session?.accessToken; // Adjust this line based on where your accessToken is stored
+      const accessToken = session?.accessToken;
       if (!accessToken) {
         console.error("No access token found.");
         setError("No access token found.");
@@ -566,19 +809,17 @@ export default function GeneratedPosts() {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/fetch_last_post/get_stored_post`,
           {
-            method: "POST", // Ensure this matches your API's method
+            method: "POST",
             headers: {
               Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
-            // body: JSON.stringify({}) // Include if your API expects a body
           }
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        console.log("API Response:", data);
 
         // Process the API response
         const processedPosts: { [ideaName: string]: Post[] } = {};
@@ -603,8 +844,7 @@ export default function GeneratedPosts() {
       console.error("User is not authenticated.");
       setError("User is not authenticated.");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, status]); // Dependencies
+  }, [session, status]);
 
   // Define your ideas from API
   const fetchedIdeas: Idea[] = Object.keys(apiPosts).map((ideaName, index) => ({
@@ -625,22 +865,13 @@ export default function GeneratedPosts() {
   }, [searchParams]);
 
   // Define existing predefined ideas (if any)
-  const predefinedIdeas: Idea[] = [
-    // Add your predefined ideas here if needed
-    // Example:
-    // {
-    //   id: '1',
-    //   title: "SpaceX vs Zomato Infographics",
-    //   type: "infographic",
-    //   posts: [], // Populate if you have predefined posts
-    // },
-  ];
+  const predefinedIdeas: Idea[] = [];
 
   // Combine fetched ideas with predefined, custom, and AI-generated ideas
   const allIdeas: Idea[] = [
     ...fetchedIdeas,
     ...predefinedIdeas.filter((idea) =>
-      selectedIdeas.includes(Number(idea.id))
+      selectedIdeas.includes(Number(idea.id.split("-")[1]))
     ),
     ...(customIdea
       ? [{ id: "custom", title: "Custom Idea", type: "custom", posts: [] }]
@@ -677,14 +908,12 @@ export default function GeneratedPosts() {
       const currentIdea = allIdeas[currentIdeaIndex];
       if (currentIdea.type === "fetched" && currentIdea.posts) {
         setPostIndices((prev) => {
-          // Only set if not already set to prevent infinite loop
           if (prev[currentIdeaIndex] === undefined) {
             return { ...prev, [currentIdeaIndex]: 0 };
           }
           return prev;
         });
 
-        // Set currentPostIndex based on postIndices
         if (postIndices[currentIdeaIndex] !== undefined) {
           setCurrentPostIndex(postIndices[currentIdeaIndex]);
         } else {
@@ -717,7 +946,6 @@ export default function GeneratedPosts() {
     } else if (currentIdeaIndex < allIdeas.length - 1) {
       const newIdeaIndex = currentIdeaIndex + 1;
       setCurrentIdeaIndex(newIdeaIndex);
-      // The useEffect will handle setting the correct post index
     }
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -749,7 +977,7 @@ export default function GeneratedPosts() {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleImageClick = (imageObj: string, imageIndex: number) => {
+  const handleImageClickModal = (imageObj: string, imageIndex: number) => {
     const imageKey = `${currentIdeaIndex}-${currentPostIndex}-${imageIndex}`;
     const existingHistory = imageHistories[imageKey];
     const initialHistory = existingHistory || [imageObj];
@@ -760,20 +988,27 @@ export default function GeneratedPosts() {
     setModalImageHistory(initialHistory);
   };
 
+  /**
+   * Updated handleImageUpdate function to also update the parent state (`apiPosts`)
+   * This ensures that changes made within the modal are reflected outside of it.
+   */
   const handleImageUpdate = (newImage: string, newHistory: string[]) => {
     if (imageUpdateIndex !== null) {
-      setPostsData((prevPosts) => {
-        const updatedPosts = [...prevPosts];
-        const updatedImages = [...updatedPosts[currentPostIndex].images];
-        updatedImages[imageUpdateIndex] = newImage;
-        updatedPosts[currentPostIndex] = {
-          ...updatedPosts[currentPostIndex],
-          images: updatedImages,
-        };
-        return updatedPosts;
+      const ideaName = allIdeas[currentIdeaIndex].title;
+
+      setApiPosts((prevApiPosts) => {
+        const updatedPosts = [...(prevApiPosts[ideaName] || [])];
+        if (updatedPosts[currentPostIndex]) {
+          const updatedImages = [...updatedPosts[currentPostIndex].images];
+          updatedImages[imageUpdateIndex] = newImage;
+          updatedPosts[currentPostIndex] = {
+            ...updatedPosts[currentPostIndex],
+            images: updatedImages,
+          };
+        }
+        return { ...prevApiPosts, [ideaName]: updatedPosts };
       });
 
-      // Update imageHistories
       setImageHistories((prevHistories) => ({
         ...prevHistories,
         [currentImageKey]: newHistory,
@@ -863,7 +1098,6 @@ export default function GeneratedPosts() {
     zip
       .generateAsync({ type: "blob" })
       .then((content) => {
-        // Construct the new filename with Idea number and Post number
         const ideaNumber = currentIdeaIndex + 1;
         const postNumber = currentPostIndex + 1;
         const zipFilename = `Idea_${ideaNumber}_Post_${postNumber}.zip`;
@@ -879,6 +1113,11 @@ export default function GeneratedPosts() {
   if (allIdeas.length === 0 && !loading && !error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 p-8">
+        {/* User Warning */}
+        <div className="mb-4 p-4 bg-yellow-100 text-yellow-800 rounded-md">
+          <strong>Warning:</strong> Please download your posts' data as it may not remain saved for long.
+        </div>
+
         <Link
           href="/generate-ideas"
           className="inline-flex items-center mb-8 text-indigo-600 hover:text-indigo-800 transition-colors"
@@ -897,6 +1136,11 @@ export default function GeneratedPosts() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 p-8">
+      {/* User Warning */}
+      <div className="mb-4 p-4 bg-yellow-100 text-yellow-800 rounded-md">
+        <strong>Warning:</strong> Please download your posts' data as it may not remain saved for long.
+      </div>
+
       <Link
         href="/generated-ideas"
         className="inline-flex items-center mb-8 text-indigo-600 hover:text-indigo-800 transition-colors"
@@ -931,7 +1175,7 @@ export default function GeneratedPosts() {
               <CardTitle>Selected Ideas</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[calc(90vh-200px)]">
+              <ScrollArea className="max-h-[90vh]">
                 {allIdeas.map((idea, index) => (
                   <Button
                     key={idea.id}
@@ -939,7 +1183,6 @@ export default function GeneratedPosts() {
                     className="w-full mb-2 justify-start text-left"
                     onClick={() => {
                       setCurrentIdeaIndex(index);
-                      // The useEffect will handle setting currentPostIndex based on postIndices
                     }}
                   >
                     {idea.title}
@@ -980,45 +1223,16 @@ export default function GeneratedPosts() {
                           <div
                             key={index}
                             className="relative cursor-pointer"
-                            onClick={() => handleImageClick(imageObj, index)}
-                            style={
-                              postsData[currentPostIndex].images.length === 1
-                                ? { display: "flex", justifyContent: "center" }
-                                : {}
-                            }
+                            onClick={() => handleImageClickModal(imageObj, index)}
                           >
-                            {imageObj.startsWith("data:image") ? (
-                              <img
-                                src={imageObj}
-                                alt={`Image ${index + 1} for Post ${
-                                  currentPostIndex + 1
-                                } of ${currentIdea?.title}`}
-                                className="object-cover rounded-md cursor-pointer"
-                                loading="lazy"
-                                style={
-                                  postsData[currentPostIndex].images.length ===
-                                  1
-                                    ? { maxHeight: "400px", width: "auto" }
-                                    : {}
-                                }
-                              />
-                            ) : (
-                              <Image
-                                src={imageObj}
-                                alt={`Image ${index + 1} for Post ${
-                                  currentPostIndex + 1
-                                } of ${currentIdea?.title}`}
-                                width={400}
-                                height={800}
-                                className="object-cover rounded-md cursor-pointer"
-                                style={
-                                  postsData[currentPostIndex].images.length ===
-                                  1
-                                    ? { maxHeight: "400px", width: "auto" }
-                                    : {}
-                                }
-                              />
-                            )}
+                            <img
+                              src={imageObj}
+                              alt={`Image ${index + 1} for Post ${
+                                currentPostIndex + 1
+                              } of ${currentIdea?.title}`}
+                              className="object-contain rounded-md w-full h-auto max-h-[800px]"
+                              loading="lazy"
+                            />
                           </div>
                         )
                       )}
@@ -1039,6 +1253,7 @@ export default function GeneratedPosts() {
                   className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white bg-opacity-75 hover:bg-opacity-100"
                   onClick={handlePrevPost}
                   disabled={currentIdeaIndex === 0 && currentPostIndex === 0}
+                  aria-label="Previous Post"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -1051,6 +1266,7 @@ export default function GeneratedPosts() {
                     currentIdeaIndex === allIdeas.length - 1 &&
                     currentPostIndex === (currentIdea?.posts?.length || 0) - 1
                   }
+                  aria-label="Next Post"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -1066,6 +1282,7 @@ export default function GeneratedPosts() {
                     variant="outline"
                     size="sm"
                     onClick={handleCopyCaption}
+                    aria-label="Copy Caption"
                   >
                     {copiedCaption ? (
                       <>
@@ -1082,6 +1299,7 @@ export default function GeneratedPosts() {
                     size="sm"
                     onClick={handleExportPost}
                     className="flex items-center"
+                    aria-label="Export Post"
                   >
                     <Download className="h-4 w-4 mr-2" /> Export Post
                   </Button>
@@ -1095,7 +1313,7 @@ export default function GeneratedPosts() {
       {/* Image Modal */}
       {selectedImage && imageUpdateIndex !== null && (
         <ImageModal
-          key={currentImageKey} // **Added Key for Unique Modal Instances**
+          key={currentImageKey}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           imageSrc={selectedImage}
@@ -1124,6 +1342,46 @@ export default function GeneratedPosts() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Inline Styles for Loader and Scrollbar */}
+      <style jsx>{`
+        .loader {
+          border: 8px solid #f3f3f3; /* Light grey */
+          border-top: 8px solid #3498db; /* Blue */
+          border-radius: 50%;
+          width: 64px;
+          height: 64px;
+          animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background: #a8a8a8;
+        }
+      `}</style>
     </div>
   );
 }
