@@ -19,20 +19,20 @@ import {
 } from "@/components/ui/tooltip";
 import {
   Building,
-  Globe,
+  // Globe,
   Instagram,
   Twitter,
   Linkedin,
   Facebook, // Added Facebook icon
   Loader2,
   MapPin,
-  Users,
-  MessageSquare,
+  // Users,
+  // MessageSquare,
   Briefcase,
   Target,
   Volume2,
   FileText,
-  Palette,
+  // Palette,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -111,7 +111,7 @@ export default function BrandProfile() {
           }
         );
         setBrandProfile(response.data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (axios.isAxiosError(err)) {
           setError(
             err.response?.data?.error ||
@@ -375,6 +375,31 @@ export default function BrandProfile() {
                       >
                         {getBrandTypeDescription(brandType)}
                       </Badge>
+                    </div>
+                    <div>
+                      <h3
+                        className="font-semibold mb-1 flex items-center cursor-pointer"
+                        onClick={() => toggleSection("manualInputText")}
+                      >
+                        Manual Input Text
+                        {expandedSections.includes("manualInputText") ? (
+                          <ChevronUp className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="ml-2 h-4 w-4" />
+                        )}
+                      </h3>
+                      {expandedSections.includes("manualInputText") && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <p className="text-gray-600 whitespace-pre-line mt-2">
+                            {manualInputText}
+                          </p>
+                        </motion.div>
+                      )}
                     </div>
                     {website && ( // Added Website section
                       <div>

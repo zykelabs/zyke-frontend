@@ -54,16 +54,18 @@ export const authOptions: NextAuthOptions = {
 
           // If the response is not successful, throw an error with the message
           throw new Error(data.msg || "Invalid credentials");
-        } catch (error: any) {
-          console.error("Credentials sign-in error:", error);
-          throw new Error(error.response?.data?.msg || "Failed to sign in.");
+        } catch (error: unknown) {
+          const err = error as { response?: { data?: { msg?: string } } };
+          console.error("Credentials sign-in error:", err);
+          throw new Error(err.response?.data?.msg || "Failed to sign in.");
         }
       },
     }),
   ],
 
   callbacks: {
-    async signIn({ user, account, profile }) {
+    // async signIn({ user, account, profile }) {
+      async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
           const { email, name } = user;
@@ -87,9 +89,10 @@ export const authOptions: NextAuthOptions = {
             return true;
           }
           return false;
-        } catch (error: any) {
-          console.error("Google sign-in error:", error.response?.data || error);
-          throw new Error(error.response?.data?.msg || "Failed to sign in with Google.");
+        } catch (error: unknown) {
+          const err = error as { response?: { data?: { msg?: string } } };
+          console.error("Credentials sign-in error:", err);
+          throw new Error(err.response?.data?.msg || "Failed to sign in.");
         }
       }
       return true;
@@ -129,7 +132,8 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
 
-    async redirect({ url, baseUrl }) {
+    // async redirect({ url, baseUrl }) {
+    async redirect({ baseUrl }) {
       return baseUrl + "/idea-generator";
     },
   },

@@ -162,11 +162,11 @@ function LegendaryNavbar() {
   });
 
   const navItems = [
-    { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-    { name: "Ideas", icon: Sparkles, href: "/ideas" },
-    { name: "Chatbot", icon: MessageCircle, href: "/chatbot" },
-    { name: "Analytics", icon: BarChart2, href: "/analytics" },
-    { name: "Settings", icon: Settings, href: "/settings" },
+    // { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+    // { name: "Ideas", icon: Sparkles, href: "/ideas" },
+    // { name: "Chatbot", icon: MessageCircle, href: "/chatbot" },
+    // { name: "Analytics", icon: BarChart2, href: "/analytics" },
+    // { name: "Settings", icon: Settings, href: "/settings" },
   ];
 
   return (

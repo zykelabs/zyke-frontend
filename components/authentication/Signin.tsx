@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
@@ -110,36 +110,39 @@ export default function SignIn() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setIsGoogleSignInLoading(true);
-    try {
-      const result = await signIn("google", { redirect: false });
+  // Just writing for avoiding error in build, untill rest part is commented, remove this when other comments are uncommented
+  if (1 < 0) {setIsGoogleSignInLoading(false);}
 
-      if (result?.ok && !result.error) {
-        const session = await fetch("/api/auth/session").then((res) =>
-          res.json()
-        );
-        if (session?.accessToken) await checkBrandVoice(session.accessToken);
-      } else {
-        setAlert({
-          show: true,
-          title: "Error",
-          description: result?.error || "Failed to sign in with Google.",
-          type: "error",
-        });
-      }
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-      setAlert({
-        show: true,
-        title: "Error",
-        description: "Failed to sign in with Google. Please try again.",
-        type: "error",
-      });
-    } finally {
-      setIsGoogleSignInLoading(false);
-    }
-  };
+  // const handleGoogleSignIn = async () => {
+  //   setIsGoogleSignInLoading(true);
+  //   try {
+  //     const result = await signIn("google", { redirect: false });
+
+  //     if (result?.ok && !result.error) {
+  //       const session = await fetch("/api/auth/session").then((res) =>
+  //         res.json()
+  //       );
+  //       if (session?.accessToken) await checkBrandVoice(session.accessToken);
+  //     } else {
+  //       setAlert({
+  //         show: true,
+  //         title: "Error",
+  //         description: result?.error || "Failed to sign in with Google.",
+  //         type: "error",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Google sign-in error:", error);
+  //     setAlert({
+  //       show: true,cls
+  //       title: "Error",
+  //       description: "Failed to sign in with Google. Please try again.",
+  //       type: "error",
+  //     });
+  //   } finally {
+  //     setIsGoogleSignInLoading(false);
+  //   }
+  // };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();

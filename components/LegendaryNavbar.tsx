@@ -4,15 +4,15 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSpring, animated } from "react-spring";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "next-themes";
+// import { useTheme } from "next-themes";
 import { signOut, useSession } from "next-auth/react";
 import {
   Zap,
-  LayoutDashboard,
-  Sparkles,
-  MessageCircle,
-  BarChart2,
-  Settings,
+  // LayoutDashboard,
+  // Sparkles,
+  // MessageCircle,
+  // BarChart2,
+  // Settings,
   User,
   CreditCard,
   LogOut,
@@ -56,17 +56,17 @@ const useScrollDirection = () => {
   return scrollDirection;
 };
 
-const navItems = [
-  { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { name: "Ideas", icon: Sparkles, href: "/ideas" },
-  { name: "Chatbot", icon: MessageCircle, href: "/chatbot" },
-  { name: "Analytics", icon: BarChart2, href: "/analytics" },
-  { name: "Settings", icon: Settings, href: "/settings" },
-];
+// const navItems = [
+  // { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  // { name: "Ideas", icon: Sparkles, href: "/ideas" },
+  // { name: "Chatbot", icon: MessageCircle, href: "/chatbot" },
+  // { name: "Analytics", icon: BarChart2, href: "/analytics" },
+  // { name: "Settings", icon: Settings, href: "/settings" },
+// ];
 
 export default function LegendaryNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  // const { theme, setTheme } = useTheme();
   const scrollDirection = useScrollDirection();
   const { data: session } = useSession();
 
@@ -100,7 +100,7 @@ export default function LegendaryNavbar() {
           </Link>
 
           <div className="hidden md:flex items-center space-x-6">
-            {navItems.map((item) => (
+            {/* {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -109,7 +109,7 @@ export default function LegendaryNavbar() {
                 <item.icon className="w-4 h-4" />
                 <span>{item.name}</span>
               </Link>
-            ))}
+            ))} */}
           </div>
 
           <div className="flex items-center space-x-4">
@@ -199,7 +199,7 @@ export default function LegendaryNavbar() {
             className="md:hidden bg-background border-t border-border"
           >
             <div className="container mx-auto px-4 py-4 space-y-4">
-              {navItems.map((item) => (
+              {/* {navItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
@@ -209,7 +209,7 @@ export default function LegendaryNavbar() {
                   <item.icon className="w-5 h-5" />
                   <span>{item.name}</span>
                 </Link>
-              ))}
+              ))} */}
             </div>
           </motion.div>
         )}
