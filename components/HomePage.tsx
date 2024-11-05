@@ -284,13 +284,15 @@ export default function HomePage() {
                     </Link>
                   </>
                 ) : (
-                  <Button
-                    onClick={() => setIsAuthModalOpen(true)}
-                    size="sm"
-                    className="w-full bg-white text-black hover:bg-gray-200 mt-2 transition-colors duration-300"
-                  >
-                    Sign In
-                  </Button>
+                  <Link href="/signin">
+                    <Button
+                      onClick={() => setIsAuthModalOpen(true)}
+                      size="sm"
+                      className="w-full bg-white text-black hover:bg-gray-200 mt-2 transition-colors duration-300"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
                 )}
               </div>
             </motion.div>
