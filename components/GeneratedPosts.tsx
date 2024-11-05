@@ -404,6 +404,13 @@ const ImageModal: React.FC<ImageModalProps> = ({
         mask: dilatedMask,
         image: base64Image,
       };
+      const accessToken = session?.accessToken;
+      if (!accessToken) {
+        console.error("No access token found.");
+        setError("No access token found.");
+        setLoading(false);
+        return;
+      }
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/inpaint/inpaint_image`,
@@ -411,6 +418,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(payload),
         }
