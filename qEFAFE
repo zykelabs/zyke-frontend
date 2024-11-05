@@ -1,0 +1,143 @@
+[33mcommit 2af11a6ebd05407a32ac0414c3aa1d14508a9173[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Tue Nov 5 08:45:18 2024 +0530
+
+    build errors fixing
+
+[33mcommit c6befa1eed18069f0ba3f24cb5b5e865179fa817[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Tue Nov 5 07:39:48 2024 +0530
+
+    Add .env to .gitignore
+
+[33mcommit dd66dcf8b1b1a26b24595b8cc4aee857a1646e50[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Tue Nov 5 07:34:45 2024 +0530
+
+    Add .env to .gitignore
+
+[33mcommit 65239770561ecca3610696e49305c3a0034a108d[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Tue Nov 5 07:30:52 2024 +0530
+
+    version 1.0 done
+
+[33mcommit 59a5673127411460793429382b6c77a99e99511a[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Tue Nov 5 03:13:00 2024 +0530
+
+    image segmentation and inpaint done
+
+[33mcommit 96610f4931755641585467e00af39b932b561369[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Sun Nov 3 17:39:29 2024 +0530
+
+    generated post redirect fixed
+
+[33mcommit d32b84d6fc55a4374d5013dcaf2bbb3a4bbbf491[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Sun Nov 3 15:02:12 2024 +0530
+
+    brandvoice routing fixed
+
+[33mcommit 9e1f21bfb3ff89e903db6aebc88d6c15cd7a1c6f[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Sat Nov 2 04:57:49 2024 +0530
+
+    brand voice done
+
+[33mcommit 32218622bd4f3fc03923cc8339431ad6cbfff492[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Tue Oct 29 02:14:10 2024 +0530
+
+    post generation done
+
+[33mcommit 0fd7a1d69bd298bb15178f1a1499177ecd056044[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Mon Oct 28 02:58:18 2024 +0530
+
+    repurpose and trend to idea done
+
+[33mcommit 08e7534889fdcd7c9140ccd6b6ecf83cc2e9a260[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Fri Oct 25 21:55:46 2024 +0530
+
+    brandvoice implemented and authetication problem fixed
+
+[33mcommit 721ad315b1c05ef6e8ba2896e55d0dcce53a98cd[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 23 13:42:24 2024 +0530
+
+    trends list added
+
+[33mcommit 34543ce00a56ce9a1f5fc5ee3c806d59d721e718[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Tue Oct 22 03:48:04 2024 +0530
+
+    payment gateway added
+
+[33mcommit 750d194b2714b1523e1536b95dc1cfc51620c651[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Sat Oct 19 21:40:48 2024 +0530
+
+    user authentication implemented
+
+[33mcommit 0b7e59a24fa046aeb6d45993ae562e69a28f36ff[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 09:06:17 2024 +0530
+
+    restored to original
+
+[33mcommit 0f837d9f79f4c3a5c975fbfbed44620e2439dab5[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 09:04:22 2024 +0530
+
+    next config js file added
+
+[33mcommit 8d0defcc1f1c398a21d9c943ce270634e1353e21[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 08:22:36 2024 +0530
+
+    /generated-post fixed
+
+[33mcommit 0b43704e1dffb643065a9024ea8e63ca531eb5f6[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 08:12:02 2024 +0530
+
+    generated post page warnings fixed
+
+[33mcommit b76a6658d90f9d1168053f0ef42d0d40e08d894b[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 08:06:31 2024 +0530
+
+    all the warning removed
+
+[33mcommit 9452b760957f2efb287942d22322ddf6ca3afbd0[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 07:57:06 2024 +0530
+
+    image editor url removed
+
+[33mcommit 2f0e3f4254aa7c172ac45e722d686d5aa1ec09f4[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 07:52:23 2024 +0530
+
+    eslint disabled
+
+[33mcommit fa0851d2c8d669c2abdf3576488f203817dc33a6[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 07:48:40 2024 +0530
+
+    home page cleared
+
+[33mcommit 8fc6c124d4998f0672ed3b7a4bfb92649d55d53c[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 07:45:29 2024 +0530
+
+    editor removed for vercel
+
+[33mcommit 00ba92871a5de44dffff3f15bcd9c6b653e4b288[m
+Author: rupammahato <rupammahato@kgpian.iitkgp.ac.in>
+Date:   Wed Oct 16 07:40:04 2024 +0530
+
+    first commit
