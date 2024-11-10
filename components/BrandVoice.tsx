@@ -70,7 +70,7 @@ const formSchema = z.object({
   industries: z.array(z.string()).min(1, "At least one industry is required"),
   otherIndustries: z.array(z.string()).optional(),
   files: z.array(z.any()).optional(),
-  website: z.string().url("Invalid URL format").optional(),
+  website: z.string().url("Invalid URL format").or(z.literal("")).optional(),
   socialMedia: z.array(socialMediaSchema).optional(),
   otherUrls: z
     .array(
