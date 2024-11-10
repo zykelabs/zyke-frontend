@@ -173,7 +173,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
     setIsLoadingMask(true); // Start loading cursor
     try {
       const segmentResponse = await fetch(
-        "https://4f4b-152-59-165-182.ngrok-free.app/segment",
+        "https://fc5f-152-58-139-44.ngrok-free.app/segment",
         {
           method: "POST",
           headers: {
