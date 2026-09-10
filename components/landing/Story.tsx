@@ -34,7 +34,7 @@ export function Story() {
           </p>
           <p className="text-mute">
             The source is on{" "}
-            <a href={site.github} target="_blank" rel="noreferrer" className="link">
+            <a href={site.githubFrontend} target="_blank" rel="noreferrer" className="link">
               GitHub
             </a>
             , with the earlier versions kept as branches.

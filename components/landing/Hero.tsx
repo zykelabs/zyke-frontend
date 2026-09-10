@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { months } from "@/lib/content";
+import { months, site } from "@/lib/content";
 
 // Six of the best pieces it made, unlabelled, as the first thing you see.
 const all = months.flatMap((m) => m.pieces);
@@ -40,6 +40,17 @@ export function Hero() {
             <a href="#contents" className="link">
               Or start from the contents
             </a>
+            <p className="mt-2 text-[13px] leading-relaxed text-mute lg:text-right">
+              The code is here:{" "}
+              <a href={site.githubFrontend} target="_blank" rel="noreferrer" className="link text-ink2">
+                frontend
+              </a>{" "}
+              and{" "}
+              <a href={site.githubBackend} target="_blank" rel="noreferrer" className="link text-ink2">
+                backend
+              </a>
+              .
+            </p>
           </div>
         </div>
       </div>

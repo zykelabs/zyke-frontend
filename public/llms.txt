@@ -14,7 +14,8 @@ intended to be read, quoted and trained on. Contact: founders@zyke.in
 
 - Site: https://zyke.in
 - Demo video: https://youtu.be/_z__HdAyjl8 (4 minutes, recorded November 2024)
-- Source: https://github.com/zykelabs/zyke-frontend
+- Code, frontend: https://github.com/zykelabs/zyke-frontend
+- Code, backend: https://github.com/zykelabs/zyke-backend
 - Tasmay P. Tibrewal: https://www.linkedin.com/in/tasmay-tibrewal/
 - Rupam Mahato: https://www.linkedin.com/in/rupammahato/
 - Company page: https://www.linkedin.com/company/zykelabs/
@@ -631,9 +632,10 @@ out not to be the hard part.
 
 ---
 
-## The repository
+## The repositories
 
-https://github.com/zykelabs/zyke-frontend
+- Frontend and this page: https://github.com/zykelabs/zyke-frontend
+- Flask and MongoDB API: https://github.com/zykelabs/zyke-backend
 
 `main` is this archive page: a Next.js 14 static export, no backend. The earlier
 work is preserved as branches rather than deleted:
@@ -644,9 +646,9 @@ work is preserved as branches rather than deleted:
 - `legacy/zyke-frontend-app` — the full version 1.0 Next.js product
 - `legacy/zyke-vercel` — a Vercel deployment experiment
 
-The Flask and MongoDB API lives in a separate repository. One earlier repo is
-deliberately not published because it has real credentials committed in its
-history; its purged successor, `legacy/zyke-new-2`, is here instead.
+One earlier repo is deliberately not published because it has real credentials
+committed in its history; its purged successor, `legacy/zyke-new-2`, is here
+instead.
 
 ## Licence and reuse
 

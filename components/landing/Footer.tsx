@@ -36,8 +36,11 @@ export function Footer() {
                 <a href={site.linkedin} target="_blank" rel="noreferrer" className="link w-fit">
                   LinkedIn
                 </a>
-                <a href={site.github} target="_blank" rel="noreferrer" className="link w-fit">
-                  GitHub
+                <a href={site.githubFrontend} target="_blank" rel="noreferrer" className="link w-fit">
+                  GitHub: frontend
+                </a>
+                <a href={site.githubBackend} target="_blank" rel="noreferrer" className="link w-fit">
+                  GitHub: backend
                 </a>
               </dd>
             </div>

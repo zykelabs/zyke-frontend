@@ -5,7 +5,9 @@ export const site = {
   name: "Zyke",
   email: "founders@zyke.in",
   linkedin: "https://www.linkedin.com/company/zykelabs/",
-  github: "https://github.com/zykelabs/zyke-frontend",
+  github: "https://github.com/zykelabs",
+  githubFrontend: "https://github.com/zykelabs/zyke-frontend",
+  githubBackend: "https://github.com/zykelabs/zyke-backend",
   youtubeId: "_z__HdAyjl8",
   youtubeUrl: "https://youtu.be/_z__HdAyjl8",
 };
