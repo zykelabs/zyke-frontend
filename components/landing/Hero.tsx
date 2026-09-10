@@ -1,15 +1,15 @@
 import Image from "next/image";
-import { work } from "@/lib/content";
+import { months } from "@/lib/content";
 
 // Six of the best pieces it made, unlabelled, as the first thing you see.
-const all = work.flatMap((b) => b.groups.flatMap((g) => g.pieces));
+const all = months.flatMap((m) => m.pieces);
 const strip = [
-  "/gallery/delhi-landmarks.jpeg",
-  "/gallery/aliens-order-fries.jpeg",
-  "/gallery/bira-diwali-cheers.jpeg",
-  "/gallery/scaling-new-heights.jpeg",
-  "/gallery/one-bira-table.jpeg",
-  "/gallery/alien-chef-in-orbit.jpeg",
+  "/gallery/nov-delhi-landmarks.jpeg",
+  "/gallery/nov-smart-routing.jpeg",
+  "/gallery/oct-bira-america.jpeg",
+  "/gallery/nov-lebron-confetti.jpeg",
+  "/gallery/nov-cooking-better-india.jpeg",
+  "/gallery/oct-brewing-perfect-code.jpeg",
 ].map((src) => all.find((p) => p.src === src)!);
 
 export function Hero() {
@@ -59,7 +59,7 @@ export function Hero() {
             ))}
           </div>
           <p className="mt-3 text-[13px] text-mute">
-            Six posts Zyke came up with on its own, for two brands it had never been told anything about beyond a
+            Six posts Zyke came up with on its own, for four brands it had never been told anything about beyond a
             website address.
           </p>
         </div>

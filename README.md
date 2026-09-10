@@ -45,11 +45,11 @@ The `out/` folder is plain static files, so it can equally be dropped onto Verce
 
 ## What is on the page
 
-Ten numbered sections, in this order: the demo video with chapter links, the problem
-we set out to solve, the three promises from the original landing page plus the
-competitor comparison, the four-step walkthrough with the click-to-edit before and
-after, the thirteen features, the work Zyke generated, who it was for, the unit
-economics and market sizing, the stack, and the story with the team and the grants.
+Eleven numbered sections: the demo video with chapter links, the problem, the three
+promises plus the competitor comparison, the four-step walkthrough with the real
+click-to-edit before and after, the thirteen features, the work Zyke generated, who it
+was for, the unit economics and market sizing, the image pipeline and what was new
+about it, the story with the team and the grants, and why it started and why it stopped.
 
 `lib/content.ts` holds every piece of copy and data. The components are presentational.
 
@@ -57,17 +57,36 @@ economics and market sizing, the stack, and the story with the team and the gran
 
 - The demo video, its chapter list and the thirteen-feature list come from the
   November 2024 product demo on YouTube.
-- The problem, the buyer quotes, the comparison table, the pricing, the market figures,
-  the team and the grants come from the December 2024 pitch deck.
-- The stack and the timeline come from the code and the commit history, not the deck.
-- `public/gallery/` holds 25 images Zyke generated during testing, chosen from 77 by
-  eye. They are grouped by brand and then by the trend Zyke latched onto, because the
-  interesting part is the jump from the news to the brand. The original prompts are
-  gone, so nothing on the page claims to quote one. Resolution stands in for a date:
-  512px images are from the early builds, 1024px after the October rewrite, 1600px
-  from the last builds in November.
+- The problem, the buyer quotes, the comparison table, the pricing, the market figures
+  and the grants come from the December 2024 pitch deck, with Y Combinator, Modal,
+  Daytona and Google Cloud added afterwards. The total is $54,500 in credits.
+- The stack, the image pipeline and the novelty list come from the backend and frontend
+  source, documented in full in `../docs/repos/`.
+- The ambition and the post-mortem in section 11 are the founders' own words.
+
+### The gallery
+
+`public/gallery/` holds 35 images Zyke generated during testing for Zomato, Bira 91,
+Nike and a coding school, chosen from 77 by eye.
+
+They are organised by month, not by brand, because the month is the story. Resolution
+tracks it: September is entirely 512px with text that collapses into letter shapes,
+October moves to 512 and 1024 as short headlines start landing, and November runs at
+1024 and 1600 with full sentences, correct logos and the same idea reproducible across
+two formats. `nov-better-food-first-run` and `nov-better-food-second-run` are two runs
+of one idea minutes apart and are shown side by side as the clearest evidence of that.
+
+Each month shows six images with a button to reveal the rest, and the three cards at the
+top of the section jump straight into a given month.
+
+The two Nike images arrived as UI screenshots and were cropped with ffmpeg to remove the
+browser chrome and the carousel arrows.
+
+### Other notes
+
 - The before and after in step 4 is the genuine pair from the demo:
   `public/masks/L_Model_blended_img_1.png` is the original and
   `public/generated/fixed.png` is the same image after one inpainting edit.
-- The image pipeline and the list of what was new about it are both derived from the
-  backend and frontend source, and are documented in full in `../docs/repos/`.
+- The original prompts are gone, so nothing on the page claims to quote one. Images are
+  labelled by the trend Zyke picked up, and the leaps it made from a headline to a brand
+  are listed separately.

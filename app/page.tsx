@@ -10,6 +10,7 @@ import { Buyers } from "@/components/landing/Buyers";
 import { Economics } from "@/components/landing/Economics";
 import { UnderTheHood } from "@/components/landing/UnderTheHood";
 import { Story } from "@/components/landing/Story";
+import { Why } from "@/components/landing/Why";
 import { Footer } from "@/components/landing/Footer";
 
 export default function Home() {
@@ -28,6 +29,7 @@ export default function Home() {
         <Economics />
         <UnderTheHood />
         <Story />
+        <Why />
       </main>
       <Footer />
     </>

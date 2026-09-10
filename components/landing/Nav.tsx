@@ -10,6 +10,7 @@ const links = [
   ["#numbers", "Numbers"],
   ["#stack", "Under the hood"],
   ["#story", "Story"],
+  ["#why", "Why"],
 ] as const;
 
 export function Nav() {

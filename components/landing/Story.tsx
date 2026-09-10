@@ -29,8 +29,8 @@ export function Story() {
           </p>
           <p>
             Version 1.0 shipped on 5 November 2024 and the demo above was recorded on it. Bira 91 and a handful of
-            other companies tested it. The company did not continue past that. The domain, the code and the work did,
-            which is what this page is for.
+            other companies tested it. It did not go further than that, for reasons worth being straight about, which
+            are{" "}<a href="#why" className="link">in the next section</a>.
           </p>
           <p className="text-mute">
             The source is on{" "}
@@ -56,7 +56,15 @@ export function Story() {
           <dl className="mt-4 border-t rule">
             {team.map((m) => (
               <div key={m.name} className="border-b rule py-4">
-                <dt className="font-serif text-2xl tracking-tight">{m.name}</dt>
+                <dt className="font-serif text-2xl tracking-tight">
+                  {m.linkedin ? (
+                    <a href={m.linkedin} target="_blank" rel="noreferrer" className="link">
+                      {m.name}
+                    </a>
+                  ) : (
+                    m.name
+                  )}
+                </dt>
               </div>
             ))}
           </dl>
@@ -79,7 +87,7 @@ export function Story() {
             ))}
           </dl>
           <p className="mt-4 text-[13px] leading-relaxed text-mute">
-            Twenty-three and a half thousand dollars of credits and no cash. Every model call behind every picture on
+            Fifty-four and a half thousand dollars of credits and no cash. Every model call behind every picture on
             this page was paid for out of that.
           </p>
         </div>

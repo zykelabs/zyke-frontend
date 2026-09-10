@@ -13,7 +13,18 @@ export function Footer() {
               {site.email}
             </a>
           </div>
-          <dl className="grid grid-cols-2 gap-8 text-[14px] lg:col-span-5">
+          <dl className="grid grid-cols-2 gap-8 text-[14px] sm:grid-cols-3 lg:col-span-5">
+            <div>
+              <dt className="label">The people</dt>
+              <dd className="mt-3 flex flex-col gap-2">
+                <a href="https://www.linkedin.com/in/tasmay-tibrewal/" target="_blank" rel="noreferrer" className="link w-fit">
+                  Tasmay
+                </a>
+                <a href="https://www.linkedin.com/in/rupammahato/" target="_blank" rel="noreferrer" className="link w-fit">
+                  Rupam
+                </a>
+              </dd>
+            </div>
             <div>
               <dt className="label">Elsewhere</dt>
               <dd className="mt-3 flex flex-col gap-2">
@@ -31,8 +42,8 @@ export function Footer() {
             <div>
               <dt className="label">Colophon</dt>
               <dd className="mt-3 text-ink2 leading-relaxed">
-                Set in Instrument Serif and Geist. Built as a static page. Zomato and Bira 91 appear as example
-                brands only. Neither was affiliated with Zyke and neither endorsed any of the generated work.
+                Set in Instrument Serif and Geist. Built as a static page. Zomato, Bira 91 and Nike appear as example
+                brands only. None was affiliated with Zyke and none endorsed any of the generated work.
               </dd>
             </div>
           </dl>
