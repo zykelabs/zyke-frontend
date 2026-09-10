@@ -109,9 +109,11 @@ export const gallery = [
 export const stack = [
   { layer: "Web app", items: ["Next.js 14, TypeScript, Tailwind", "Email sign-up with one-time codes", "Razorpay wallet for credits"] },
   { layer: "API", items: ["Flask on AWS EC2 in Mumbai, behind gunicorn", "MongoDB for users, brand voices, posts and transactions", "Eleven blueprints, twenty-seven routes"] },
-  { layer: "Language models", items: ["OpenAI o1-mini for ideas and captions", "Llama 3.1 and GPT-4o mini (vision) for brand research", "Gemini 1.5 Flash for repurposing URLs", "Perplexity Sonar for explaining trends"] },
-  { layer: "Image models", items: ["FLUX 1.1 Pro for post images", "A click-to-segment model on a GPU in Google Cloud Run", "Stability AI inpainting for edits"] },
-  { layer: "Data", items: ["Google Trends", "Instagram and web scraping for brand research", "Google Cloud Storage for media"] },
+  { layer: "Trends and recommendation", items: ["Google Trends daily searches for India, through pytrends", "Perplexity Sonar to explain why each topic is trending", "OpenAI o1-mini to score and rank trends per brand", "Six-hour caches, billed to a house account"] },
+  { layer: "Language models", items: ["OpenAI o1-mini for ranking, ideas, captions and edit routing", "Llama 3.1 and GPT-4o mini (vision) for brand research", "Gemini 1.5 Flash for repurposing URLs"] },
+  { layer: "Image generation", items: ["FLUX 1.1 Pro through Together AI, fifty steps", "Batches of four with a hand-rolled rate limiter"] },
+  { layer: "Image editing", items: ["GraCo, granularity-controllable interactive segmentation, on a GPU", "Grounding DINO for open-vocabulary object detection", "Styling LoRAs for whole-image restyling", "Stability AI inpainting and image to image", "OpenCV locally for mask dilation and previews"] },
+  { layer: "Data", items: ["Instagram and web scraping for brand research", "Google Cloud Storage for media", "Google Cloud Run and Modal for the GPU services"] },
 ];
 
 export const timeline = [
@@ -208,9 +210,14 @@ export const marketerUse = [
 ];
 
 export const team = [
-  { name: "Tasmay P. Tibrewal", linkedin: "https://www.linkedin.com/in/tasmay-tibrewal/" },
-  { name: "Rupam Mahato", linkedin: "https://www.linkedin.com/in/rupammahato/" },
-  { name: "Siddharth Dikshit", linkedin: "" },
+  { name: "Tasmay P. Tibrewal", role: "CTO turned CEO", linkedin: "https://www.linkedin.com/in/tasmay-tibrewal/" },
+  { name: "Rupam Mahato", role: "Founding engineer", linkedin: "https://www.linkedin.com/in/rupammahato/" },
+  { name: "Siddharth Dikshit", role: "Co-founder and CEO until 2024. Left after the dispute.", linkedin: "" },
+];
+
+export const people = [
+  { name: "Tasmay", role: "Founder", linkedin: "https://www.linkedin.com/in/tasmay-tibrewal/" },
+  { name: "Rupam", role: "Founding member", linkedin: "https://www.linkedin.com/in/rupammahato/" },
 ];
 
 export const grants = [
@@ -387,35 +394,19 @@ export const pipeline = [
     title: "Images generated four at a time",
     body: "FLUX 1.1 Pro through Together AI, fifty steps, at four and a bit cents an image. Requests went out in batches of four with a pause between them to stay inside the rate limit, then every image was downloaded and inlined so a post travelled as one object.",
   },
-  {
-    n: "4",
-    title: "Click a point, get candidate regions",
-    body: "The part that did not exist anywhere else. You clicked a pixel. Those coordinates went to a semantic segmentation model we ran on a GPU behind Google Cloud Run, which returned several candidate masks for what you might have meant, from the object you clicked to the whole region around it.",
-  },
-  {
-    n: "5",
-    title: "Show the masks before committing",
-    body: "Raw masks are unreadable, so each one was dilated with a seventeen by seventeen kernel, resized to the picture and alpha-blended over it in colour. You picked from a row of previews of your own image with the region lit up. Choosing a region cost nothing, because that step ran locally with OpenCV.",
-  },
-  {
-    n: "6",
-    title: "Repaint only that region",
-    body: "The chosen mask, the original picture and your sentence went to Stability's inpainting endpoint at three cents a call. Every edit was applied to the pristine original rather than the last edit, so mistakes did not compound, and the whole chain was kept as history you could step back through.",
-  },
-  {
-    n: "7",
-    title: "Fight the model into blending",
-    body: "Inpainting in 2024 liked to return a half-filled hole, or a hard seam, or to write a caption into the gap. So the prompt was wrapped in a fixed instruction to blend the region with the rest of the image and fill it completely, plus a long negative prompt listing every failure we had seen: empty part, blank image, text, any text, alphabets, part not blended with the rest.",
-  },
 ];
 
 export const novelties = [
-  "Editing a generated image by pointing at it and describing the change, a year before any image model could do it on its own.",
-  "Candidate masks shown as previews on your own picture, so a segmentation model became something a marketing person could use.",
-  "Always editing the original rather than the last result, with full undo history.",
-  "A brand voice as a stored object passed into every prompt, rather than a prompt template.",
-  "Trend, idea and post as three separate stages you could stop and steer between, each one parsed from tagged output.",
-  "Every generation metered to the cent, because credits were deducted per model call.",
+  "A reasoning model routing image edits by tool call, deciding whether your sentence meant a region, an object, the whole frame or the style, a year before agentic image editing was a normal idea.",
+  "One click returning several masks at several granularities, so the model asked what you meant instead of guessing.",
+  "Open-vocabulary detection wired to the prompt, so you could name a thing you had not clicked and have it found, changed or deleted.",
+  "Style handled by LoRAs rather than by prompt, so a restyle kept the picture instead of redrawing it.",
+  "Candidate masks shown as previews on your own image, free to browse, so a segmentation model became usable by a marketing person.",
+  "Every edit applied to the original rather than the last result, with full undo history, so passes did not compound.",
+  "Trends scored per brand from the brand's own history, with creative brands pushed toward the leaps and traditional brands pushed away from them.",
+  "Trends explained before being ranked, because a brand can react to a reason but not to a noun.",
+  "Trend, idea and post as three separate stages you could stop and steer between, each parsed from tagged output.",
+  "Every generation metered to the cent, with trend research billed to a house account instead of the user.",
 ];
 
 // The leaps Zyke made on its own, from a headline to a brand. Nobody wrote
@@ -493,3 +484,87 @@ export const failure = [
 
 export const failureClose =
   "Then there were co-founder disputes, and with the outreach already stalled there was not much holding it together. It ended there. I was in my third year and left for an internship. The lesson is not subtle: building the hard part turned out not to be the hard part.";
+
+// ---------------------------------------------------------------------------
+// The two engines worth describing in detail: the trend recommender, and the
+// image editing router. The recommender is all in the archived backend. The
+// editing router mostly ran as a separate GPU service whose source is not in
+// these repos, so that part is written from memory and from the calls the
+// frontend made into it.
+// ---------------------------------------------------------------------------
+
+export const recommender = [
+  {
+    n: "1",
+    title: "Pull what the country is actually searching",
+    body: "Google Trends daily trending searches for India, through pytrends, on an IST clock. Not a hashtag scrape. The queries people were typing that morning.",
+  },
+  {
+    n: "2",
+    title: "Ask why each one is trending",
+    body: "A trending search on its own is a noun with no story. Every trend went to Perplexity with one job: explain why this is trending right now, not what it is in general, and if there are several reasons give all of them. It came back as a one-line summary and a long description. That distinction mattered, because a brand cannot react to a topic, only to a reason.",
+  },
+  {
+    n: "3",
+    title: "Score every trend against the brand",
+    body: "The scorer received three things: the company research database, an analysis of the brand's own historical posts, and the full trend list with explanations. It returned a relevance score from 1 to 10 for each trend and a ranking, along with the trend's original position so the ranking could be mapped back to the source list.",
+  },
+  {
+    n: "4",
+    title: "Score differently depending on the brand",
+    body: "This is the part that made it feel personal. The instruction split brands in two. A brand whose history showed it was creative and willing to be strange got encouraged toward unconventional ideas even from trends with nothing to do with its sector. A traditional brand got directly related, conventional ideas and was actively discouraged from the leaps. The same trend list handed to two brands came back ranked differently and used differently.",
+  },
+  {
+    n: "5",
+    title: "Turn the ranked trends into ideas, not posts",
+    body: "For each trend that scored well it produced several named ideas with descriptions, still in the brand's voice, and stopped there. You saw the ranking, the reasoning and the ideas, and chose. There was also a checkbox that let it add one idea of its own that you had not asked for, which is where a good deal of the stranger output on this page came from.",
+  },
+  {
+    n: "6",
+    title: "Cache it, and do not charge for it",
+    body: "Trends were cached globally for six hours and a user's ranked ideas for six hours more, so the expensive part ran once rather than once per visit. The cost of fetching and explaining trends was logged against a house account instead of the user's credits, because nobody should pay to find out what is happening.",
+  },
+];
+
+export const editing = [
+  {
+    n: "1",
+    title: "A model decides what kind of edit this is",
+    body: "You typed a sentence. Before anything touched the picture, the image and the available workflows went to o1-mini, which decided what you actually wanted and called the tools to do it. Change the whole mood, replace one object, delete one object, restyle the entire image: these are four different pipelines with different failure modes, and picking the wrong one produces garbage. The router picked, triggered the workflow and managed it through to the end.",
+  },
+  {
+    n: "2",
+    title: "Route one: click to segment, at the granularity you meant",
+    body: "If you pointed at something, one click went to a granularity-controllable interactive segmentation model, GraCo, in the same family as Semantic SAM. A single click is ambiguous by nature: clicking a rider's jacket could mean the jacket, the rider, or the rider and the scooter together. So it returned several masks at several granularities for that one click, and you picked the one that matched what you meant. That region was then cut out of the image and refilled, either by infill or by image to image on the masked area.",
+  },
+  {
+    n: "3",
+    title: "Route two: no target, so change everything",
+    body: "A prompt about the whole picture, like making the background darker, has no object to find. That went straight to image to image over the full frame with your sentence as the instruction, which keeps the composition and moves the look.",
+  },
+  {
+    n: "4",
+    title: "Route three: find the thing you named",
+    body: "If your sentence named an object rather than pointing at one, an open-vocabulary detector took over. Grounding DINO was given the noun phrase from your prompt and returned candidate regions for it. The most related one was selected, converted to a mask, and then operated on. Modify meant image to image inside that mask. Remove meant infill, so the model had to invent what belonged behind the thing that was deleted rather than smearing it.",
+  },
+  {
+    n: "5",
+    title: "Route four: restyle the whole thing with a LoRA",
+    body: "Asking for a different look is not an edit to a region, it is an edit to everything at once. We kept a set of styling LoRAs, and a style request triggered the matching one and re-rendered the image through it. Prompt-only restyling in 2024 tended to redraw the picture into something else; a LoRA held the content and moved the treatment.",
+  },
+  {
+    n: "6",
+    title: "Show the mask before spending anything",
+    body: "Masks are unreadable as raw arrays, so each candidate was dilated with a seventeen by seventeen kernel, resized to the picture and alpha-blended over it in colour. You chose from a row of previews of your own image with the region lit up. That step ran locally with OpenCV and cost nothing, so you could hunt for the right region for free and only pay when you committed.",
+  },
+  {
+    n: "7",
+    title: "Always edit the original, never the last result",
+    body: "Every operation was applied to the pristine image rather than to the previous edit, with the whole chain kept as history you could step back through. Repeated edits in 2024 degraded fast, each pass softening and shifting what the one before it had done. Going back to the original each time is why five edits still looked like one picture.",
+  },
+  {
+    n: "8",
+    title: "Fight the inpainting model into blending",
+    body: "Infill liked to hand back a half-filled hole, a hard seam, or a caption written into the gap. So the instruction was wrapped in a fixed demand to blend the region with the rest of the image and fill it completely, plus a long negative prompt listing every failure we had seen: empty part, blank image, text, any text, alphabets, part not blended with the rest.",
+  },
+];

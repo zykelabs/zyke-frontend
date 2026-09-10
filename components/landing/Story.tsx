@@ -65,6 +65,7 @@ export function Story() {
                     m.name
                   )}
                 </dt>
+                <dd className="mt-1 text-[13px] leading-relaxed text-mute">{m.role}</dd>
               </div>
             ))}
           </dl>

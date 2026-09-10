@@ -60,8 +60,12 @@ about it, the story with the team and the grants, and why it started and why it 
 - The problem, the buyer quotes, the comparison table, the pricing, the market figures
   and the grants come from the December 2024 pitch deck, with Y Combinator, Modal,
   Daytona and Google Cloud added afterwards. The total is $54,500 in credits.
-- The stack, the image pipeline and the novelty list come from the backend and frontend
-  source, documented in full in `../docs/repos/`.
+- The stack, the trend recommender and the generation pipeline come from the backend and
+  frontend source, documented in full in `../docs/repos/`.
+- The editing pipeline is the one part not preserved. The archived backend has only the
+  Stability inpaint proxy and the OpenCV mask blender; the router, GraCo segmentation,
+  Grounding DINO and the styling LoRAs ran as a separate GPU service behind Cloud Run
+  whose source is not in these repos. The page says so where it describes it.
 - The ambition and the post-mortem in section 11 are the founders' own words.
 
 ### The gallery

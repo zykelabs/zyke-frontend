@@ -1,4 +1,4 @@
-import { site } from "@/lib/content";
+import { site, people } from "@/lib/content";
 
 export function Footer() {
   return (
@@ -16,13 +16,15 @@ export function Footer() {
           <dl className="grid grid-cols-2 gap-8 text-[14px] sm:grid-cols-3 lg:col-span-5">
             <div>
               <dt className="label">The people</dt>
-              <dd className="mt-3 flex flex-col gap-2">
-                <a href="https://www.linkedin.com/in/tasmay-tibrewal/" target="_blank" rel="noreferrer" className="link w-fit">
-                  Tasmay
-                </a>
-                <a href="https://www.linkedin.com/in/rupammahato/" target="_blank" rel="noreferrer" className="link w-fit">
-                  Rupam
-                </a>
+              <dd className="mt-3 flex flex-col gap-3">
+                {people.map((p) => (
+                  <span key={p.name} className="block">
+                    <a href={p.linkedin} target="_blank" rel="noreferrer" className="link w-fit">
+                      {p.name}
+                    </a>
+                    <span className="mt-0.5 block text-[12px] text-mute">{p.role}</span>
+                  </span>
+                ))}
               </dd>
             </div>
             <div>
