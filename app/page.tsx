@@ -5,7 +5,7 @@ import { Problem } from "@/components/landing/Problem";
 import { Pillars } from "@/components/landing/Pillars";
 import { HowItWorked } from "@/components/landing/HowItWorked";
 import { Features } from "@/components/landing/Features";
-import { Wild } from "@/components/landing/Wild";
+import { Work } from "@/components/landing/Work";
 import { Buyers } from "@/components/landing/Buyers";
 import { Economics } from "@/components/landing/Economics";
 import { UnderTheHood } from "@/components/landing/UnderTheHood";
@@ -23,7 +23,7 @@ export default function Home() {
         <Pillars />
         <HowItWorked />
         <Features />
-        <Wild />
+        <Work />
         <Buyers />
         <Economics />
         <UnderTheHood />

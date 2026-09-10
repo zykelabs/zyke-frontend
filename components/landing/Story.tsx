@@ -12,9 +12,10 @@ export function Story() {
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="space-y-5 text-[15px] leading-relaxed text-ink2 lg:col-span-5">
           <p>
-            We met at IIT Kharagpur in the campus Business Club and ended up running PR and marketing for the Indian
-            Case Challenge, one of the larger business case competitions in Asia. Somewhere in the middle of that, both
-            of us doing design work at two in the morning, the idea for Zyke stopped being a joke.
+            It started at IIT Kharagpur, in the campus Business Club. Two of us ended up running PR and marketing for
+            the Indian Case Challenge, one of the larger business case competitions in Asia. Somewhere in the middle of
+            that, doing design work at two in the morning, the idea for Zyke stopped being a joke. Rupam joined in
+            October 2024 and wrote most of the product you can see in the demo.
           </p>
           <p>
             It started in July 2024 as a single page and a single API route: type a brief, answer two clarifying
@@ -56,14 +57,12 @@ export function Story() {
             {team.map((m) => (
               <div key={m.name} className="border-b rule py-4">
                 <dt className="font-serif text-2xl tracking-tight">{m.name}</dt>
-                <dd className="mt-1 text-[13px] text-mute">{m.role}</dd>
               </div>
             ))}
           </dl>
           <p className="mt-4 text-[13px] leading-relaxed text-mute">
-            Plus one founding team member who joined in October 2024 and helped ship the MVP in four weeks. Between us
-            we had also won gold at Inter IIT for product development and for an NLP problem statement, which is
-            roughly how we convinced ourselves we could build this.
+            Between us we had won gold at Inter IIT for product development and for an NLP problem statement, which is
+            roughly how we convinced ourselves we could build this in the first place.
           </p>
         </div>
         <div className="lg:col-span-7">
@@ -80,8 +79,8 @@ export function Story() {
             ))}
           </dl>
           <p className="mt-4 text-[13px] leading-relaxed text-mute">
-            Eleven and a half thousand dollars of credits, no cash. Every model call on this page was paid for out of
-            that.
+            Twenty-three and a half thousand dollars of credits and no cash. Every model call behind every picture on
+            this page was paid for out of that.
           </p>
         </div>
       </div>

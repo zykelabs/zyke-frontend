@@ -60,7 +60,14 @@ economics and market sizing, the stack, and the story with the team and the gran
 - The problem, the buyer quotes, the comparison table, the pricing, the market figures,
   the team and the grants come from the December 2024 pitch deck.
 - The stack and the timeline come from the code and the commit history, not the deck.
-- `public/gallery/` holds 33 images Zyke generated during testing, chosen from 77 by
-  eye. The original prompts are gone, so the line shown above each image is a
-  reconstruction of the short idea behind it. The misspellings inside the images are
-  the 2024 image model's and are left alone.
+- `public/gallery/` holds 25 images Zyke generated during testing, chosen from 77 by
+  eye. They are grouped by brand and then by the trend Zyke latched onto, because the
+  interesting part is the jump from the news to the brand. The original prompts are
+  gone, so nothing on the page claims to quote one. Resolution stands in for a date:
+  512px images are from the early builds, 1024px after the October rewrite, 1600px
+  from the last builds in November.
+- The before and after in step 4 is the genuine pair from the demo:
+  `public/masks/L_Model_blended_img_1.png` is the original and
+  `public/generated/fixed.png` is the same image after one inpainting edit.
+- The image pipeline and the list of what was new about it are both derived from the
+  backend and frontend source, and are documented in full in `../docs/repos/`.

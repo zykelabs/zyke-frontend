@@ -1,15 +1,16 @@
 import Image from "next/image";
-import { wild } from "@/lib/content";
+import { work } from "@/lib/content";
 
 // Six of the best pieces it made, unlabelled, as the first thing you see.
+const all = work.flatMap((b) => b.groups.flatMap((g) => g.pieces));
 const strip = [
   "/gallery/delhi-landmarks.jpeg",
   "/gallery/aliens-order-fries.jpeg",
   "/gallery/bira-diwali-cheers.jpeg",
-  "/gallery/rider-leaves-the-planet.jpeg",
+  "/gallery/scaling-new-heights.jpeg",
   "/gallery/one-bira-table.jpeg",
   "/gallery/alien-chef-in-orbit.jpeg",
-].map((src) => wild.find((p) => p.src === src)!);
+].map((src) => all.find((p) => p.src === src)!);
 
 export function Hero() {
   return (
@@ -23,7 +24,7 @@ export function Hero() {
           <p className="max-w-xl text-lg leading-relaxed text-ink2 lg:col-span-7">
             You gave Zyke a brand. It read the brand&rsquo;s website and social accounts, worked out how the brand
             talked, found what was trending that morning, and came back with finished posts and generated images. If an
-            image was wrong you pointed at the part you wanted changed and typed a sentence. Two of us built it at IIT
+            image was wrong you pointed at the part you wanted changed and typed a sentence. Three of us built it at IIT
             Kharagpur in 2024. This page is the record.
           </p>
           <div className="flex flex-col gap-3 text-[15px] lg:col-span-5 lg:items-end">

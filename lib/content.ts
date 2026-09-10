@@ -68,7 +68,7 @@ export const steps = [
 ];
 
 export const beforeAfter = {
-  before: "/posts/Idea3Post2Img1.png",
+  before: "/masks/L_Model_blended_img_1.png",
   after: "/generated/fixed.png",
   prompt: "Make the background darker and add a galaxy with some planets",
 };
@@ -208,75 +208,265 @@ export const marketerUse = [
 ];
 
 export const team = [
-  { name: "Siddharth Dikshit", role: "Chief Executive Officer" },
-  { name: "Tasmay P. Tibrewal", role: "Chief Technical Officer" },
+  { name: "Tasmay P. Tibrewal" },
+  { name: "Rupam Mahato" },
+  { name: "Siddharth Dikshit" },
 ];
 
 export const grants = [
+  { org: "Daytona", amount: "$10,000", what: "Development environment credits" },
   { org: "CampusFund", amount: "$5,000", what: "AWS credits to build the MVP" },
   { org: "Modal Labs", amount: "$5,000", what: "Compute credits to deploy the ML models" },
+  { org: "Google Cloud for Startups", amount: "$2,000", what: "Credits for the GPU segmentation service and storage" },
   { org: "Microsoft for Startups", amount: "$1,000", what: "Azure credits" },
   { org: "MongoDB for Startups", amount: "$500", what: "Database credits" },
 ];
 
 // ---------------------------------------------------------------------------
-// Work Zyke produced during testing, for Zomato, Bira 91 and a couple of other
-// brands. We did not write these prompts. Zyke picked the trend, tied it to the
-// brand and wrote the caption. The `prompt` line below is our best guess at the
-// half-sentence idea behind each one, recovered by looking at the picture. The
-// originals are gone.
+// Work Zyke produced during testing, for Zomato, Bira 91 and one other brand.
+// We did not write these. Zyke picked the trend, decided how to tie it to the
+// brand, wrote the caption and generated the picture. Grouped the way it made
+// them: by brand, then by the trend it latched onto.
+//
+// `w` is the generated width. It doubles as a date stamp. The 512px runs are
+// the earliest, 1024px came after we rebuilt the pipeline, and the 1600px ones
+// are from the last builds in November 2024.
 // ---------------------------------------------------------------------------
 
 export type Piece = {
   src: string;
   w: number;
   h: number;
-  brand: string;
-  trend: string;
-  prompt: string;
   caption: string;
-  featured?: boolean;
 };
 
-export const wild: Piece[] = [
-  { src: "/gallery/spacex-vs-zomato-precision.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "SpaceX catches a booster, Zomato catches your craving", caption: "A rocket launch beside a delivery rider. Same precision, different missions.", featured: true },
-  { src: "/gallery/rider-leaves-the-planet.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "a Zomato rider leaving the planet", caption: "A rider lifting off Earth on a pizza-fuelled exhaust trail, past pizza planets.", featured: true },
-  { src: "/gallery/booster-catch-rate-chart.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "booster success rate vs order accuracy rate", caption: "A bar chart nobody asked for, comparing rocket recovery to getting your order right.", featured: true },
-  { src: "/gallery/aliens-order-fries.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "aliens ordering fries from Zomato", caption: "Four aliens at a table in orbit, arguing over asteroid fries and galaxy sauce.", featured: true },
-  { src: "/gallery/alien-chef-in-orbit.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "an alien chef cooking Zomato food in orbit", caption: "A green chef plating a salad in a space station kitchen, Earth through the window.", featured: true },
-  { src: "/gallery/zomato-delivers-to-the-roof.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "Zomato delivers to the rooftop, aliens included", caption: "A Zomato jet banking over a moonlit rooftop dinner, guests slightly not from here.", featured: true },
-  { src: "/gallery/flag-on-an-on-time-delivery.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "planting a flag on an on-time delivery", caption: "An astronaut planting a red flag in deep space, holding an open pizza box." },
-  { src: "/gallery/zomato-to-the-moon.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "Zomato to the moon", caption: "An astronaut walking the lunar surface with a pizza, hashtagged #MartianMeals." },
-  { src: "/gallery/mission-control-fleet.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "the Zomato mission control fleet", caption: "Four riders in spacesuits on scooters, rolling out of a command centre." },
+export type TrendGroup = {
+  id: string;
+  trend: string;
+  when: string;
+  leap: string;
+  pieces: Piece[];
+};
 
-  { src: "/gallery/delhi-landmarks.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Delhi traffic", prompt: "a rider tearing past Delhi's landmarks", caption: "A red scooter throwing sparks past India Gate at sunset, petals in the air.", featured: true },
-  { src: "/gallery/smart-routing-at-night.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Delhi traffic", prompt: "Zomato's smart routing, at night", caption: "A glowing scooter tracing a lit route across a dark city map.", featured: true },
-  { src: "/gallery/how-it-feels-vs-how-it-delivers.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Delhi traffic", prompt: "Delhi traffic versus a Zomato rider", caption: "Gridlock on top, a rider getting through underneath. How it feels, versus how it delivers." },
-  { src: "/gallery/not-for-our-delivery-heroes.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Delhi traffic", prompt: "stuck in traffic, except our riders", caption: "Two panels: a rider weaving through cars, then the same rider on a rocket." },
-  { src: "/gallery/three-steps.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "none", prompt: "the three steps of a delivery", caption: "Get the order, plan the route, deliver. Three cards, one dark palette." },
+export type BrandGroup = {
+  brand: string;
+  note: string;
+  groups: TrendGroup[];
+};
 
-  { src: "/gallery/scaling-new-heights.jpeg", w: 1600, h: 1066, brand: "Zomato", trend: "The Prime Minister in the news", prompt: "what if the Prime Minister endorsed Zomato?", caption: "A mountain of food, a very large delivery box, and an unmistakable endorsement.", featured: true },
-  { src: "/gallery/better-food-for-more-people.jpeg", w: 1600, h: 1066, brand: "Zomato", trend: "The Prime Minister in the news", prompt: "the Prime Minister as Zomato's chef, and the cows agree", caption: "A chef's hat, a floating buffet, and four cartoon cows holding Zomato bags." },
-
-  { src: "/gallery/zomato-twist-makeup.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Get-ready-with-me videos", prompt: "a Zomato makeup tutorial", caption: "A four-panel get-ready-with-me, except every product is a food container." },
-  { src: "/gallery/eat-light-shine-bright.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Get-ready-with-me videos", prompt: "eat light, shine bright", caption: "A beauty collage in purple: skin, a Zomato box, and dinner under a full moon." },
-  { src: "/gallery/order-as-a-beauty-boost.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Get-ready-with-me videos", prompt: "your Zomato order as a beauty boost", caption: "Before and after, in full bridal makeup, credited to a food delivery order." },
-
-  { src: "/gallery/bira-diwali-cheers.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Diwali", prompt: "Bira 91 for Diwali", caption: "Two glasses meeting in front of a blurred rangoli of light.", featured: true },
-  { src: "/gallery/one-bira-table.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Diwali", prompt: "everyone around one Bira 91 table", caption: "Shot from above: a dozen hands, a glowing logo burned into the wood.", featured: true },
-  { src: "/gallery/bira-dinner-party.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Diwali", prompt: "a Bira 91 dinner party", caption: "A long table, warm lights, everyone reaching in at once." },
-  { src: "/gallery/bira-at-the-party.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Diwali", prompt: "Bira 91 at the party", caption: "A crowd mid-laugh in headscarves and gold, glasses raised." },
-  { src: "/gallery/bira-under-the-tree.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 under a tree at golden hour", caption: "A quiet table under an enormous oak, low sun through the leaves.", featured: true },
-  { src: "/gallery/bira-takes-the-world.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 takes on the world", caption: "One bottle standing between the Statue of Liberty and the Eiffel Tower.", featured: true },
-  { src: "/gallery/bira-new-york-rooftop.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 on a New York rooftop", caption: "Golden hour over Manhattan, six people and a round of bottles." },
-  { src: "/gallery/bira-garden-party.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "a Bira 91 garden party", caption: "Paper lanterns, a checked tablecloth, and a table of people laughing." },
-  { src: "/gallery/bira-lands-in-america.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 lands in America", caption: "Six bottles on a Stars and Stripes, lit like a product shoot." },
-  { src: "/gallery/bira-in-every-skyline.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 in every skyline", caption: "Big Ben, a dome, a bridge, and a crowd raising bottles underneath." },
-  { src: "/gallery/bira-citrus.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "none", prompt: "Bira 91, citrus and smooth", caption: "A split product shot: pineapple and shade on one side, hard orange on the other." },
-  { src: "/gallery/is-beer-only-for-men.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "none", prompt: "is beer only for men?", caption: "Myth on the left in navy, fact on the right in yellow, and a crowd disagreeing." },
-
-  { src: "/gallery/brewing-the-perfect-code.jpeg", w: 512, h: 512, brand: "Others", trend: "Developer culture", prompt: "brewing the perfect code", caption: "Half brewery, half IDE, one chimp holding the sign between them.", featured: true },
-  { src: "/gallery/six-months-to-mastery.jpeg", w: 512, h: 512, brand: "Others", trend: "Developer culture", prompt: "six months to mastery", caption: "A chimp in a leather jacket with a pint in one hand and a textbook in the other." },
+export const work: BrandGroup[] = [
+  {
+    brand: "Zomato",
+    note:
+      "An Indian food delivery company with famously cheeky marketing. We gave Zyke the name and the website. Everything after that is its own.",
+    groups: [
+      {
+        id: "pm",
+        trend: "The Prime Minister was all over the Indian news",
+        when: "November 2024",
+        leap:
+          "Zyke read the domestic news cycle, saw one name in most of it, and decided the move was a national endorsement. Nobody asked it for a politician. It reached for the most recognisable face in the country and put a delivery box in his hands. These two are also the sharpest pictures it ever made.",
+        pieces: [
+          { src: "/gallery/scaling-new-heights.jpeg", w: 1600, h: 1066, caption: "A mountain of food on a mountain, a very large box, and an unmistakable endorsement." },
+          { src: "/gallery/better-food-for-more-people.jpeg", w: 1600, h: 1066, caption: "A chef's hat, a floating buffet, and four cartoon cows carrying Zomato bags." },
+        ],
+      },
+      {
+        id: "delhi",
+        trend: "Delhi traffic",
+        when: "October 2024",
+        leap:
+          "The least exotic trend it ever picked, and the one closest to the actual product. If the city cannot move, the interesting thing about a delivery company is that its riders still do.",
+        pieces: [
+          { src: "/gallery/delhi-landmarks.jpeg", w: 1024, h: 1024, caption: "A red scooter throwing sparks past India Gate at sunset." },
+          { src: "/gallery/smart-routing-at-night.jpeg", w: 1024, h: 1024, caption: "A glowing scooter tracing a lit route across a dark city map." },
+          { src: "/gallery/how-it-feels-vs-how-it-delivers.jpeg", w: 1024, h: 1024, caption: "Gridlock on top, a rider getting through underneath." },
+          { src: "/gallery/not-for-our-delivery-heroes.jpeg", w: 1024, h: 1024, caption: "Stuck in traffic, then the same rider on a rocket." },
+        ],
+      },
+      {
+        id: "grwm",
+        trend: "Get-ready-with-me videos",
+        when: "October 2024",
+        leap:
+          "A format, not an event. Zyke noticed the shape of the videos doing well that week and rebuilt it around food, so the products in the routine are all things you order.",
+        pieces: [
+          { src: "/gallery/zomato-twist-makeup.jpeg", w: 1024, h: 1024, caption: "A four-panel get-ready-with-me where every product is a food container." },
+          { src: "/gallery/eat-light-shine-bright.jpeg", w: 1024, h: 1024, caption: "A beauty collage in purple: skin, a box, and dinner under a full moon." },
+        ],
+      },
+      {
+        id: "ufo",
+        trend: "The US government released its files on unidentified objects",
+        when: "September 2024",
+        leap:
+          "This is the jump we did not see coming. Declassified alien files were the story of the week, so Zyke decided that if aliens are real then they are a market, and started writing posts about serving them. The asteroid fries and the galaxy sauce are its words, not ours.",
+        pieces: [
+          { src: "/gallery/aliens-order-fries.jpeg", w: 512, h: 512, caption: "Four aliens at a table in orbit, arguing over asteroid fries and galaxy sauce." },
+          { src: "/gallery/alien-chef-in-orbit.jpeg", w: 512, h: 512, caption: "A green chef plating a salad in a space station kitchen, Earth through the window." },
+          { src: "/gallery/zomato-delivers-to-the-roof.jpeg", w: 512, h: 512, caption: "A delivery jet banking over a moonlit rooftop dinner, guests slightly not from here." },
+        ],
+      },
+      {
+        id: "spacex",
+        trend: "SpaceX caught a Starship booster with the launch tower",
+        when: "October 2024",
+        leap:
+          "The trend everyone was posting about. Zyke's angle was that catching a hundred-tonne booster and getting an order right are the same claim about precision, so it built the comparison out until it had a chart of it.",
+        pieces: [
+          { src: "/gallery/spacex-vs-zomato-precision.jpeg", w: 512, h: 512, caption: "A rocket launch beside a delivery rider. Same precision, different missions." },
+          { src: "/gallery/booster-catch-rate-chart.jpeg", w: 512, h: 512, caption: "A bar chart nobody asked for, comparing booster recovery to order accuracy." },
+          { src: "/gallery/flag-on-an-on-time-delivery.jpeg", w: 512, h: 512, caption: "An astronaut planting a flag in deep space, holding an open pizza box." },
+          { src: "/gallery/zomato-to-the-moon.jpeg", w: 512, h: 512, caption: "An astronaut walking the lunar surface with a pizza." },
+        ],
+      },
+    ],
+  },
+  {
+    brand: "Bira 91",
+    note:
+      "An Indian craft beer company, and one of the companies that actually tested Zyke in November 2024.",
+    groups: [
+      {
+        id: "diwali",
+        trend: "Diwali",
+        when: "October 2024",
+        leap:
+          "The obvious one, handled well. Zyke went for the room rather than the product: lights, a crowded table, people mid-laugh.",
+        pieces: [
+          { src: "/gallery/bira-diwali-cheers.jpeg", w: 512, h: 512, caption: "Two glasses meeting in front of a blurred rangoli of light." },
+          { src: "/gallery/one-bira-table.jpeg", w: 512, h: 512, caption: "Shot from above: a dozen hands and a logo burned into the wood." },
+          { src: "/gallery/bira-at-the-party.jpeg", w: 512, h: 512, caption: "A crowd mid-laugh in headscarves and gold, glasses raised." },
+        ],
+      },
+      {
+        id: "global",
+        trend: "Indian brands going abroad",
+        when: "October 2024",
+        leap:
+          "Zyke read the export story in the business press and turned it into a travel series, planting the bottle in a different skyline each time.",
+        pieces: [
+          { src: "/gallery/bira-takes-the-world.jpeg", w: 512, h: 512, caption: "One bottle standing between the Statue of Liberty and the Eiffel Tower." },
+          { src: "/gallery/bira-lands-in-america.jpeg", w: 512, h: 512, caption: "Six bottles on a Stars and Stripes, lit like a product shoot." },
+          { src: "/gallery/bira-in-every-skyline.jpeg", w: 512, h: 512, caption: "Big Ben, a dome, a bridge, and a crowd raising bottles underneath." },
+        ],
+      },
+      {
+        id: "nobrand",
+        trend: "No trend, just the brand",
+        when: "October 2024",
+        leap:
+          "With nothing trending it fell back on the brand voice alone. The second one is Zyke arguing with a stereotype about its own category, which is not a thing we asked it to do.",
+        pieces: [
+          { src: "/gallery/bira-under-the-tree.jpeg", w: 512, h: 512, caption: "A quiet table under an enormous oak, low sun through the leaves." },
+          { src: "/gallery/is-beer-only-for-men.jpeg", w: 512, h: 512, caption: "Myth on the left in navy, fact on the right in yellow, and a crowd disagreeing." },
+        ],
+      },
+    ],
+  },
+  {
+    brand: "A coding school",
+    note: "A third brand we pointed it at to see whether any of this held up outside food and drink.",
+    groups: [
+      {
+        id: "dev",
+        trend: "Developer culture",
+        when: "October 2024",
+        leap:
+          "Different category, same behaviour. It found the running joke in the audience and built a mascot around it without being told there should be one.",
+        pieces: [
+          { src: "/gallery/brewing-the-perfect-code.jpeg", w: 512, h: 512, caption: "Half brewery, half IDE, one chimp holding the sign between them." },
+          { src: "/gallery/six-months-to-mastery.jpeg", w: 512, h: 512, caption: "A chimp in a leather jacket with a pint in one hand and a textbook in the other." },
+        ],
+      },
+    ],
+  },
 ];
 
-export const brandFilters = ["All", "Zomato", "Bira 91", "Others"];
+// The same pipeline, three months apart. Used to show what got better.
+export const progression = [
+  {
+    when: "September 2024",
+    size: "512 x 512",
+    src: "/gallery/aliens-order-fries.jpeg",
+    w: 512,
+    h: 512,
+    what: "Composition works, text does not. Speech bubbles come out as approximate shapes: \u201cPass the galax yon galaxy sauce\u201d. One megapixel was the ceiling.",
+  },
+  {
+    when: "October 2024",
+    size: "1024 x 1024",
+    src: "/gallery/delhi-landmarks.jpeg",
+    w: 1024,
+    h: 1024,
+    what: "Four times the pixels after we moved to FLUX 1.1 Pro and started writing image prompts through the brand voice. Headlines are nearly right; \u201cthrowgth\u201d is the only slip.",
+  },
+  {
+    when: "November 2024",
+    size: "1600 x 1066",
+    src: "/gallery/scaling-new-heights.jpeg",
+    w: 1600,
+    h: 1066,
+    what: "The last builds. Near-photographic, a readable headline, a hashtag it invented, and a face it rendered on purpose. Still cannot spell Zomato on the box.",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// The image pipeline, and the things we had to build ourselves because they
+// did not exist yet. All taken from the code.
+// ---------------------------------------------------------------------------
+
+export const era2024 = [
+  "There was no Nano Banana and no GPT Image. There was no model you could hand a picture and a sentence to and get the picture back, changed.",
+  "Image models could not write. Any text in a picture came out as approximate letter shapes, which is why almost every headline on this page is misspelled.",
+  "A megapixel was the ceiling. 1024 by 1024 was a good day.",
+  "Instruction following was weak. A long prompt with several requirements in it would get two of them.",
+  "Nothing kept a character or a product consistent between two pictures, so a set of images that told one story had to be forced.",
+];
+
+export const pipeline = [
+  {
+    n: "1",
+    title: "One idea becomes several image prompts",
+    body: "The reasoning model was asked for a post as XML, with a caption and a list of image prompts inside it, and told to vary how many images each post got. That is how the images in a post form a sequence instead of three versions of the same picture. Structured output was not reliable in 2024, so every prompt asked for XML tags and we parsed them by hand.",
+  },
+  {
+    n: "2",
+    title: "The brand voice goes in as its own message",
+    body: "Not a line in a system prompt. A saved record with the company research, the tone, emotion and character filters, and an analysis of the brand's own past posts, injected as a separate system message on every single call. It is the reason two brands given the same trend came back with different posts.",
+  },
+  {
+    n: "3",
+    title: "Images generated four at a time",
+    body: "FLUX 1.1 Pro through Together AI, 1024 square, fifty steps, at four and a bit cents an image. Requests went out in batches of four with a pause between them to stay inside the rate limit, then every image was downloaded and inlined so a post travelled as one object.",
+  },
+  {
+    n: "4",
+    title: "Click a point, get candidate regions",
+    body: "The part that did not exist anywhere else. You clicked a pixel. Those coordinates went to a semantic segmentation model we ran on a GPU behind Google Cloud Run, which returned several candidate masks for what you might have meant, from the object you clicked to the whole region around it.",
+  },
+  {
+    n: "5",
+    title: "Show the masks before committing",
+    body: "Raw masks are unreadable, so each one was dilated with a seventeen by seventeen kernel, resized to the picture and alpha-blended over it in colour. You picked from a row of previews of your own image with the region lit up. Choosing a region cost nothing, because that step ran locally with OpenCV.",
+  },
+  {
+    n: "6",
+    title: "Repaint only that region",
+    body: "The chosen mask, the original picture and your sentence went to Stability's inpainting endpoint at three cents a call. Every edit was applied to the pristine original rather than the last edit, so mistakes did not compound, and the whole chain was kept as history you could step back through.",
+  },
+  {
+    n: "7",
+    title: "Fight the model into blending",
+    body: "Inpainting in 2024 liked to return a half-filled hole, or a hard seam, or to write a caption into the gap. So the prompt was wrapped in a fixed instruction to blend the region with the rest of the image and fill it completely, plus a long negative prompt listing every failure we had seen: empty part, blank image, text, any text, alphabets, part not blended with the rest.",
+  },
+];
+
+export const novelties = [
+  "Editing a generated image by pointing at it and describing the change, a year before any image model could do it on its own.",
+  "Candidate masks shown as previews on your own picture, so a segmentation model became something a marketing person could use.",
+  "Always editing the original rather than the last result, with full undo history.",
+  "A brand voice as a stored object passed into every prompt, rather than a prompt template.",
+  "Trend, idea and post as three separate stages you could stop and steer between, each one parsed from tagged output.",
+  "Every generation metered to the cent, because credits were deducted per model call.",
+];
