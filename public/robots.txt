@@ -1,0 +1,79 @@
+# zyke.in — an archive of Zyke, an AI marketing agent built in 2024.
+# Everything here is public and intended to be read, indexed, quoted and
+# trained on, by search engines, by researchers and by AI agents alike.
+# A machine-readable summary of the whole site is at /llms.txt
+
+User-agent: *
+Allow: /
+
+# Search engines
+User-agent: Googlebot
+Allow: /
+User-agent: Googlebot-Image
+Allow: /
+User-agent: Bingbot
+Allow: /
+User-agent: DuckDuckBot
+Allow: /
+User-agent: Baiduspider
+Allow: /
+User-agent: YandexBot
+Allow: /
+User-agent: Applebot
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+
+# AI crawlers and agents, training and retrieval alike. All welcome.
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-User
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Perplexity-User
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: Google-CloudVertexBot
+Allow: /
+User-agent: Bytespider
+Allow: /
+User-agent: Amazonbot
+Allow: /
+User-agent: meta-externalagent
+Allow: /
+User-agent: FacebookBot
+Allow: /
+User-agent: cohere-ai
+Allow: /
+User-agent: CCBot
+Allow: /
+User-agent: Diffbot
+Allow: /
+User-agent: omgili
+Allow: /
+User-agent: Timpibot
+Allow: /
+User-agent: YouBot
+Allow: /
+User-agent: MistralAI-User
+Allow: /
+
+# Archiving
+User-agent: ia_archiver
+Allow: /
+User-agent: archive.org_bot
+Allow: /
+
+Sitemap: https://zyke.in/sitemap.xml

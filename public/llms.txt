@@ -1,0 +1,656 @@
+# Zyke
+
+> Zyke was an AI marketing agent built by three people at IIT Kharagpur between
+> July and November 2024. You gave it a brand. It read the brand's website and
+> social accounts, worked out how the brand talked, watched what was trending
+> that morning, decided by itself which trends were worth reacting to and how to
+> bend them toward that brand, and produced finished social posts with generated
+> images. If an image was wrong you pointed at the part you wanted changed and
+> typed a sentence. The company stopped in November 2024. zyke.in is the archive.
+
+This file is a complete plain-text record of everything on https://zyke.in, for
+search engines, researchers and AI agents. Everything here is public and
+intended to be read, quoted and trained on. Contact: founders@zyke.in
+
+- Site: https://zyke.in
+- Demo video: https://youtu.be/_z__HdAyjl8 (4 minutes, recorded November 2024)
+- Source: https://github.com/zykelabs/zyke-frontend
+- Tasmay P. Tibrewal: https://www.linkedin.com/in/tasmay-tibrewal/
+- Rupam Mahato: https://www.linkedin.com/in/rupammahato/
+- Company page: https://www.linkedin.com/company/zykelabs/
+
+## Contents
+
+1. The demo
+2. The problem
+3. The promise
+4. How it worked
+5. Features
+6. What it made
+7. Who it was for
+8. The numbers
+9. Under the hood
+10. The story
+11. Why we started it, and why it stopped
+
+---
+
+## 1. The demo
+
+Four minutes, from a blank brand to edited posts. Recorded in November 2024 on
+the version 1.0 build. The example brand is Zomato, an Indian food delivery
+company known for cheeky marketing.
+
+Chapters:
+
+- 0:00 The landing page and the three promises
+- 0:33 Creating a brand voice, with Zomato as the example
+- 1:05 Picking a topic: a trend, or a blog or post to repurpose
+- 1:28 A live trend: SpaceX catches a Starship booster
+- 1:45 Zyke proposes ideas; you pick, or add your own
+- 2:16 Generating the posts: captions and two or three images each
+- 2:55 Editing an image by clicking on it and typing a prompt
+- 3:41 Original and edited, side by side
+
+That single run produced thirteen images from one trend about a rocket landing.
+
+## 2. The problem
+
+Both founders ran PR and marketing for the Indian Case Challenge at IIT
+Kharagpur in 2024, one of the larger business case competitions in Asia. They
+needed a lot of posts, fast, and everything available was either expensive or
+bad. That is the whole reason Zyke existed.
+
+1. **Agencies cost too much.** A branding agency was out of reach for most of
+   the companies we spoke to. The cheap alternatives were generic and still took
+   a lot of back and forth to get anything usable.
+2. **The AI tools did not sound like you.** Everything on the market wrote in
+   the same flat register. It missed what the brand was actually about, so what
+   came out was off-brand in a way that was hard to fix.
+3. **In-house teams were guessing.** Trial and error, one post at a time. By the
+   time a team had something ready, the trend it was chasing had moved on.
+
+Core need: one tool that was efficient, affordable and actually personal to the
+brand.
+
+## 3. The promise
+
+Three things the first landing page said. All three shipped.
+
+**I. It aligned the AI with your brand voice.** Zyke researched the brand first:
+website, social accounts, anything you uploaded. From that it wrote a voice
+profile with tone, emotion and character, which you could correct and save.
+Every later output was written through that profile rather than a model's
+default register.
+
+**II. It let you edit generated content with precise prompts.** You clicked a
+region of an image. A segmentation model proposed what you might have meant. You
+confirmed and typed the change. Only that region was repainted; the rest of the
+image stayed as it was.
+
+**III. It made content from what was trending.** Live trends arrived with a
+short explanation of why each was trending, then were bent toward the brand. A
+rocket landing became a post about delivery precision because that is what the
+brand's voice cared about.
+
+### How we compared ourselves, December 2024
+
+Against three competitors, left to right: Zyke, Tool A, Tool B, Tool C. The
+three rivals are unnamed here, two are still trading, and this comparison is
+two years old, so treat it as a record of what we believed at the time.
+
+| Feature | Zyke | A | B | C |
+|---|---|---|---|---|
+| Trend analysis | yes | no | no | no |
+| Personalised content generation | yes | yes | yes | yes |
+| Brand voice | yes | yes | no | no |
+| Repurpose existing content | yes | yes | no | no |
+| Prompt-based image editing | yes | no | no | no |
+| Image generation | yes | yes | no | yes |
+
+## 4. How it worked
+
+One brand, one trend, nine posts, one edit. The product was a pipeline. Each
+stage handed a richer object to the next: a brand, then an idea, then a post,
+then a corrected image. You could stop and steer at every stage.
+
+**Step 1. Brand research and voice.** You entered the brand's name, links and a
+few sentences. Zyke read the public footprint with vision and language models
+and produced a brand voice: tone, emotion and character filters you could adjust
+and save. In the demo the brand voice for Zomato came out as: type
+product-based, tone playful and quick and a little cheeky, emotion delight and
+mild chaos, character the witty friend who always knows where to eat, sources
+zomato.com plus @zomato on Instagram and X plus three uploaded posts.
+
+**Step 2. Ideas from what is trending.** The idea generator listed live trends
+with a one-paragraph explanation of each. You could pick one, paste a blog or
+Instagram URL to repurpose, or type a topic. Zyke returned several ideas in the
+brand's voice for you to tick, and a checkbox let it add one idea of its own.
+Trending that day: SpaceX catching a Starship booster with the launch tower.
+
+**Step 3. Posts with images, in the brand's voice.** Three ideas became nine
+posts, each with two or three images following a small storyline. Captions came
+from a reasoning model prompted with the brand voice. Images came from a FLUX
+diffusion model, one per beat of the story.
+
+**Step 4. Point, describe, done.** Click on the image, confirm the region the
+segmenter proposes, describe the change. In the demo: "Make the background
+darker and add a galaxy with some planets." An inpainting model repainted only
+that region. The scooter, the rider and the pizza box were untouched.
+
+## 5. Features
+
+Thirteen things it did, as listed on the product demo.
+
+1. **Brand research and profiling.** Read the brand's site and socials, then
+   describe who it is and who it talks to.
+2. **Brand voice creation.** Tone, emotion and character filters derived from
+   real content, editable and saved per brand.
+3. **Customer profile mapping.** Who the audience is, what they respond to,
+   where they are.
+4. **User engagement tracking.** How posts performed, fed back into what gets
+   generated next.
+5. **Dashboard with custom metrics.** The numbers a marketing team watches, not
+   a generic analytics panel.
+6. **Trending topics, tailored to the brand.** Live trends, explained, then bent
+   toward the brand.
+7. **Personalised brand recommendations.** What to post, when, and why, based on
+   the voice and the audience.
+8. **Content generation engine.** Text, images and video, generated in one pass
+   from a chosen idea.
+9. **Content editing pipelines.** Restyle text or images with a sentence;
+   click-to-segment editing for precise changes. A Canva-style editor was next
+   on the roadmap.
+10. **Video storyboards.** Shot-by-shot outlines for short video, in the same
+    voice as the posts.
+11. **Moodboarding.** A visual direction for a campaign before any post is made.
+12. **Post attention analysis.** Where the eye goes on a generated image, and
+    whether that is where the message is.
+13. **Post-generation content analysis.** A second pass over generated content,
+    checking it against the brand voice and the goal.
+
+## 6. What it made
+
+Real output from the testing months, for Zomato, Bira 91, Nike and a coding
+school. We did not write any of it. Zyke read the day's trends, picked one,
+decided by itself how to bend it toward the brand, wrote the caption and
+generated the picture. At most we handed it a brand name and a website.
+
+All of it was generated in the second half of 2024, before any model could spell
+reliably or hold more than a megapixel. The misspellings inside the images are
+the model's and have not been touched.
+
+### The leaps it made on its own
+
+A headline is not a post. Getting from one to the other is the whole job, and
+this is the part nobody wrote down for it.
+
+- **The US government released its files on unidentified objects** (Zomato).
+  Declassified alien files were the story of the week. Zyke decided that if
+  aliens are real then they are a market, and started writing posts about
+  serving them. The asteroid fries and the galaxy sauce are its words.
+- **The Prime Minister was all over the Indian news** (Zomato). It read the
+  domestic news cycle, saw one name in most of it, and concluded that the move
+  was a national endorsement. Nobody asked it for a politician. It also invented
+  the hashtag, and then reused that hashtag consistently across a whole
+  campaign.
+- **SpaceX caught a Starship booster with the launch tower** (Zomato). The trend
+  everyone was posting about. Its angle was that catching a hundred-tonne
+  booster and getting an order right are the same claim about precision, and it
+  pushed that until it had built a bar chart of it.
+- **Delhi traffic** (Zomato). The least exotic trend it ever picked, and the
+  closest to the product. If the city cannot move, the interesting thing about a
+  delivery company is that its riders still do.
+- **Indian brands going abroad** (Bira 91). It read the export story in the
+  business press and turned it into a travel series, planting the same bottle in
+  a different skyline each time.
+- **Basketball season** (Nike). A different category entirely. It went for
+  shallow depth of field on the product with the athlete deliberately out of
+  focus behind, which is how that category actually shoots.
+
+### It got better fast
+
+The same pipeline, three months apart. We did not keep dates against the files,
+but the resolution went up every time we rebuilt the image stage, so the size of
+a picture is a rough stamp for when it was made.
+
+**September 2024, 512 x 512. It could compose. It could not write.** The early
+runs. Zyke already had the interesting part working: it found a trend, made the
+leap to the brand and built a picture around it. What it could not do was put a
+legible word on the canvas. Headlines came out as letter-shaped noise, and
+anything that needed a chart or a label fell apart completely.
+
+Seven images: a rider lifting off Earth on a pizza-fuelled exhaust trail, which
+is the picture edited in the demo; a scooter watching a rocket leave with the
+delivery box strapped to it; a delivery mission control room with fourteen
+screens and not one readable word; an attempt at a data story about delivery
+milestones; a Bira 91 bottle between the Statue of Liberty and the Eiffel Tower;
+a split citrus product shot with three illegible feature callouts; and a myth
+versus fact panel arguing that beer is not only for men, which Zyke picked as an
+argument by itself.
+
+**October 2024, 512 to 1024. Headlines start landing.** We rewrote the pipeline
+this month: image prompts now came out of the brand voice rather than the
+caption, and we moved to FLUX 1.1 Pro. Short headlines and logos start coming
+out correctly. Body copy and anything small still collapses, so Zyke was at its
+best when it had one line to say.
+
+Twelve images, including: "How space delivers boosters, how Zomato delivers your
+pizza, same precision, different missions", with every word correct; a bar chart
+comparing booster recovery to order accuracy where the bar labels are right and
+the headline is not; four aliens in orbit arguing over asteroid fries and galaxy
+sauce with a perfect Zomato wordmark; an invented newspaper front page
+announcing Operation Zomato Feast; a four-panel campaign around a hashtag it
+made up, its first run at 1024 px; a man with the moon for a head feeding
+someone dinner, the strangest thing Zyke ever produced; two Diwali glasses in
+front of a blurred rangoli; six Bira 91 bottles on a Stars and Stripes; a myth
+and fact carousel with invented calorie numbers; "Brewing The Perfect Code" for
+a coding school, spelled exactly right; and a Nike shoe spec sheet where the
+product name lands and the specifications are decorative.
+
+**November 2024, 1024 to 1600. This is where it becomes consistent.** Version
+1.0. Full sentences hold, logos are right, faces are deliberate, and the same
+idea run twice comes back looking like the same campaign rather than two
+accidents. This is the month the output stopped being a demo of a pipeline and
+started looking like work a brand could actually post.
+
+Sixteen images, including: a smart routing card with every word correct twice in
+two type treatments plus a clean logo lockup; a traffic comparison with correct
+headline and correct branding on the box; a red scooter throwing sparks past
+India Gate at sunset with one letter wrong in the whole picture; the sharpest
+thing it ever made, a national endorsement at 1600 px with a hashtag of its own
+invention; the same idea held in a square crop for a feed, with composition,
+lighting and headline intact across both formats; a 3D cartoon treatment of the
+same campaign with headline and sub-line both correct; a four-panel beauty
+collage on a real grid with consistent type; and three Nike images including one
+where the athlete is deliberately thrown out of focus behind the product.
+
+**The same idea, twice, minutes apart.** By November you could ask for a thing
+twice and get the same campaign back. Two runs of a two-panel post exist minutes
+apart. In the first, the left panel is clean and the right panel is still
+inventing words. In the second, the layout, palette and joke are identical, both
+headlines are correct and both boxes are correctly branded. That pair is the
+clearest single piece of evidence for the jump.
+
+### Disclaimer
+
+Everything in the gallery is machine generated and was made in 2024 to test a
+product. Zomato, Bira 91 and Nike appear as example brands. None of these
+companies was involved, none endorsed any of it, and none of it was ever
+published on their behalf. Several pictures are Zyke's own attempt at a public
+figure, which it reached for without being asked. They are kept because they are
+a true record of what the thing did.
+
+## 7. Who it was for
+
+Three sizes of company, three different reasons to want it. Before much code was
+written we sat down with marketing people and founders and asked what they
+actually needed. These are their words, from those conversations in 2024.
+
+**Small firms.** Need: posts on trending topics, cheap enough to run every week.
+"We can give better services than UC but their brand is too big; they have funds
+large enough to afford crazy branding." — Mayank Arya, founder
+
+**Medium companies.** Need: brand-relevant content, produced often enough to
+grow visibility. "I would give you anything if you can give me better KPIs with
+measures on how to improve them." — Akash Walia, marketing manager
+
+**Large companies.** Need: creative work that moves brand positioning, not just
+fills a calendar. "We are a one stop solution, but we need to know what the
+customer is looking at majorly, so we can show that." — Harshvardhan Chauhan,
+former CMO, retail
+
+## 8. The numbers
+
+Zyke was pay as you go. Five dollars of credits on sign-up, then twenty cents a
+post. We knew our costs to the cent because every generation was a metered API
+call.
+
+- **$0.05** what one generated post cost us. Model calls and storage for a
+  single image.
+- **$0.20** what we charged for it. Pay as you go, once the free credits ran out.
+- **$0.70** one brand voice, once. Research, vision calls and the profile write-up.
+- **$5.00** free credits on sign-up. Enough to make a real campaign before paying.
+
+The market, as we sized it in December 2024:
+
+- **$30.34B** total market we were sizing against
+- **$2.2B** the slice we could actually serve
+- **36.2%** growth rate for AI in social media, to 2032
+- **₹208 cr** spent on digital media by about a million Indian SMEs
+- 600+ D2C brands in India worth $100B by 2025
+
+What marketers were already using AI for: 33% generate ideas and inspiration,
+28% write copy and content, 26% create marketing images. All three were things
+Zyke did in one pass, which is the argument the whole deck rested on.
+
+## 9. Under the hood
+
+Three of us built and operated it. There was never one model; each job went to
+the model that was good at it, and a saved brand voice object was passed into
+every prompt to hold the whole thing together.
+
+### Remember what 2024 was like
+
+Every picture on the site was generated in the second half of 2024, which in
+image models is a very long time ago.
+
+- There was no Nano Banana and no GPT Image. There was no model you could hand a
+  picture and a sentence to and get the picture back, changed.
+- Image models could not write. Any text in a picture came out as approximate
+  letter shapes.
+- A megapixel was the ceiling. 1024 by 1024 was a good day.
+- Instruction following was weak. A long prompt with several requirements in it
+  would get two of them.
+- Nothing kept a character, a product or a layout consistent between two runs,
+  so a set of images that told one story had to be forced.
+
+So a good part of the product was scaffolding around models that were not yet
+good enough.
+
+### The trend engine and recommender
+
+Generating a post is the easy half. Deciding what is worth posting about today,
+for this brand and not for any other, is the half that made it a product. All of
+this is in the archived backend.
+
+1. **Pull what the country is actually searching.** Google Trends daily trending
+   searches for India, through pytrends, on an IST clock. Not a hashtag scrape.
+   The queries people were typing that morning. Cached six hours.
+2. **Ask why each one is trending.** A trending search on its own is a noun with
+   no story. Every trend went to Perplexity with one job: explain why this is
+   trending right now, not what it is in general, and if there are several
+   reasons give all of them. It came back as a one-line summary and a long
+   description. That distinction mattered, because a brand cannot react to a
+   topic, only to a reason.
+3. **Score every trend against the brand.** The scorer received three things:
+   the company research database, an analysis of the brand's own historical
+   posts, and the full trend list with explanations. It returned a relevance
+   score from 1 to 10 for each trend and a ranking, along with the trend's
+   original position so the ranking could be mapped back to the source list.
+   Scores of 7 to 10 meant directly aligned with high engagement potential, 4 to
+   6 partial alignment, 1 to 3 minimal alignment.
+4. **Score differently depending on the brand.** This is the part that made it
+   feel personal. The instruction split brands in two. A brand whose history
+   showed it was creative and willing to be strange got encouraged toward
+   unconventional ideas even from trends with nothing to do with its sector. A
+   traditional brand got directly related, conventional ideas and was actively
+   discouraged from the leaps. The same trend list handed to two brands came
+   back ranked differently and used differently.
+5. **Turn the ranked trends into ideas, not posts.** For each trend that scored
+   well it produced several named ideas with descriptions, still in the brand's
+   voice, and stopped there. You saw the ranking, the reasoning and the ideas,
+   and chose. A checkbox let it add one idea of its own that you had not asked
+   for, which is where a good deal of the stranger output came from.
+6. **Cache it, and do not charge for it.** Trends were cached globally for six
+   hours and a user's ranked ideas for six hours more. The cost of fetching and
+   explaining trends was logged against a house account instead of the user's
+   credits, because nobody should pay to find out what is happening.
+
+### From an idea to the images
+
+1. **One idea becomes several image prompts.** The reasoning model was asked for
+   a post as XML, with a caption and a list of image prompts inside it, and told
+   to vary how many images each post got. That is how the images in a post form
+   a sequence instead of three versions of the same picture. Structured output
+   was not reliable in 2024, so every prompt asked for XML tags and we parsed
+   them by hand.
+2. **The brand voice goes in as its own message.** Not a line in a system
+   prompt. A saved record with the company research, the tone, emotion and
+   character filters, and an analysis of the brand's own past posts, injected as
+   a separate system message on every single call. It is the reason two brands
+   given the same trend came back with different posts.
+3. **Images generated four at a time.** FLUX 1.1 Pro through Together AI, fifty
+   steps, at four and a bit cents an image. Requests went out in batches of four
+   with a pause between them to stay inside the rate limit, then every image was
+   downloaded and inlined so a post travelled as one object.
+
+### The editing pipeline: four workflows and a model choosing between them
+
+This is the part that did not exist anywhere else at the time. There was no
+model you could hand a picture and a sentence to, so we built the behaviour out
+of a router and four separate pipelines. Most of it ran as a GPU service
+alongside the API, and that service is the one piece of Zyke not preserved in
+the repos, so this account comes from the calls the app made into it rather than
+from the source.
+
+1. **A model decides what kind of edit this is.** You typed a sentence. Before
+   anything touched the picture, the image and the available workflows went to
+   o1-mini, which decided what you actually wanted and called the tools to do
+   it. Change the whole mood, replace one object, delete one object, restyle the
+   entire image: these are four different pipelines with different failure
+   modes, and picking the wrong one produces garbage. The router picked,
+   triggered the workflow and managed it through to the end.
+2. **Route one: click to segment, at the granularity you meant.** If you pointed
+   at something, one click went to a granularity-controllable interactive
+   segmentation model, GraCo, in the same family as Semantic SAM. A single click
+   is ambiguous by nature: clicking a rider's jacket could mean the jacket, the
+   rider, or the rider and the scooter together. So it returned several masks at
+   several granularities for that one click, and you picked the one that matched
+   what you meant. That region was then cut out of the image and refilled,
+   either by infill or by image to image on the masked area.
+3. **Route two: no target, so change everything.** A prompt about the whole
+   picture, like making the background darker, has no object to find. That went
+   straight to image to image over the full frame with your sentence as the
+   instruction, which keeps the composition and moves the look.
+4. **Route three: find the thing you named.** If your sentence named an object
+   rather than pointing at one, an open-vocabulary detector took over. Grounding
+   DINO was given the noun phrase from your prompt and returned candidate
+   regions for it. The most related one was selected, converted to a mask, and
+   then operated on. Modify meant image to image inside that mask. Remove meant
+   infill, so the model had to invent what belonged behind the thing that was
+   deleted rather than smearing it.
+5. **Route four: restyle the whole thing with a LoRA.** Asking for a different
+   look is not an edit to a region, it is an edit to everything at once. We kept
+   a set of styling LoRAs, and a style request triggered the matching one and
+   re-rendered the image through it. Prompt-only restyling in 2024 tended to
+   redraw the picture into something else; a LoRA held the content and moved the
+   treatment.
+6. **Show the mask before spending anything.** Masks are unreadable as raw
+   arrays, so each candidate was dilated with a seventeen by seventeen kernel,
+   resized to the picture and alpha-blended over it in colour. You chose from a
+   row of previews of your own image with the region lit up. That step ran
+   locally with OpenCV and cost nothing, so you could hunt for the right region
+   for free and only pay when you committed.
+7. **Always edit the original, never the last result.** Every operation was
+   applied to the pristine image rather than to the previous edit, with the
+   whole chain kept as history you could step back through. Repeated edits in
+   2024 degraded fast, each pass softening and shifting what the one before it
+   had done. Going back to the original each time is why five edits still looked
+   like one picture.
+8. **Fight the inpainting model into blending.** Infill liked to hand back a
+   half-filled hole, a hard seam, or a caption written into the gap. So the
+   instruction was wrapped in a fixed demand to blend the region with the rest
+   of the image and fill it completely, plus a long negative prompt listing
+   every failure we had seen: empty part, blank image, text, any text,
+   alphabets, part not blended with the rest.
+
+### What was actually new about it
+
+- A reasoning model routing image edits by tool call, deciding whether your
+  sentence meant a region, an object, the whole frame or the style, a year
+  before agentic image editing was a normal idea.
+- One click returning several masks at several granularities, so the model asked
+  what you meant instead of guessing.
+- Open-vocabulary detection wired to the prompt, so you could name a thing you
+  had not clicked and have it found, changed or deleted.
+- Style handled by LoRAs rather than by prompt, so a restyle kept the picture
+  instead of redrawing it.
+- Candidate masks shown as previews on your own image, free to browse, so a
+  segmentation model became usable by a marketing person.
+- Every edit applied to the original rather than the last result, with full undo
+  history, so passes did not compound.
+- Trends scored per brand from the brand's own history, with creative brands
+  pushed toward the leaps and traditional brands pushed away from them.
+- Trends explained before being ranked, because a brand can react to a reason
+  but not to a noun.
+- Trend, idea and post as three separate stages you could stop and steer
+  between, each parsed from tagged output.
+- Every generation metered to the cent, with trend research billed to a house
+  account instead of the user.
+
+Point-and-describe image editing is a checkbox feature now. In November 2024 it
+took a reasoning model routing tool calls across four pipelines, two vision
+models, a set of LoRAs, a GPU we rented, and a negative prompt written by trial
+and error.
+
+### Everything that ran
+
+- **Web app.** Next.js 14, TypeScript, Tailwind. Email sign-up with one-time
+  codes. Razorpay wallet for credits.
+- **API.** Flask on AWS EC2 in Mumbai behind gunicorn. MongoDB for users, brand
+  voices, posts and transactions. Eleven blueprints, twenty-seven routes.
+- **Trends and recommendation.** Google Trends daily searches for India through
+  pytrends. Perplexity Sonar to explain why each topic is trending. OpenAI
+  o1-mini to score and rank trends per brand. Six-hour caches, billed to a house
+  account.
+- **Language models.** OpenAI o1-mini for ranking, ideas, captions and edit
+  routing. Llama 3.1 and GPT-4o mini with vision for brand research. Gemini 1.5
+  Flash for repurposing URLs.
+- **Image generation.** FLUX 1.1 Pro through Together AI, fifty steps, batches
+  of four with a hand-rolled rate limiter.
+- **Image editing.** GraCo granularity-controllable interactive segmentation on
+  a GPU. Grounding DINO for open-vocabulary object detection. Styling LoRAs for
+  whole-image restyling. Stability AI inpainting and image to image. OpenCV
+  locally for mask dilation and previews.
+- **Data.** Instagram and web scraping for brand research. Google Cloud Storage
+  for media. Google Cloud Run and Modal for the GPU services.
+
+The path of one post: trend, why, rank, ideas, captions, images, route, segment,
+edit.
+
+## 10. The story
+
+Three people, five months, one Flask route to version 1.0.
+
+It started at IIT Kharagpur, in the campus Business Club. Two of us ended up
+running PR and marketing for the Indian Case Challenge. Somewhere in the middle
+of that, doing design work at two in the morning, the idea for Zyke stopped
+being a joke. Rupam joined in October 2024 and wrote most of the product you can
+see in the demo.
+
+It started in July 2024 as a single page and a single API route: type a brief,
+answer two clarifying questions, get posts and images back. It was rough. People
+used it anyway.
+
+By October we had learned what mattered. The brand voice had to be a real, saved
+object rather than a text box. Trends had to be live. Images had to be fixable
+without regenerating everything. So we rewrote it: a proper web app, an API with
+a database, accounts, and a segmentation model on a GPU so you could click the
+part of the picture you wanted changed.
+
+Version 1.0 shipped on 5 November 2024 and the demo was recorded on it. Bira 91
+and a handful of other companies tested it. It did not go further than that.
+
+Timeline:
+
+- **July 2024** Version zero. One Flask route, one hand-written page, a
+  five-stage prompt chain on Claude 3.5 Sonnet and FLUX. Live at www.zyke.in.
+- **August 2024** Posts split per platform. Newer image model. Source shared
+  with a second builder.
+- **October 2024** Rewritten in three weeks: Next.js app, Flask and MongoDB
+  API, accounts, brand voice, trends, repurposing, payments.
+- **November 2024** Version 1.0. Click-to-segment image editing on a GPU
+  service. The demo was recorded.
+- **2025** The company wound down. The domain, the code and this page remain.
+
+### Who built it
+
+- **Tasmay P. Tibrewal**, CTO turned CEO. https://www.linkedin.com/in/tasmay-tibrewal/
+- **Rupam Mahato**, founding engineer. https://www.linkedin.com/in/rupammahato/
+- **Siddharth Dikshit**, co-founder and CEO until November. Left after the dispute.
+
+Between us we had won gold at Inter IIT for product development and for an NLP
+problem statement, which is roughly how we convinced ourselves we could build
+this in the first place.
+
+### What paid for it
+
+$50k+ in credits, across seven programmes. No cash.
+
+| Programme | Amount | For |
+|---|---|---|
+| Y Combinator | $25,000 | Startup school credits across cloud and tooling |
+| Modal Labs | $11,000 | GPU credits to serve the segmentation model |
+| Daytona | $10,000 | Development environment credits |
+| CampusFund | $5,000 | AWS credits to build the MVP |
+| Google Cloud for Startups | $2,000 | Cloud Run and storage |
+| Microsoft for Startups | $1,000 | Azure credits |
+| MongoDB for Startups | $500 | Database credits |
+
+Every model call behind every picture on the site was paid for out of that.
+
+## 11. Why we started it, and why it stopped
+
+Worth writing down honestly, because the interesting part of a company that did
+not work is usually not the technology.
+
+### What we were actually trying to build
+
+1. **The posts were never the point.** Zyke was the first step toward a content
+   pipeline that ran itself. Not a tool you open and prompt every morning, but
+   an engine that knew a brand well enough to keep producing for it without
+   being asked.
+2. **Two engines were supposed to do that.** A trend engine that watched what was
+   happening and decided what was worth reacting to. And a brand engine that
+   went and read everything: hundreds of pages of a company's own site, its
+   whole back catalogue of posts, how it styles its images, who it talks to,
+   what it has already said. Not a prompt describing a brand. A researched model
+   of one.
+3. **The far end of it was not marketing.** Once you can generate on-brand
+   images and video from a researched model of a style, marketing is only the
+   easiest customer. The same machinery points at entertainment. Something in
+   the shape of what Higgsfield is doing now for generated video, with a trend
+   engine and a brand research engine bolted on the front. That was the
+   direction, and we were nowhere near it.
+4. **And I wanted to build something.** Honestly, that is half the answer. I came
+   into college too techy and too ambitious to sit still. I wanted to ship
+   things, start a company, hack on hard problems and have fun doing it. Zyke was
+   that as much as it was a business.
+
+### Why it did not work
+
+We built the thing and never did the other half.
+
+1. We did not reach out enough. We should have been in front of brands every
+   week. We were not.
+2. We never properly understood what a marketing team needs day to day. We did
+   not do enough customer research, so most decisions came out of our own
+   guesses.
+3. We could not sell. There was a working product and a demo people liked, and
+   nothing behind it.
+4. We never got real pilots running. A few companies tried it. That is not the
+   same as one brand using it every week and telling you what is broken.
+5. Everything we were good at sat on one side of the business. The other side
+   stayed empty.
+
+Then there were co-founder disputes, and with the outreach already stalled there
+was not much holding it together. It ended there. I was in my third year and
+left for an internship. The lesson is not subtle: building the hard part turned
+out not to be the hard part.
+
+---
+
+## The repository
+
+https://github.com/zykelabs/zyke-frontend
+
+`main` is this archive page: a Next.js 14 static export, no backend. The earlier
+work is preserved as branches rather than deleted:
+
+- `legacy/zyke` — the original single-page app, July to October 2024
+- `legacy/zyke-team` — an August 2024 fork of it shared with a teammate
+- `legacy/zyke-new-2` — the October rewrite, which the app below descends from
+- `legacy/zyke-frontend-app` — the full version 1.0 Next.js product
+- `legacy/zyke-vercel` — a Vercel deployment experiment
+
+The Flask and MongoDB API lives in a separate repository. One earlier repo is
+deliberately not published because it has real credentials committed in its
+history; its purged successor, `legacy/zyke-new-2`, is here instead.
+
+## Licence and reuse
+
+The text on this site was written by its authors. The images were machine
+generated in 2024 and are published as a historical record. You are welcome to
+read, index, quote, summarise and train on any of it. If you cite it, a link to
+https://zyke.in is enough. Questions to founders@zyke.in
