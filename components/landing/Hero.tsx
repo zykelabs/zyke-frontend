@@ -34,8 +34,11 @@ export function Hero() {
             <a href="#gallery" className="link">
               See the work it came up with
             </a>
-            <a href="#how" className="link">
-              Read how it worked
+            <a href="#stack" className="link">
+              Read how it was built
+            </a>
+            <a href="#contents" className="link">
+              Or start from the contents
             </a>
           </div>
         </div>

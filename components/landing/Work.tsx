@@ -78,10 +78,38 @@ export function Work() {
           </p>
           <ol className="mt-8 divide-y divide-rule border-y rule">
             {leaps.map((l) => (
-              <li key={l.trend} className="grid gap-2 py-6 lg:grid-cols-12 lg:gap-8">
-                <p className="label lg:col-span-2 lg:pt-1">{l.brand}</p>
-                <h4 className="font-serif text-xl leading-snug tracking-tight lg:col-span-4">{l.trend}</h4>
-                <p className="text-[15px] leading-relaxed text-ink2 lg:col-span-6">{l.leap}</p>
+              <li key={l.trend} className="grid gap-6 py-8 lg:grid-cols-12 lg:gap-10">
+                <div className="lg:col-span-5">
+                  <p className="label">{l.brand}</p>
+                  <h4 className="mt-2 font-serif text-xl leading-snug tracking-tight sm:text-[1.35rem]">{l.trend}</h4>
+                  <p className="mt-3 text-[15px] leading-relaxed text-ink2">{l.leap}</p>
+                </div>
+                {/* What it produced, beside the reasoning. */}
+                <ol className="grid grid-cols-3 gap-3 self-start lg:col-span-7">
+                  {l.shots.map((sh) => (
+                    <li key={sh.src}>
+                      <button
+                        onClick={() => setOpen(indexOf(sh.src))}
+                        className="group block w-full text-left"
+                        aria-label={`Open the ${sh.when} example`}
+                      >
+                        <span className="plate block aspect-square overflow-hidden">
+                          <Image
+                            src={sh.src}
+                            alt={`${l.brand}, ${l.trend}`}
+                            width={sh.w}
+                            height={sh.h}
+                            sizes="(max-width: 640px) 30vw, 15vw"
+                            className="h-full w-full object-cover transition-opacity group-hover:opacity-90"
+                          />
+                        </span>
+                        <span className="mt-1.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-mute">
+                          {sh.when}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
               </li>
             ))}
           </ol>

@@ -212,7 +212,7 @@ export const marketerUse = [
 export const team = [
   { name: "Tasmay P. Tibrewal", role: "CTO turned CEO", linkedin: "https://www.linkedin.com/in/tasmay-tibrewal/" },
   { name: "Rupam Mahato", role: "Founding engineer", linkedin: "https://www.linkedin.com/in/rupammahato/" },
-  { name: "Siddharth Dikshit", role: "Co-founder and CEO until 2024. Left after the dispute.", linkedin: "" },
+  { name: "Siddharth Dikshit", role: "Co-founder and CEO until November. Left after the dispute.", linkedin: "" },
 ];
 
 export const people = [
@@ -417,36 +417,63 @@ export const leaps = [
     brand: "Zomato",
     leap:
       "Declassified alien files were the story of the week. Zyke decided that if aliens are real then they are a market, and started writing posts about serving them. The asteroid fries and the galaxy sauce are its words.",
+    shots: [
+      { src: "/gallery/oct-aliens-and-fries.jpeg", w: 512, h: 512, when: "Oct" },
+    ],
   },
   {
     trend: "The Prime Minister was all over the Indian news",
     brand: "Zomato",
     leap:
       "It read the domestic news cycle, saw one name in most of it, and concluded that the move was a national endorsement. Nobody asked it for a politician. It also invented the hashtag, and then reused that hashtag consistently across a whole campaign.",
+    shots: [
+      { src: "/gallery/oct-newspaper-front-page.jpeg", w: 512, h: 512, when: "Oct" },
+      { src: "/gallery/nov-scaling-heights.jpeg", w: 1024, h: 1024, when: "Nov" },
+      { src: "/gallery/nov-cooking-better-india.jpeg", w: 1024, h: 1024, when: "Nov" },
+    ],
   },
   {
     trend: "SpaceX caught a Starship booster with the launch tower",
     brand: "Zomato",
     leap:
       "The trend everyone was posting about. Its angle was that catching a hundred-tonne booster and getting an order right are the same claim about precision, and it pushed that until it had built a bar chart of it.",
+    shots: [
+      { src: "/gallery/sept-mission-control.jpeg", w: 512, h: 512, when: "Sept" },
+      { src: "/gallery/oct-space-vs-delivery.jpeg", w: 512, h: 512, when: "Oct" },
+      { src: "/gallery/oct-booster-chart.jpeg", w: 512, h: 512, when: "Oct" },
+    ],
   },
   {
     trend: "Delhi traffic",
     brand: "Zomato",
     leap:
       "The least exotic trend it ever picked, and the closest to the product. If the city cannot move, the interesting thing about a delivery company is that its riders still do.",
+    shots: [
+      { src: "/gallery/nov-delhi-landmarks.jpeg", w: 1024, h: 1024, when: "Nov" },
+      { src: "/gallery/nov-smart-routing.jpeg", w: 1024, h: 1024, when: "Nov" },
+      { src: "/gallery/nov-how-it-feels.jpeg", w: 1024, h: 1024, when: "Nov" },
+    ],
   },
   {
     trend: "Indian brands going abroad",
     brand: "Bira 91",
     leap:
       "It read the export story in the business press and turned it into a travel series, planting the same bottle in a different skyline each time.",
+    shots: [
+      { src: "/gallery/sept-bira-two-landmarks.jpeg", w: 512, h: 512, when: "Sept" },
+      { src: "/gallery/oct-bira-america.jpeg", w: 512, h: 512, when: "Oct" },
+    ],
   },
   {
     trend: "Basketball season",
     brand: "Nike",
     leap:
       "A different category entirely. It went for shallow depth of field on the product with the athlete deliberately out of focus behind, which is how that category actually shoots.",
+    shots: [
+      { src: "/gallery/oct-lebron-spec-sheet.jpeg", w: 400, h: 400, when: "Oct" },
+      { src: "/gallery/nov-lebron-confetti.jpeg", w: 844, h: 844, when: "Nov" },
+      { src: "/gallery/nov-empty-gym.jpeg", w: 340, h: 340, when: "Nov" },
+    ],
   },
 ];
 
@@ -567,4 +594,19 @@ export const editing = [
     title: "Fight the inpainting model into blending",
     body: "Infill liked to hand back a half-filled hole, a hard seam, or a caption written into the gap. So the instruction was wrapped in a fixed demand to blend the region with the rest of the image and fill it completely, plus a long negative prompt listing every failure we had seen: empty part, blank image, text, any text, alphabets, part not blended with the rest.",
   },
+];
+
+// Every collapsible section, in page order. Drives the nav and the contents list.
+export const sections = [
+  { id: "demo", n: "01", label: "The demo", blurb: "Four minutes, from a blank brand to edited posts." },
+  { id: "problem", n: "02", label: "The problem", blurb: "Why we started building it at all." },
+  { id: "pillars", n: "03", label: "The promise", blurb: "Three claims, and the comparison behind them." },
+  { id: "how", n: "04", label: "How it worked", blurb: "One brand, one trend, nine posts, one edit." },
+  { id: "features", n: "05", label: "Features", blurb: "Thirteen things it did." },
+  { id: "gallery", n: "06", label: "What it made", blurb: "Three months of output, and how fast it improved." },
+  { id: "buyers", n: "07", label: "Who it was for", blurb: "Three company sizes, in their own words." },
+  { id: "numbers", n: "08", label: "The numbers", blurb: "Unit economics, and the market we never reached." },
+  { id: "stack", n: "09", label: "Under the hood", blurb: "The trend recommender and the editing router, in full." },
+  { id: "story", n: "10", label: "The story", blurb: "Five months, three people, fifty thousand in credits." },
+  { id: "why", n: "11", label: "Why", blurb: "What we were building, and why it stopped." },
 ];

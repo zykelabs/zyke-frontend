@@ -48,8 +48,17 @@ The `out/` folder is plain static files, so it can equally be dropped onto Verce
 Eleven numbered sections: the demo video with chapter links, the problem, the three
 promises plus the competitor comparison, the four-step walkthrough with the real
 click-to-edit before and after, the thirteen features, the work Zyke generated, who it
-was for, the unit economics and market sizing, the image pipeline and what was new
-about it, the story with the team and the grants, and why it started and why it stopped.
+was for, the unit economics and market sizing, the trend recommender and the editing
+router, the story with the team and the grants, and why it started and why it stopped.
+
+**Every section is collapsed by default.** The page opens as a hero plus a contents
+list, roughly 5,000px tall; fully expanded it is about 31,000px. `sections-context.tsx`
+holds the open state, and a closed section does not render its children at all, so a
+first load fetches six images rather than sixty-three. Any link to a section id opens
+it on the way there, including links inside the prose, the nav index, the contents list,
+a pasted deep link like `/#stack`, and the browser's back button. The contents list also
+has an open-everything toggle, and the nav is a single Index panel listing all eleven
+rather than a row of links that would not fit.
 
 `lib/content.ts` holds every piece of copy and data. The components are presentational.
 

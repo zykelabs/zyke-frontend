@@ -1,56 +1,64 @@
 "use client";
 
-import { useState } from "react";
-
-const links = [
-  ["#demo", "Demo"],
-  ["#how", "How it worked"],
-  ["#features", "Features"],
-  ["#gallery", "The work"],
-  ["#numbers", "Numbers"],
-  ["#stack", "Under the hood"],
-  ["#story", "Story"],
-  ["#why", "Why"],
-] as const;
+import { useEffect, useState } from "react";
+import { sections, site } from "@/lib/content";
+import { useSections } from "./sections-context";
 
 export function Nav() {
   const [open, setOpen] = useState(false);
+  const { reveal } = useSections();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
     <header className="sticky top-0 z-40 border-b rule bg-paper/95 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-page items-center justify-between px-6 lg:px-10">
         <a href="#top" className="font-serif text-2xl leading-none tracking-tight">
           zyke
         </a>
-        <nav className="hidden items-center gap-8 md:flex">
-          {links.map(([h, l]) => (
-            <a key={h} href={h} className="text-[13px] text-ink2 transition-colors hover:text-ink">
-              {l}
-            </a>
-          ))}
-        </nav>
-        <a href="mailto:founders@zyke.in" className="hidden text-[13px] link md:inline">
-          founders@zyke.in
-        </a>
-        <button
-          className="text-[13px] md:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-label="Toggle menu"
-        >
-          {open ? "Close" : "Menu"}
-        </button>
+        <div className="flex items-center gap-6">
+          <button
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 hover:text-ink"
+          >
+            {open ? "Close" : "Index"}
+          </button>
+          <a href={`mailto:${site.email}`} className="hidden text-[13px] link sm:inline">
+            {site.email}
+          </a>
+        </div>
       </div>
+
+      {/* One index for every screen size, rather than a separate mobile menu. */}
       {open && (
-        <nav className="border-t rule bg-paper md:hidden">
-          <ul className="mx-auto max-w-page px-6 py-2">
-            {links.map(([h, l]) => (
-              <li key={h}>
-                <a href={h} onClick={() => setOpen(false)} className="block py-3 text-base">
-                  {l}
-                </a>
+        <nav className="border-t rule bg-paper">
+          {/* Multi-column so the numbers run down each column, not across. */}
+          <ol className="mx-auto max-w-page px-6 py-2 lg:columns-2 lg:gap-12 lg:px-10">
+            {sections.map((s) => (
+              <li key={s.id} className="break-inside-avoid border-b rule">
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    reveal(s.id);
+                  }}
+                  className="flex w-full items-baseline gap-4 py-3 text-left"
+                >
+                  <span className="w-6 shrink-0 font-mono text-xs text-mute">{s.n}</span>
+                  <span className="text-[15px]">{s.label}</span>
+                </button>
               </li>
             ))}
-          </ul>
+          </ol>
+          <div className="mx-auto max-w-page px-6 pb-4 pt-2 lg:px-10">
+            <a href={`mailto:${site.email}`} className="link text-[13px] sm:hidden">
+              {site.email}
+            </a>
+          </div>
         </nav>
       )}
     </header>

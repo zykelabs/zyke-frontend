@@ -7,7 +7,7 @@ export function Story() {
       id="story"
       n="10"
       label="The story"
-      title="Two people, five months, one Flask route to version 1.0."
+      title="Three people, five months, one Flask route to version 1.0."
     >
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="space-y-5 text-[15px] leading-relaxed text-ink2 lg:col-span-5">
@@ -76,7 +76,9 @@ export function Story() {
         </div>
         <div className="lg:col-span-7">
           <p className="label">What paid for it</p>
-          <dl className="mt-4 border-t rule">
+          <p className="display mt-3 text-5xl sm:text-6xl">$50k+</p>
+          <p className="mt-2 text-[13px] text-mute">in credits, across seven programmes. No cash.</p>
+          <dl className="mt-8 border-t rule">
             {grants.map((g) => (
               <div key={g.org} className="grid grid-cols-[1fr_auto] items-baseline gap-4 border-b rule py-4">
                 <div>
@@ -88,8 +90,7 @@ export function Story() {
             ))}
           </dl>
           <p className="mt-4 text-[13px] leading-relaxed text-mute">
-            Fifty-four and a half thousand dollars of credits and no cash. Every model call behind every picture on
-            this page was paid for out of that.
+            Every model call behind every picture on this page was paid for out of that.
           </p>
         </div>
       </div>
