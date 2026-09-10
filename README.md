@@ -72,19 +72,13 @@ since the repo is already there and the domain is yours.
 
 ### GitHub Pages, which is what this repo is set up for
 
-1. Add the deploy workflow. It is **not on `main`**, because the token used to
-   push this repo does not carry the `workflow` scope and GitHub refuses such a
-   push. It is on the `pages-workflow` branch instead, one commit ahead of
-   `main`. Either push that branch with a token that has `workflow` scope:
-
-   ```
-   git push origin pages-workflow:main
-   ```
-
-   or open GitHub in a browser, create
-   `.github/workflows/deploy-pages.yml` on `main` with the contents of that
-   branch, and commit it there. Either way it then builds and publishes `out/`
-   on every push to `main`.
+1. Add the deploy workflow. It ships as `deploy/github-pages-workflow.yml` and
+   belongs at `.github/workflows/deploy-pages.yml`. It is parked rather than
+   installed because a token without the `workflow` scope cannot push any
+   branch that touches `.github/workflows/`, so the file cannot reach the remote
+   from here. Copy it into place through the GitHub web editor, or from a shell
+   with a `workflow`-scoped token or SSH. `deploy/README.md` has both recipes.
+   Once it exists it builds and publishes `out/` on every push to `main`.
 2. In the repo, **Settings → Pages → Source: GitHub Actions**.
 3. In **Settings → Pages → Custom domain**, enter `zyke.in` and save. Tick
    **Enforce HTTPS** once the certificate is issued, which takes a few minutes
