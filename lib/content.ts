@@ -121,3 +121,162 @@ export const timeline = [
   { when: "November 2024", what: "Version 1.0. Click-to-segment image editing on a GPU service. The demo above was recorded." },
   { when: "2025", what: "The company wound down. The domain, the code and this page remain." },
 ];
+
+// ---------------------------------------------------------------------------
+// From the pitch deck, December 2024. Kept as it was written then.
+// ---------------------------------------------------------------------------
+
+export const problems = [
+  {
+    n: "01",
+    title: "Agencies cost too much.",
+    body: "A branding agency was out of reach for most of the companies we spoke to. The cheap alternatives were generic and still took a lot of back and forth to get anything usable.",
+  },
+  {
+    n: "02",
+    title: "The AI tools did not sound like you.",
+    body: "Everything on the market wrote in the same flat register. It missed what the brand was actually about, so what came out was off-brand in a way that was hard to fix.",
+  },
+  {
+    n: "03",
+    title: "In-house teams were guessing.",
+    body: "Trial and error, one post at a time. By the time a team had something ready, the trend it was chasing had moved on.",
+  },
+];
+
+export const coreNeed =
+  "One tool that was efficient, affordable and actually personal to the brand.";
+
+export const buyers = [
+  {
+    who: "Small firms",
+    need: "Posts on trending topics, cheap enough to run every week.",
+    quote:
+      "We can give better services than UC but their brand is too big; they have funds large enough to afford crazy branding.",
+    by: "Mayank Arya",
+    role: "Founder",
+  },
+  {
+    who: "Medium companies",
+    need: "Brand-relevant content, produced often enough to grow visibility.",
+    quote:
+      "I would give you anything if you can give me better KPIs with measures on how to improve them.",
+    by: "Akash Walia",
+    role: "Marketing manager",
+  },
+  {
+    who: "Large companies",
+    need: "Creative work that moves brand positioning, not just fills a calendar.",
+    quote:
+      "We are a one stop solution, but we need to know what the customer is looking at majorly, so we can show that.",
+    by: "Harshvardhan Chauhan",
+    role: "Former CMO, retail",
+  },
+];
+
+// Yes / no across Zyke and the three tools we were compared against.
+export const comparison = {
+  columns: ["Zyke", "Tool A", "Tool B", "Tool C"],
+  rows: [
+    { feature: "Trend analysis", values: [true, false, false, false] },
+    { feature: "Personalised content generation", values: [true, true, true, true] },
+    { feature: "Brand voice", values: [true, true, false, false] },
+    { feature: "Repurpose existing content", values: [true, true, false, false] },
+    { feature: "Prompt-based image editing", values: [true, false, false, false] },
+    { feature: "Image generation", values: [true, true, false, true] },
+  ],
+};
+
+export const economics = [
+  { figure: "$0.05", label: "What one generated post cost us", note: "Model calls and storage for a single image." },
+  { figure: "$0.20", label: "What we charged for it", note: "Pay as you go, once the free credits ran out." },
+  { figure: "$0.70", label: "One brand voice, once", note: "Research, vision calls and the profile write-up." },
+  { figure: "$5.00", label: "Free credits on sign-up", note: "Enough to make a real campaign before paying." },
+];
+
+export const market = [
+  { figure: "$30.34B", label: "Total market we were sizing against" },
+  { figure: "$2.2B", label: "The slice we could actually serve" },
+  { figure: "36.2%", label: "Growth rate for AI in social media, to 2032" },
+  { figure: "₹208 cr", label: "Spent on digital media by about a million Indian SMEs" },
+];
+
+export const marketerUse = [
+  { pct: "33%", what: "Generate ideas and inspiration" },
+  { pct: "28%", what: "Write copy and content" },
+  { pct: "26%", what: "Create marketing images" },
+];
+
+export const team = [
+  { name: "Siddharth Dikshit", role: "Chief Executive Officer" },
+  { name: "Tasmay P. Tibrewal", role: "Chief Technical Officer" },
+];
+
+export const grants = [
+  { org: "CampusFund", amount: "$5,000", what: "AWS credits to build the MVP" },
+  { org: "Modal Labs", amount: "$5,000", what: "Compute credits to deploy the ML models" },
+  { org: "Microsoft for Startups", amount: "$1,000", what: "Azure credits" },
+  { org: "MongoDB for Startups", amount: "$500", what: "Database credits" },
+];
+
+// ---------------------------------------------------------------------------
+// Work Zyke produced during testing, for Zomato, Bira 91 and a couple of other
+// brands. We did not write these prompts. Zyke picked the trend, tied it to the
+// brand and wrote the caption. The `prompt` line below is our best guess at the
+// half-sentence idea behind each one, recovered by looking at the picture. The
+// originals are gone.
+// ---------------------------------------------------------------------------
+
+export type Piece = {
+  src: string;
+  w: number;
+  h: number;
+  brand: string;
+  trend: string;
+  prompt: string;
+  caption: string;
+  featured?: boolean;
+};
+
+export const wild: Piece[] = [
+  { src: "/gallery/spacex-vs-zomato-precision.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "SpaceX catches a booster, Zomato catches your craving", caption: "A rocket launch beside a delivery rider. Same precision, different missions.", featured: true },
+  { src: "/gallery/rider-leaves-the-planet.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "a Zomato rider leaving the planet", caption: "A rider lifting off Earth on a pizza-fuelled exhaust trail, past pizza planets.", featured: true },
+  { src: "/gallery/booster-catch-rate-chart.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "booster success rate vs order accuracy rate", caption: "A bar chart nobody asked for, comparing rocket recovery to getting your order right.", featured: true },
+  { src: "/gallery/aliens-order-fries.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "aliens ordering fries from Zomato", caption: "Four aliens at a table in orbit, arguing over asteroid fries and galaxy sauce.", featured: true },
+  { src: "/gallery/alien-chef-in-orbit.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "an alien chef cooking Zomato food in orbit", caption: "A green chef plating a salad in a space station kitchen, Earth through the window.", featured: true },
+  { src: "/gallery/zomato-delivers-to-the-roof.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "Zomato delivers to the rooftop, aliens included", caption: "A Zomato jet banking over a moonlit rooftop dinner, guests slightly not from here.", featured: true },
+  { src: "/gallery/flag-on-an-on-time-delivery.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "planting a flag on an on-time delivery", caption: "An astronaut planting a red flag in deep space, holding an open pizza box." },
+  { src: "/gallery/zomato-to-the-moon.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "Zomato to the moon", caption: "An astronaut walking the lunar surface with a pizza, hashtagged #MartianMeals." },
+  { src: "/gallery/mission-control-fleet.jpeg", w: 512, h: 512, brand: "Zomato", trend: "SpaceX catches a Starship booster", prompt: "the Zomato mission control fleet", caption: "Four riders in spacesuits on scooters, rolling out of a command centre." },
+
+  { src: "/gallery/delhi-landmarks.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Delhi traffic", prompt: "a rider tearing past Delhi's landmarks", caption: "A red scooter throwing sparks past India Gate at sunset, petals in the air.", featured: true },
+  { src: "/gallery/smart-routing-at-night.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Delhi traffic", prompt: "Zomato's smart routing, at night", caption: "A glowing scooter tracing a lit route across a dark city map.", featured: true },
+  { src: "/gallery/how-it-feels-vs-how-it-delivers.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Delhi traffic", prompt: "Delhi traffic versus a Zomato rider", caption: "Gridlock on top, a rider getting through underneath. How it feels, versus how it delivers." },
+  { src: "/gallery/not-for-our-delivery-heroes.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Delhi traffic", prompt: "stuck in traffic, except our riders", caption: "Two panels: a rider weaving through cars, then the same rider on a rocket." },
+  { src: "/gallery/three-steps.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "none", prompt: "the three steps of a delivery", caption: "Get the order, plan the route, deliver. Three cards, one dark palette." },
+
+  { src: "/gallery/scaling-new-heights.jpeg", w: 1600, h: 1066, brand: "Zomato", trend: "The Prime Minister in the news", prompt: "what if the Prime Minister endorsed Zomato?", caption: "A mountain of food, a very large delivery box, and an unmistakable endorsement.", featured: true },
+  { src: "/gallery/better-food-for-more-people.jpeg", w: 1600, h: 1066, brand: "Zomato", trend: "The Prime Minister in the news", prompt: "the Prime Minister as Zomato's chef, and the cows agree", caption: "A chef's hat, a floating buffet, and four cartoon cows holding Zomato bags." },
+
+  { src: "/gallery/zomato-twist-makeup.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Get-ready-with-me videos", prompt: "a Zomato makeup tutorial", caption: "A four-panel get-ready-with-me, except every product is a food container." },
+  { src: "/gallery/eat-light-shine-bright.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Get-ready-with-me videos", prompt: "eat light, shine bright", caption: "A beauty collage in purple: skin, a Zomato box, and dinner under a full moon." },
+  { src: "/gallery/order-as-a-beauty-boost.jpeg", w: 1024, h: 1024, brand: "Zomato", trend: "Get-ready-with-me videos", prompt: "your Zomato order as a beauty boost", caption: "Before and after, in full bridal makeup, credited to a food delivery order." },
+
+  { src: "/gallery/bira-diwali-cheers.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Diwali", prompt: "Bira 91 for Diwali", caption: "Two glasses meeting in front of a blurred rangoli of light.", featured: true },
+  { src: "/gallery/one-bira-table.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Diwali", prompt: "everyone around one Bira 91 table", caption: "Shot from above: a dozen hands, a glowing logo burned into the wood.", featured: true },
+  { src: "/gallery/bira-dinner-party.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Diwali", prompt: "a Bira 91 dinner party", caption: "A long table, warm lights, everyone reaching in at once." },
+  { src: "/gallery/bira-at-the-party.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Diwali", prompt: "Bira 91 at the party", caption: "A crowd mid-laugh in headscarves and gold, glasses raised." },
+  { src: "/gallery/bira-under-the-tree.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 under a tree at golden hour", caption: "A quiet table under an enormous oak, low sun through the leaves.", featured: true },
+  { src: "/gallery/bira-takes-the-world.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 takes on the world", caption: "One bottle standing between the Statue of Liberty and the Eiffel Tower.", featured: true },
+  { src: "/gallery/bira-new-york-rooftop.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 on a New York rooftop", caption: "Golden hour over Manhattan, six people and a round of bottles." },
+  { src: "/gallery/bira-garden-party.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "a Bira 91 garden party", caption: "Paper lanterns, a checked tablecloth, and a table of people laughing." },
+  { src: "/gallery/bira-lands-in-america.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 lands in America", caption: "Six bottles on a Stars and Stripes, lit like a product shoot." },
+  { src: "/gallery/bira-in-every-skyline.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "Going global", prompt: "Bira 91 in every skyline", caption: "Big Ben, a dome, a bridge, and a crowd raising bottles underneath." },
+  { src: "/gallery/bira-citrus.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "none", prompt: "Bira 91, citrus and smooth", caption: "A split product shot: pineapple and shade on one side, hard orange on the other." },
+  { src: "/gallery/is-beer-only-for-men.jpeg", w: 512, h: 512, brand: "Bira 91", trend: "none", prompt: "is beer only for men?", caption: "Myth on the left in navy, fact on the right in yellow, and a crowd disagreeing." },
+
+  { src: "/gallery/brewing-the-perfect-code.jpeg", w: 512, h: 512, brand: "Others", trend: "Developer culture", prompt: "brewing the perfect code", caption: "Half brewery, half IDE, one chimp holding the sign between them.", featured: true },
+  { src: "/gallery/six-months-to-mastery.jpeg", w: 512, h: 512, brand: "Others", trend: "Developer culture", prompt: "six months to mastery", caption: "A chimp in a leather jacket with a pint in one hand and a textbook in the other." },
+];
+
+export const brandFilters = ["All", "Zomato", "Bira 91", "Others"];

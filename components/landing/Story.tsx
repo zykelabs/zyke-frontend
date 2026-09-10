@@ -1,13 +1,23 @@
-import { timeline, site } from "@/lib/content";
+import { timeline, team, grants, site } from "@/lib/content";
 import { Section } from "./Section";
 
 export function Story() {
   return (
-    <Section id="story" n="07" label="The story" title="From one Flask route to version 1.0 in five months.">
+    <Section
+      id="story"
+      n="10"
+      label="The story"
+      title="Two people, five months, one Flask route to version 1.0."
+    >
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="space-y-5 text-[15px] leading-relaxed text-ink2 lg:col-span-5">
           <p>
-            Zyke started in July 2024 as a single page and a single API route: type a brief, answer two clarifying
+            We met at IIT Kharagpur in the campus Business Club and ended up running PR and marketing for the Indian
+            Case Challenge, one of the larger business case competitions in Asia. Somewhere in the middle of that, both
+            of us doing design work at two in the morning, the idea for Zyke stopped being a joke.
+          </p>
+          <p>
+            It started in July 2024 as a single page and a single API route: type a brief, answer two clarifying
             questions, get posts and images back. It was rough. People used it anyway.
           </p>
           <p>
@@ -17,8 +27,9 @@ export function Story() {
             part of the picture you wanted changed.
           </p>
           <p>
-            Version 1.0 shipped in November 2024 and the demo above was recorded on it. The company did not continue
-            past that. The domain, the code and the work did, which is what this page is for.
+            Version 1.0 shipped on 5 November 2024 and the demo above was recorded on it. Bira 91 and a handful of
+            other companies tested it. The company did not continue past that. The domain, the code and the work did,
+            which is what this page is for.
           </p>
           <p className="text-mute">
             The source is on{" "}
@@ -36,6 +47,43 @@ export function Story() {
             </div>
           ))}
         </dl>
+      </div>
+
+      <div className="mt-20 grid gap-12 lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <p className="label">Who built it</p>
+          <dl className="mt-4 border-t rule">
+            {team.map((m) => (
+              <div key={m.name} className="border-b rule py-4">
+                <dt className="font-serif text-2xl tracking-tight">{m.name}</dt>
+                <dd className="mt-1 text-[13px] text-mute">{m.role}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-4 text-[13px] leading-relaxed text-mute">
+            Plus one founding team member who joined in October 2024 and helped ship the MVP in four weeks. Between us
+            we had also won gold at Inter IIT for product development and for an NLP problem statement, which is
+            roughly how we convinced ourselves we could build this.
+          </p>
+        </div>
+        <div className="lg:col-span-7">
+          <p className="label">What paid for it</p>
+          <dl className="mt-4 border-t rule">
+            {grants.map((g) => (
+              <div key={g.org} className="grid grid-cols-[1fr_auto] items-baseline gap-4 border-b rule py-4">
+                <div>
+                  <dt className="text-[15px] font-medium">{g.org}</dt>
+                  <dd className="mt-0.5 text-[13px] text-mute">{g.what}</dd>
+                </div>
+                <dd className="font-serif text-2xl tracking-tight tabular-nums">{g.amount}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-4 text-[13px] leading-relaxed text-mute">
+            Eleven and a half thousand dollars of credits, no cash. Every model call on this page was paid for out of
+            that.
+          </p>
+        </div>
       </div>
     </Section>
   );

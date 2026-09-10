@@ -5,7 +5,7 @@ export function Features() {
   return (
     <Section
       id="features"
-      n="04"
+      n="05"
       label="Features"
       title="Thirteen things it did."
       lede="The feature list from the product demo, in full. Most were in every user's hands; a few were in the last builds before the company wound down."

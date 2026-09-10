@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { chapters, site } from "@/lib/content";
+import Image from "next/image";
+import { chapters, gallery, site } from "@/lib/content";
 import { cn } from "@/lib/utils";
 import { Section } from "./Section";
 
@@ -57,6 +58,29 @@ export function DemoVideo() {
         </a>
         .
       </p>
+
+      {/* Everything the demo run actually produced, in order. */}
+      <div className="mt-16">
+        <p className="label">The thirteen images that run produced</p>
+        <ol className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-7 sm:gap-3">
+          {gallery.map((g) => (
+            <li key={g.src} className="plate">
+              <Image
+                src={g.src}
+                alt={g.caption}
+                width={512}
+                height={512}
+                sizes="14vw"
+                className="aspect-square w-full object-cover"
+              />
+            </li>
+          ))}
+        </ol>
+        <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-mute">
+          Three ideas, nine posts, thirteen images, one trend about a rocket landing. Generated in the four minutes you
+          just watched.
+        </p>
+      </div>
     </Section>
   );
 }

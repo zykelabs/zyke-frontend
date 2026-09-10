@@ -42,3 +42,25 @@ One-time setup:
 4. Turn on **Enforce HTTPS** once the certificate is issued.
 
 The `out/` folder is plain static files, so it can equally be dropped onto Vercel, Netlify, Cloudflare Pages or an S3 bucket if GitHub Pages is not wanted.
+
+## What is on the page
+
+Ten numbered sections, in this order: the demo video with chapter links, the problem
+we set out to solve, the three promises from the original landing page plus the
+competitor comparison, the four-step walkthrough with the click-to-edit before and
+after, the thirteen features, the work Zyke generated, who it was for, the unit
+economics and market sizing, the stack, and the story with the team and the grants.
+
+`lib/content.ts` holds every piece of copy and data. The components are presentational.
+
+### Where the content comes from
+
+- The demo video, its chapter list and the thirteen-feature list come from the
+  November 2024 product demo on YouTube.
+- The problem, the buyer quotes, the comparison table, the pricing, the market figures,
+  the team and the grants come from the December 2024 pitch deck.
+- The stack and the timeline come from the code and the commit history, not the deck.
+- `public/gallery/` holds 33 images Zyke generated during testing, chosen from 77 by
+  eye. The original prompts are gone, so the line shown above each image is a
+  reconstruction of the short idea behind it. The misspellings inside the images are
+  the 2024 image model's and are left alone.

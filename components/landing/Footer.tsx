@@ -31,8 +31,8 @@ export function Footer() {
             <div>
               <dt className="label">Colophon</dt>
               <dd className="mt-3 text-ink2 leading-relaxed">
-                Set in Instrument Serif and Geist. Built as a static page. Zomato appears in the demo as an example
-                brand and is not affiliated with Zyke.
+                Set in Instrument Serif and Geist. Built as a static page. Zomato and Bira 91 appear as example
+                brands only. Neither was affiliated with Zyke and neither endorsed any of the generated work.
               </dd>
             </div>
           </dl>

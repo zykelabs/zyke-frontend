@@ -7,7 +7,7 @@ export function HowItWorked() {
   return (
     <Section
       id="how"
-      n="03"
+      n="04"
       label="How it worked"
       title={
         <>

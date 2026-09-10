@@ -15,7 +15,7 @@ export function UnderTheHood() {
   return (
     <Section
       id="stack"
-      n="06"
+      n="09"
       label="Under the hood"
       title="What ran. Taken from the code, not the deck."
       lede="Two people built and operated it. There was never one model; each job went to the model that was good at it, and a saved brand voice object was passed into every prompt to hold the whole thing together."
