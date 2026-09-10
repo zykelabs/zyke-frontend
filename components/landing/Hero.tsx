@@ -1,99 +1,48 @@
-"use client";
-
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { ArrowDown, Play } from "lucide-react";
-import { site, gallery } from "@/lib/content";
-import { buttonClass } from "@/components/ui/button";
-import { Stars } from "./Stars";
-
-const fade = (delay = 0) => ({
-  initial: { opacity: 0, y: 14 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
-});
-
-// A handful of generated posts, tilted, like prints on a desk.
-const stack = [gallery[9], gallery[3], gallery[1], gallery[7], gallery[12]];
+import { gallery } from "@/lib/content";
 
 export function Hero() {
   return (
-    <section id="top" className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
-      <Stars />
-      <div className="grid-paper pointer-events-none absolute inset-0" aria-hidden />
-
-      <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1.1fr_.9fr]">
-        <div>
-          <motion.p {...fade(0)} className="eyebrow mb-5">
-            Built at {site.builtAt} · {site.years} · now an archive
-          </motion.p>
-          <motion.h1
-            {...fade(0.05)}
-            className="text-balance text-5xl font-semibold leading-[1.02] tracking-tight sm:text-6xl md:text-7xl"
-          >
-            An AI marketing agent that actually knew your brand.
-          </motion.h1>
-          <motion.p {...fade(0.12)} className="mt-6 max-w-xl text-lg leading-relaxed text-ink-300 sm:text-xl">
-            Zyke learned a brand&rsquo;s voice, watched what was trending, and turned both into finished social posts
-            with images you could edit by pointing at them. It ran for a year. This page is what it was.
-          </motion.p>
-
-          <motion.div {...fade(0.2)} className="mt-9 flex flex-wrap items-center gap-3">
-            <a href="#demo" className={buttonClass("solid", "lg")}>
-              <Play className="h-4 w-4" aria-hidden />
-              Watch the 4-minute demo
+    <section id="top">
+      <div className="mx-auto max-w-page px-6 pb-16 pt-20 lg:px-10 lg:pb-24 lg:pt-32">
+        <p className="label">Zyke, 2024. An AI marketing agent, now an archive.</p>
+        <h1 className="display mt-8 max-w-[22ch] text-[2.75rem] sm:text-6xl lg:text-[5.5rem]">
+          It learned a brand&rsquo;s voice, followed what was trending, and did the work.
+        </h1>
+        <div className="mt-10 grid gap-8 lg:grid-cols-12">
+          <p className="max-w-xl text-lg leading-relaxed text-ink2 lg:col-span-7">
+            Zyke turned a brand and a live trend into finished social posts with generated images, then let you fix
+            any image by pointing at the part you wanted changed. It was built at IIT Kharagpur in 2024 and ran for a
+            year. This page is the record of what it was and how it worked.
+          </p>
+          <div className="flex flex-col gap-3 text-[15px] lg:col-span-5 lg:items-end">
+            <a href="#demo" className="link">
+              Watch the four-minute demo
             </a>
-            <a href="#how" className={buttonClass("outline", "lg")}>
-              How it worked
-              <ArrowDown className="h-4 w-4" aria-hidden />
+            <a href="#how" className="link">
+              Read how it worked
             </a>
-          </motion.div>
+            <a href="#gallery" className="link">
+              See what it made
+            </a>
+          </div>
+        </div>
+      </div>
 
-          <motion.dl {...fade(0.3)} className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t hairline pt-6">
-            {[
-              ["3", "prompts to a full campaign"],
-              ["9", "posts from one trend in the demo"],
-              ["1", "click to edit an image"],
-            ].map(([n, l]) => (
-              <div key={l}>
-                <dt className="font-mono text-3xl font-medium text-white">{n}</dt>
-                <dd className="mt-1 text-sm text-ink-400">{l}</dd>
-              </div>
+      {/* A plain strip of the demo's output. No tilt, no decoration. */}
+      <div className="border-t rule">
+        <div className="mx-auto max-w-page px-6 py-6 lg:px-10">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6 sm:gap-3">
+            {[gallery[2], gallery[3], gallery[9], gallery[1], gallery[12], gallery[0]].map((g) => (
+              <figure key={g.src} className="plate">
+                <Image src={g.src} alt={g.caption} width={512} height={512} className="aspect-square w-full object-cover" priority />
+              </figure>
             ))}
-          </motion.dl>
+          </div>
+          <p className="mt-3 text-[13px] text-mute">
+            Six of the thirteen images Zyke generated in the demo, for Zomato, from one trend about a rocket landing.
+          </p>
         </div>
-
-        <div className="mx-auto w-full max-w-[440px] origin-top scale-[.7] sm:scale-100">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="relative h-[480px] w-full"
-          aria-label="Posts generated by Zyke"
-        >
-          {stack.map((g, i) => {
-            const rot = [-9, 6, -3, 10, -6][i];
-            const x = [-120, 90, -20, 130, -70][i];
-            const y = [40, -30, 10, 90, 150][i];
-            return (
-              <motion.figure
-                key={g.src}
-                className="absolute left-1/2 top-1/2 w-[210px] overflow-hidden rounded-2xl border hairline bg-ink-800 shadow-card sm:w-[230px]"
-                style={{ zIndex: i, translateX: "-50%", translateY: "-50%" }}
-                initial={{ x, y, rotate: rot }}
-                animate={{ x, y, rotate: rot }}
-                whileHover={{ rotate: 0, scale: 1.05, zIndex: 20 }}
-                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              >
-                <Image src={g.src} alt={g.caption} width={512} height={512} className="aspect-square object-cover" priority={i < 2} />
-              </motion.figure>
-            );
-          })}
-        </motion.div>
-        </div>
-        <p className="-mt-44 text-center font-mono text-[11px] text-ink-400 sm:-mt-10 lg:col-start-2">
-          every image here was generated by Zyke in the demo
-        </p>
       </div>
     </section>
   );
