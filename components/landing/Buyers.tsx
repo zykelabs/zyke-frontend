@@ -1,14 +1,12 @@
 import { buyers } from "@/lib/content";
-import { Section } from "./Section";
+import { Block } from "./Block";
 
 export function Buyers() {
   return (
-    <Section
-      id="buyers"
-      n="07"
+    <Block
       label="Who it was for"
       title="Three sizes of company, three different reasons to want it."
-      lede="Before we wrote much code we sat down with marketing people and founders and asked what they actually needed. These are their words, from those conversations in 2024."
+      lede="We asked marketing people and founders what they needed. Their words, 2024."
     >
       <ol className="grid gap-px bg-rule sm:grid-cols-3">
         {buyers.map((b) => (
@@ -24,6 +22,6 @@ export function Buyers() {
           </li>
         ))}
       </ol>
-    </Section>
+    </Block>
   );
 }

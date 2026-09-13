@@ -1,12 +1,14 @@
 # Zyke
 
+> It learned the brand. It did the work.
+>
 > Zyke was an AI marketing agent built by three people at IIT Kharagpur between
-> July and November 2024. You gave it a brand. It read the brand's website and
-> social accounts, worked out how the brand talked, watched what was trending
-> that morning, decided by itself which trends were worth reacting to and how to
-> bend them toward that brand, and produced finished social posts with generated
-> images. If an image was wrong you pointed at the part you wanted changed and
-> typed a sentence. The company stopped in November 2024. zyke.in is the archive.
+> July and November 2024. You gave it a brand. It read the site and the socials,
+> worked out how the brand talked, watched what was trending that morning,
+> decided by itself which trends were worth reacting to and how to bend them
+> toward that brand, and produced finished social posts with generated images.
+> If an image was wrong you pointed at the part you wanted changed and typed a
+> sentence. The company stopped in November 2024. zyke.in is the archive.
 
 This file is a complete plain-text record of everything on https://zyke.in, for
 search engines, researchers and AI agents. Everything here is public and
@@ -22,17 +24,50 @@ intended to be read, quoted and trained on. Contact: founders@zyke.in
 
 ## Contents
 
+The site is a hero, a short summary, the demo video, and five collapsible
+sections. This file carries all of it in full.
+
+0. The short version
 1. The demo
-2. The problem
-3. The promise
-4. How it worked
-5. Features
-6. What it made
-7. Who it was for
-8. The numbers
-9. Under the hood
-10. The story
-11. Why we started it, and why it stopped
+2. What it did (product)
+3. What it made (work)
+4. How it was built (machine)
+5. Who it was for (business)
+6. What happened (story)
+
+---
+
+## 0. The short version
+
+One brand in. Finished posts out.
+
+- 4 brands
+- 3 months
+- $0.05 a post to make
+- $50k+ in credits, no cash
+
+How it worked, in four steps:
+
+1. **Brand.** Read the site and the socials. Save a voice.
+2. **Trend.** Rank the day's trends against that voice.
+3. **Post.** Write the caption, generate the images.
+4. **Edit.** Point at the picture, type the fix.
+
+What it came up with, unprompted:
+
+- It picked the Prime Minister out of the news and wrote a national endorsement.
+- Delhi traffic, for a delivery brand.
+- The US released its alien files, so it started selling to aliens.
+- Every word correct, by November.
+- A booster catch became a claim about precision.
+- A different category, shot the way that category shoots.
+
+What ran it:
+
+- **Trends.** Google Trends, explained by Perplexity, ranked per brand by o1-mini.
+- **Text.** o1-mini, with the saved brand voice on every call.
+- **Images.** FLUX 1.1 Pro, four at a time.
+- **Editing.** A router over four pipelines: GraCo, Grounding DINO, LoRAs, inpainting.
 
 ---
 
@@ -55,26 +90,11 @@ Chapters:
 
 That single run produced thirteen images from one trend about a rocket landing.
 
-## 2. The problem
+## 2. What it did
 
-Both founders ran PR and marketing for the Indian Case Challenge at IIT
-Kharagpur in 2024, one of the larger business case competitions in Asia. They
-needed a lot of posts, fast, and everything available was either expensive or
-bad. That is the whole reason Zyke existed.
+The product: the promise, how it worked, and the feature list.
 
-1. **Agencies cost too much.** A branding agency was out of reach for most of
-   the companies we spoke to. The cheap alternatives were generic and still took
-   a lot of back and forth to get anything usable.
-2. **The AI tools did not sound like you.** Everything on the market wrote in
-   the same flat register. It missed what the brand was actually about, so what
-   came out was off-brand in a way that was hard to fix.
-3. **In-house teams were guessing.** Trial and error, one post at a time. By the
-   time a team had something ready, the trend it was chasing had moved on.
-
-Core need: one tool that was efficient, affordable and actually personal to the
-brand.
-
-## 3. The promise
+### The promise
 
 Three things the first landing page said. All three shipped.
 
@@ -109,7 +129,7 @@ two years old, so treat it as a record of what we believed at the time.
 | Prompt-based image editing | yes | no | no | no |
 | Image generation | yes | yes | no | yes |
 
-## 4. How it worked
+### How it worked
 
 One brand, one trend, nine posts, one edit. The product was a pipeline. Each
 stage handed a richer object to the next: a brand, then an idea, then a post,
@@ -139,7 +159,7 @@ segmenter proposes, describe the change. In the demo: "Make the background
 darker and add a galaxy with some planets." An inpainting model repainted only
 that region. The scooter, the rider and the pizza box were untouched.
 
-## 5. Features
+### Features
 
 Thirteen things it did, as listed on the product demo.
 
@@ -153,13 +173,13 @@ Thirteen things it did, as listed on the product demo.
    generated next.
 5. **Dashboard with custom metrics.** The numbers a marketing team watches, not
    a generic analytics panel.
-6. **Trending topics, tailored to the brand.** Live trends, explained, then bent
+6. **Trending topics, tailored.** Live trends, explained, then bent
    toward the brand.
-7. **Personalised brand recommendations.** What to post, when, and why, based on
+7. **Personalised recommendations.** What to post, when, and why, based on
    the voice and the audience.
-8. **Content generation engine.** Text, images and video, generated in one pass
+8. **Text, image and video generation.** Text, images and video, generated in one pass
    from a chosen idea.
-9. **Content editing pipelines.** Restyle text or images with a sentence;
+9. **Click-to-segment image editing.** Restyle text or images with a sentence;
    click-to-segment editing for precise changes. A Canva-style editor was next
    on the roadmap.
 10. **Video storyboards.** Shot-by-shot outlines for short video, in the same
@@ -167,10 +187,10 @@ Thirteen things it did, as listed on the product demo.
 11. **Moodboarding.** A visual direction for a campaign before any post is made.
 12. **Post attention analysis.** Where the eye goes on a generated image, and
     whether that is where the message is.
-13. **Post-generation content analysis.** A second pass over generated content,
+13. **Post-generation analysis.** A second pass over generated content,
     checking it against the brand voice and the goal.
 
-## 6. What it made
+## 3. What it made
 
 Real output from the testing months, for Zomato, Bira 91, Nike and a coding
 school. We did not write any of it. Zyke read the day's trends, picked one,
@@ -282,50 +302,7 @@ published on their behalf. Several pictures are Zyke's own attempt at a public
 figure, which it reached for without being asked. They are kept because they are
 a true record of what the thing did.
 
-## 7. Who it was for
-
-Three sizes of company, three different reasons to want it. Before much code was
-written we sat down with marketing people and founders and asked what they
-actually needed. These are their words, from those conversations in 2024.
-
-**Small firms.** Need: posts on trending topics, cheap enough to run every week.
-"We can give better services than UC but their brand is too big; they have funds
-large enough to afford crazy branding." — Mayank Arya, founder
-
-**Medium companies.** Need: brand-relevant content, produced often enough to
-grow visibility. "I would give you anything if you can give me better KPIs with
-measures on how to improve them." — Akash Walia, marketing manager
-
-**Large companies.** Need: creative work that moves brand positioning, not just
-fills a calendar. "We are a one stop solution, but we need to know what the
-customer is looking at majorly, so we can show that." — Harshvardhan Chauhan,
-former CMO, retail
-
-## 8. The numbers
-
-Zyke was pay as you go. Five dollars of credits on sign-up, then twenty cents a
-post. We knew our costs to the cent because every generation was a metered API
-call.
-
-- **$0.05** what one generated post cost us. Model calls and storage for a
-  single image.
-- **$0.20** what we charged for it. Pay as you go, once the free credits ran out.
-- **$0.70** one brand voice, once. Research, vision calls and the profile write-up.
-- **$5.00** free credits on sign-up. Enough to make a real campaign before paying.
-
-The market, as we sized it in December 2024:
-
-- **$30.34B** total market we were sizing against
-- **$2.2B** the slice we could actually serve
-- **36.2%** growth rate for AI in social media, to 2032
-- **₹208 cr** spent on digital media by about a million Indian SMEs
-- 600+ D2C brands in India worth $100B by 2025
-
-What marketers were already using AI for: 33% generate ideas and inspiration,
-28% write copy and content, 26% create marketing images. All three were things
-Zyke did in one pass, which is the argument the whole deck rested on.
-
-## 9. Under the hood
+## 4. How it was built
 
 Three of us built and operated it. There was never one model; each job went to
 the model that was good at it, and a saved brand voice object was passed into
@@ -520,7 +497,75 @@ and error.
 The path of one post: trend, why, rank, ideas, captions, images, route, segment,
 edit.
 
-## 10. The story
+## 5. Who it was for
+
+The business: the problem, the buyers, and the unit economics.
+
+### The problem
+
+Both founders ran PR and marketing for the Indian Case Challenge at IIT
+Kharagpur in 2024, one of the larger business case competitions in Asia. They
+needed a lot of posts, fast, and everything available was either expensive or
+bad. That is the whole reason Zyke existed.
+
+1. **Agencies cost too much.** The cheap alternatives were generic and still
+   took a week of back and forth.
+2. **The AI tools did not sound like you.** Same flat register every time.
+   Off-brand in a way that was hard to fix.
+3. **In-house teams were guessing.** Trial and error, one post at a time. The
+   trend had moved on by then.
+
+Core need: one tool that was efficient, affordable and actually personal to the
+brand.
+
+### Who it was for
+
+Three sizes of company, three different reasons to want it. Before much code was
+written we sat down with marketing people and founders and asked what they
+actually needed. These are their words, from those conversations in 2024.
+
+**Small firms.** Need: posts on trending topics, cheap enough to run every week.
+"We can give better services than UC but their brand is too big; they have funds
+large enough to afford crazy branding." — Mayank Arya, founder
+
+**Medium companies.** Need: brand-relevant content, produced often enough to
+grow visibility. "I would give you anything if you can give me better KPIs with
+measures on how to improve them." — Akash Walia, marketing manager
+
+**Large companies.** Need: creative work that moves brand positioning, not just
+fills a calendar. "We are a one stop solution, but we need to know what the
+customer is looking at majorly, so we can show that." — Harshvardhan Chauhan,
+former CMO, retail
+
+### The numbers
+
+Zyke was pay as you go. Five dollars of credits on sign-up, then twenty cents a
+post. We knew our costs to the cent because every generation was a metered API
+call.
+
+- **$0.05** what one generated post cost us. Model calls and storage for a
+  single image.
+- **$0.20** what we charged for it. Pay as you go, once the free credits ran out.
+- **$0.70** one brand voice, once. Research, vision calls and the profile write-up.
+- **$5.00** free credits on sign-up. Enough to make a real campaign before paying.
+
+The market, as we sized it in December 2024:
+
+- **$30.34B** total market we were sizing against
+- **$2.2B** the slice we could actually serve
+- **36.2%** growth rate for AI in social media, to 2032
+- **₹208 cr** spent on digital media by about a million Indian SMEs
+- 600+ D2C brands in India worth $100B by 2025
+
+What marketers were already using AI for: 33% generate ideas and inspiration,
+28% write copy and content, 26% create marketing images. All three were things
+Zyke did in one pass, which is the argument the whole deck rested on.
+
+## 6. What happened
+
+The story, the team, the money, and why it stopped.
+
+### The story
 
 Three people, five months, one Flask route to version 1.0.
 
@@ -581,7 +626,7 @@ $50k+ in credits, across seven programmes. No cash.
 
 Every model call behind every picture on the site was paid for out of that.
 
-## 11. Why we started it, and why it stopped
+### Why we started it, and why it stopped
 
 Worth writing down honestly, because the interesting part of a company that did
 not work is usually not the technology.

@@ -1,23 +1,21 @@
 import { pillars, comparison } from "@/lib/content";
-import { Section } from "./Section";
+import { Block } from "./Block";
 
 export function Pillars() {
   return (
-    <Section
-      id="pillars"
-      n="03"
+    <Block
       label="The promise"
       title="Three things the first landing page said. All three shipped."
     >
-      <ol className="divide-y divide-rule border-y rule">
+      <ol className="grid gap-px border-t rule bg-rule sm:grid-cols-3">
         {pillars.map((p) => (
-          <li key={p.n} className="grid gap-4 py-8 lg:grid-cols-12">
-            <span className="font-serif text-2xl text-mute lg:col-span-1">{p.n}</span>
-            <h3 className="font-serif text-2xl leading-tight tracking-tight sm:text-3xl lg:col-span-5">{p.title}</h3>
-            <p className="text-[15px] leading-relaxed text-ink2 lg:col-span-6">{p.body}</p>
+          <li key={p.n} className="bg-paper px-5 py-8 first:pl-0">
+            <span className="label">{p.n}</span>
+            <p className="mt-3 font-serif text-xl leading-snug tracking-tight sm:text-2xl">{p.title}</p>
           </li>
         ))}
       </ol>
+
 
       <div className="mt-16">
         <p className="label">How we compared ourselves, December 2024</p>
@@ -38,7 +36,7 @@ export function Pillars() {
             </thead>
             <tbody>
               {comparison.rows.map((r) => (
-                <tr key={r.feature} className="border-b rule">
+                <tr key={r.feature} className="border-b rule last:border-b-0">
                   <th scope="row" className="py-3 pr-6 text-left font-normal">
                     {r.feature}
                   </th>
@@ -56,10 +54,9 @@ export function Pillars() {
           </table>
         </div>
         <p className="mt-4 max-w-2xl text-[13px] leading-relaxed text-mute">
-          The three tools we benchmarked against are unnamed here. Two of them are still trading and this comparison is
-          two years old, so treat it as a record of what we believed at the time rather than a claim about them today.
+          The three rivals are unnamed. This is two years old, so read it as what we believed then.
         </p>
       </div>
-    </Section>
+    </Block>
   );
 }

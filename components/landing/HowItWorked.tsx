@@ -1,22 +1,20 @@
 import Image from "next/image";
 import { steps, beforeAfter } from "@/lib/content";
-import { Section } from "./Section";
+import { Block } from "./Block";
 import { BeforeAfter } from "./BeforeAfter";
 
 export function HowItWorked() {
   return (
-    <Section
-      id="how"
-      n="04"
+    <Block
       label="How it worked"
       title={
         <>
           One brand, one trend, nine posts, one edit.
         </>
       }
-      lede="The product was a pipeline. Each stage handed a richer object to the next: a brand, then an idea, then a post, then a corrected image. You could stop and steer at every stage. This is the demo, step by step."
+      lede="A pipeline. Brand, then idea, then post, then a corrected image. You could stop and steer at every stage."
     >
-      <ol className="divide-y divide-rule border-y rule">
+      <ol className="divide-y divide-rule border-t rule">
         {steps.map((s, i) => (
           <li key={s.n} className="grid gap-8 py-10 lg:grid-cols-12 lg:gap-12">
             <div className="lg:col-span-6">
@@ -34,7 +32,7 @@ export function HowItWorked() {
           </li>
         ))}
       </ol>
-    </Section>
+    </Block>
   );
 }
 
@@ -51,7 +49,7 @@ function BrandVoiceForm() {
   return (
     <dl className="border-t rule text-[15px]">
       {rows.map(([k, v]) => (
-        <div key={k} className="grid grid-cols-[96px_1fr] gap-4 border-b rule py-3">
+        <div key={k} className="grid grid-cols-[96px_1fr] gap-4 border-b rule last:border-b-0 py-3">
           <dt className="text-mute">{k}</dt>
           <dd>{v}</dd>
         </div>
@@ -75,7 +73,7 @@ function IdeaList() {
   ] as const;
   const List = ({ heading, rows, radio }: { heading: string; rows: readonly (readonly [string, boolean])[]; radio?: boolean }) => (
     <div>
-      <p className="label border-b rule pb-2">{heading}</p>
+      <p className="label border-b rule last:border-b-0 pb-2">{heading}</p>
       <ul className="divide-y divide-rule text-[15px]">
         {rows.map(([t, on]) => (
           <li key={t} className="flex items-center gap-3 py-2.5">
@@ -114,8 +112,7 @@ function PostGrid() {
         ))}
       </div>
       <figcaption className="mt-3 text-[13px] leading-relaxed text-mute">
-        Idea 1, post 1: three images, one caption. The typos in the rendered text are the image model&rsquo;s, from late
-        2024, and are left as they were.
+        Idea 1, post 1: three images, one caption. The typos are the 2024 model&rsquo;s, left as they were.
       </figcaption>
     </figure>
   );

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { months, progression, sameIdeaTwice, leaps, type Piece } from "@/lib/content";
 import { cn } from "@/lib/utils";
-import { Section } from "./Section";
+import { Block } from "./Block";
 
 // Flat list in reading order so the lightbox can walk the whole archive.
 const flat: { piece: Piece; month: string }[] = months.flatMap((m) =>
@@ -43,9 +43,7 @@ export function Work() {
 
   return (
     <>
-      <Section
-        id="gallery"
-        n="06"
+      <Block
         label="What it made"
         title={
           <>
@@ -53,30 +51,19 @@ export function Work() {
           </>
         }
         lede={
-          <>
-            <p>
-              Real output from the testing months. Zyke read the day&rsquo;s trends, picked one, decided by itself how
-              to bend it toward the brand, wrote the caption and generated the picture. At most we handed it a brand
-              name and a website. In most cases we did not even do that much.
-            </p>
-            <p className="mt-4">
-              Three months of it, in order. The jump from September to November is the point of this section: the
-              ideas were there from the start, and what changed was whether the model could actually execute them.{" "}
-              <a href="#stack" className="link">
-                What that took to build.
-              </a>
-            </p>
-          </>
+          <p>
+            Real output from the testing months. Zyke read the day&rsquo;s trends, picked one, tied it to the brand,
+            wrote the caption and made the picture. At most we handed it a brand name and a website.
+          </p>
         }
       >
         {/* The connections it made by itself, which are the actual product. */}
         <div className="border-t rule pt-10">
           <p className="label">The leaps it made on its own</p>
           <p className="mt-3 max-w-3xl font-serif text-2xl leading-snug tracking-tight sm:text-3xl">
-            A headline is not a post. Getting from one to the other is the whole job, and this is the part nobody
-            wrote down for it.
+            A headline is not a post. Getting from one to the other is the whole job, and nobody wrote it down for it.
           </p>
-          <ol className="mt-8 divide-y divide-rule border-y rule">
+          <ol className="mt-8 divide-y divide-rule border-t rule">
             {leaps.map((l) => (
               <li key={l.trend} className="grid gap-6 py-8 lg:grid-cols-12 lg:gap-10">
                 <div className="lg:col-span-5">
@@ -117,7 +104,7 @@ export function Work() {
 
         {/* Three cards, three months, each a door into that month's gallery. */}
         <div className="mt-20" />
-        <div className="border-y rule py-10">
+        <div className="border-t rule py-10">
           <p className="label">It got better fast</p>
           <p className="mt-3 max-w-3xl font-serif text-2xl leading-snug tracking-tight sm:text-3xl">
             The same pipeline, three months apart.
@@ -161,7 +148,7 @@ export function Work() {
             const hidden = m.pieces.length - visible.length;
             return (
               <div key={m.id} id={`m-${m.id}`} className="scroll-mt-24">
-                <div className="grid gap-6 border-t-2 border-ink pt-5 lg:grid-cols-12 lg:gap-12">
+                <div className="grid gap-6 border-t rule pt-8 lg:grid-cols-12 lg:gap-12">
                   <div className="lg:col-span-4">
                     <p className="label">
                       {m.month} <span className="mx-1 text-rule">/</span> {m.res}
@@ -218,12 +205,9 @@ export function Work() {
         </div>
 
         <p className="mt-20 max-w-2xl border-t rule pt-5 text-[13px] leading-relaxed text-mute">
-          Everything here is machine generated and was made in 2024 to test a product. Zomato, Bira 91 and Nike appear
-          as example brands. None of these companies was involved, none endorsed any of it, and none of it was ever
-          published on their behalf. Several pictures are Zyke&rsquo;s own attempt at a public figure, which it reached
-          for without being asked. They are here because they are a true record of what the thing did.
+          All machine generated in 2024, to test a product. Zomato, Bira 91 and Nike are example brands; none was involved and none endorsed any of it. The public figure was its own idea, kept because it is a true record.
         </p>
-      </Section>
+      </Block>
 
       {open !== null && flat[open] && (
         <Lightbox

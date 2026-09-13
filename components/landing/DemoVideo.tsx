@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { chapters, gallery, site } from "@/lib/content";
 import { cn } from "@/lib/utils";
-import { Section } from "./Section";
+import { Block } from "./Block";
 
 export function DemoVideo() {
   const [start, setStart] = useState<number | null>(null);
@@ -12,16 +12,16 @@ export function DemoVideo() {
   const src = start === null ? base : `${base}&autoplay=1&start=${start}`;
 
   return (
-    <Section
-      id="demo"
-      n="01"
+    <section id="demo" className="scroll-mt-14 border-t rule">
+      <div className="mx-auto max-w-page px-6 py-16 lg:px-10 lg:py-20">
+    <Block
       label="The demo"
       title={
         <>
           Four minutes, from a blank brand to <em>edited</em> posts.
         </>
       }
-      lede="Recorded in November 2024 on the version 1.0 build. The example brand is Zomato. Pick a chapter or press play."
+      lede="November 2024, version 1.0. The brand is Zomato. Pick a chapter or press play."
     >
       <div className="plate aspect-video w-full border rule">
         <iframe
@@ -37,7 +37,7 @@ export function DemoVideo() {
 
       <ol className="mt-8 grid gap-x-12 border-t rule sm:grid-cols-2">
         {chapters.map((c) => (
-          <li key={c.t} className="border-b rule">
+          <li key={c.t} className="border-b rule last:border-b-0">
             <button
               onClick={() => setStart(c.t)}
               className={cn(
@@ -77,10 +77,11 @@ export function DemoVideo() {
           ))}
         </ol>
         <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-mute">
-          Three ideas, nine posts, thirteen images, one trend about a rocket landing. Generated in the four minutes you
-          just watched.
+          Three ideas, nine posts, thirteen images. One trend, four minutes.
         </p>
       </div>
-    </Section>
+    </Block>
+      </div>
+    </section>
   );
 }

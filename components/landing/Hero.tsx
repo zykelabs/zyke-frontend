@@ -17,15 +17,13 @@ export function Hero() {
     <section id="top">
       <div className="mx-auto max-w-page px-6 pb-16 pt-20 lg:px-10 lg:pb-20 lg:pt-32">
         <p className="label">Zyke, 2024. An AI marketing agent, now an archive.</p>
-        <h1 className="display mt-8 max-w-[22ch] text-[2.75rem] sm:text-6xl lg:text-[5.5rem]">
-          It learned a brand&rsquo;s voice, watched what was trending, and did the work.
+        <h1 className="display mt-8 max-w-[16ch] text-[3rem] sm:text-7xl lg:text-[6.5rem]">
+          It learned the brand. It did the work.
         </h1>
         <div className="mt-10 grid gap-8 lg:grid-cols-12">
           <p className="max-w-xl text-lg leading-relaxed text-ink2 lg:col-span-7">
-            You gave Zyke a brand. It read the brand&rsquo;s website and social accounts, worked out how the brand
-            talked, found what was trending that morning, and came back with finished posts and generated images. If an
-            image was wrong you pointed at the part you wanted changed and typed a sentence. Three of us built it at IIT
-            Kharagpur in 2024. This page is the record.
+Give it a brand. It reads the site, finds what is trending, and comes back with finished posts.
+            Point at anything wrong and type the fix.
           </p>
           <div className="flex flex-col gap-3 text-[15px] lg:col-span-5 lg:items-end">
             <a href="#demo" className="link">
@@ -73,8 +71,7 @@ export function Hero() {
             ))}
           </div>
           <p className="mt-3 text-[13px] text-mute">
-            Six posts Zyke came up with on its own, for four brands it had never been told anything about beyond a
-            website address.
+            Six posts it came up with on its own, for four brands it knew only from a website address.
           </p>
         </div>
       </div>

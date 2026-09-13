@@ -15,7 +15,7 @@ export function Nav() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b rule bg-paper/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 border-b rule last:border-b-0 bg-paper/95 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-page items-center justify-between px-6 lg:px-10">
         <a href="#top" className="font-serif text-2xl leading-none tracking-tight">
           zyke
@@ -40,7 +40,7 @@ export function Nav() {
           {/* Multi-column so the numbers run down each column, not across. */}
           <ol className="mx-auto max-w-page px-6 py-2 lg:columns-2 lg:gap-12 lg:px-10">
             {sections.map((s) => (
-              <li key={s.id} className="break-inside-avoid border-b rule">
+              <li key={s.id} className="break-inside-avoid border-b rule last:border-b-0">
                 <button
                   onClick={() => {
                     setOpen(false);
@@ -49,7 +49,7 @@ export function Nav() {
                   className="flex w-full items-baseline gap-4 py-3 text-left"
                 >
                   <span className="w-6 shrink-0 font-mono text-xs text-mute">{s.n}</span>
-                  <span className="text-[15px]">{s.label}</span>
+                  <span className="text-[15px]">{s.name}</span>
                 </button>
               </li>
             ))}
